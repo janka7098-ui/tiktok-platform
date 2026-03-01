@@ -12,17 +12,13 @@ app.use(express.static("public"));
 const connections = {};
 
 io.on("connection", (socket) => {
-    console.log("🟢 Usuario conectado:", socket.id);
+    console.log("Usuario conectado:", socket.id);
 
     socket.on("startConnection", async (data) => {
         const { username } = data;
+        if (!username) return;
 
-        if (!username) {
-            socket.emit("status", "error");
-            return;
-        }
-
-        // Si ya existe conexión anterior, la cerramos
+        // 🔥 Cerrar conexión previa si existe
         if (connections[socket.id]) {
             connections[socket.id].tiktokConnection.disconnect();
             delete connections[socket.id];
@@ -31,8 +27,6 @@ io.on("connection", (socket) => {
         const tiktokConnection = new WebcastPushConnection(username);
 
         try {
-            console.log(`🔥 Intentando conectar a TikTok: ${username}`);
-
             await tiktokConnection.connect();
 
             connections[socket.id] = {
@@ -40,59 +34,42 @@ io.on("connection", (socket) => {
                 tiktokConnection
             };
 
-            console.log("✅ Conectado correctamente");
-
             socket.emit("status", "connected");
 
-            // 🎁 Regalos
+            // 🎁 REGALOS
             tiktokConnection.on("gift", (giftData) => {
-                console.log("🎁 Gift:", giftData.giftName);
-
                 socket.emit("gift", {
+                    id: giftData.giftId + "-" + giftData.repeatCount + "-" + Date.now(),
                     user: giftData.nickname,
                     gift: giftData.giftName,
                     amount: giftData.repeatCount
                 });
             });
 
-            // 💬 Chat
-            tiktokConnection.on("chat", (data) => {
+            // 💬 CHAT
+            tiktokConnection.on("chat", (chatData) => {
                 socket.emit("chat", {
-                    user: data.nickname,
-                    message: data.comment
+                    id: chatData.uniqueId + "-" + Date.now(),
+                    user: chatData.nickname,
+                    message: chatData.comment
                 });
-            });
-
-            // ❤️ Likes
-            tiktokConnection.on("like", (data) => {
-                socket.emit("like", {
-                    user: data.nickname,
-                    likes: data.likeCount
-                });
-            });
-
-            // ⭐ Follow
-            tiktokConnection.on("follow", (data) => {
-                socket.emit("follow", {
-                    user: data.nickname
-                });
-            });
-
-            // 🔌 Si TikTok se desconecta
-            tiktokConnection.on("disconnected", () => {
-                console.log("⚠ TikTok desconectado");
-                socket.emit("status", "disconnected");
             });
 
         } catch (err) {
-            console.log("❌ Error conectando:", err.message);
+            console.log("Error conectando:", err);
             socket.emit("status", "error");
         }
     });
 
-    socket.on("disconnect", () => {
-        console.log("🔴 Usuario desconectado:", socket.id);
+    socket.on("disconnectLive", () => {
+        if (connections[socket.id]) {
+            connections[socket.id].tiktokConnection.disconnect();
+            delete connections[socket.id];
+            socket.emit("status", "disconnected");
+        }
+    });
 
+    socket.on("disconnect", () => {
         if (connections[socket.id]) {
             connections[socket.id].tiktokConnection.disconnect();
             delete connections[socket.id];
@@ -100,8 +77,8 @@ io.on("connection", (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 server.listen(PORT, () => {
-    console.log("🚀 Servidor corriendo en puerto", PORT);
+    console.log("Servidor corriendo en puerto", PORT);
 });

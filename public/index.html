@@ -2,285 +2,285 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Nexora Control Panel</title>
+<title>Nexora Panel</title>
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 
 body{
-    background:radial-gradient(circle at top,#111132,#050510);
-    color:white;
-    height:100vh;
-    overflow:hidden;
+background:radial-gradient(circle at top,#111132,#050510);
+color:white;
+height:100vh;
+overflow:hidden;
 }
 
 /* LOGO */
 .logo{
-    width:160px;
-    margin-bottom:25px;
-    filter: drop-shadow(0 0 20px rgba(0,255,157,0.7));
-    animation: glow 3s infinite alternate;
+width:160px;
+margin-bottom:20px;
+filter: drop-shadow(0 0 20px rgba(0,255,157,0.7));
 }
 
-@keyframes glow{
-    from{filter: drop-shadow(0 0 10px rgba(123,47,247,0.6));}
-    to{filter: drop-shadow(0 0 25px rgba(0,255,157,0.9));}
+/* SCREENS */
+
+.screen{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-/* LOGIN */
-
-#login{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-}
-
-.login-card{
-    background:rgba(20,20,40,0.9);
-    padding:45px;
-    border-radius:25px;
-    width:380px;
-    text-align:center;
-    box-shadow:0 0 60px rgba(0,255,157,0.4);
-    backdrop-filter:blur(15px);
+.card{
+background:rgba(20,20,40,0.9);
+padding:40px;
+border-radius:25px;
+width:380px;
+text-align:center;
+box-shadow:0 0 50px rgba(0,255,157,0.3);
+backdrop-filter:blur(15px);
 }
 
 input{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:10px;
-    background:#1a1a35;
-    color:white;
-    margin-bottom:20px;
+width:100%;
+padding:14px;
+border:none;
+border-radius:10px;
+background:#1a1a35;
+color:white;
+margin-bottom:20px;
 }
 
 button{
-    padding:12px 18px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:bold;
+padding:12px 18px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+color:white;
+width:100%;
 }
 
 /* DASHBOARD */
 
 #dashboard{
-    display:none;
-    height:100vh;
-    display:flex;
+display:none;
+height:100vh;
+display:flex;
 }
 
-/* SIDEBAR */
-
 .sidebar{
-    width:240px;
-    background:#0e0e1c;
-    padding:25px;
-    border-right:1px solid rgba(255,255,255,0.05);
-    text-align:center;
+width:240px;
+background:#0e0e1c;
+padding:25px;
+border-right:1px solid rgba(255,255,255,0.05);
+text-align:center;
 }
 
 .menu-btn{
-    width:100%;
-    padding:12px;
-    margin-bottom:12px;
-    border-radius:10px;
-    background:#141428;
-    color:white;
-    transition:0.3s;
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:10px;
+background:#141428;
+color:white;
+transition:0.3s;
 }
 
 .menu-btn:hover{
-    background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-    transform:translateX(5px);
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+transform:translateX(5px);
 }
-
-/* MAIN */
 
 .main{
-    flex:1;
-    padding:30px;
+flex:1;
+padding:30px;
 }
-
-/* TOPBAR */
 
 .topbar{
-    background:#111124;
-    padding:18px;
-    border-radius:15px;
-    margin-bottom:25px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 0 25px rgba(0,255,157,0.2);
+background:#111124;
+padding:18px;
+border-radius:15px;
+margin-bottom:25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 0 25px rgba(0,255,157,0.2);
 }
 
-/* SECTIONS */
-
 .section{
-    display:none;
-    height:70vh;
-    overflow-y:auto;
-    background:#111124;
-    padding:20px;
-    border-radius:15px;
+display:none;
+height:70vh;
+overflow-y:auto;
+background:#111124;
+padding:20px;
+border-radius:15px;
 }
 
 .section.active{display:block;}
 
-.card{
-    background:#1a1a35;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:10px;
-    border-left:4px solid #00ff9d;
-    animation:fadeIn 0.3s ease;
+.card-event{
+background:#1a1a35;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+border-left:4px solid #00ff9d;
 }
-
-@keyframes fadeIn{
-    from{opacity:0;transform:translateY(5px);}
-    to{opacity:1;transform:translateY(0);}
-}
-
-/* SWITCH */
 
 .switch{
-    position:relative;
-    display:inline-block;
-    width:50px;
-    height:25px;
+position:relative;
+display:inline-block;
+width:50px;
+height:25px;
 }
 
 .switch input{display:none;}
 
 .slider{
-    position:absolute;
-    cursor:pointer;
-    top:0;left:0;right:0;bottom:0;
-    background:#333;
-    border-radius:25px;
-    transition:0.3s;
+position:absolute;
+cursor:pointer;
+top:0;left:0;right:0;bottom:0;
+background:#333;
+border-radius:25px;
+transition:0.3s;
 }
 
 .slider:before{
-    content:"";
-    position:absolute;
-    height:19px;width:19px;
-    left:3px;bottom:3px;
-    background:white;
-    border-radius:50%;
-    transition:0.3s;
+content:"";
+position:absolute;
+height:19px;width:19px;
+left:3px;bottom:3px;
+background:white;
+border-radius:50%;
+transition:0.3s;
 }
 
 input:checked + .slider{
-    background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
 }
 
 input:checked + .slider:before{
-    transform:translateX(25px);
-}
-
-.disconnect{
-    background:#ff3b3b;
-    color:white;
+transform:translateX(25px);
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-    <div class="login-card">
-        <img src="/Logotipo.png" class="logo">
-        <input id="username" placeholder="Usuario sin @" />
-        <button onclick="connectLive()" style="background:linear-gradient(90deg,#7b2ff7,#00ff9d);color:white;">Conectar</button>
-        <div id="status">Desconectado</div>
-    </div>
+<!-- ACCESS SCREEN -->
+<div id="accessScreen" class="screen">
+<div class="card">
+<img src="/Logotipo.png" class="logo">
+<input id="accessKey" placeholder="Clave de acceso">
+<button onclick="validateKey()">Acceder</button>
+<p id="accessStatus"></p>
+</div>
+</div>
+
+<!-- LOGIN TIKTOK -->
+<div id="loginScreen" class="screen" style="display:none;">
+<div class="card">
+<img src="/Logotipo.png" class="logo">
+<input id="username" placeholder="Usuario TikTok sin @">
+<button onclick="connectLive()">Conectar LIVE</button>
+<p id="status"></p>
+</div>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard">
 
-    <div class="sidebar">
-        <img src="/Logotipo.png" class="logo">
-        <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
-        <button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
-        <button class="menu-btn disconnect" onclick="disconnectLive()">⛔ Desconectar</button>
-    </div>
+<div class="sidebar">
+<img src="/Logotipo.png" class="logo">
+<button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
+<button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
+<button class="menu-btn" onclick="disconnectLive()">⛔ Desconectar</button>
+</div>
 
-    <div class="main">
-        <div class="topbar">
-            <div>🟢 Conectado a <span id="liveUser"></span></div>
-            <div>
-                🔊 TTS
-                <label class="switch">
-                    <input type="checkbox" id="ttsToggle" checked onchange="toggleTTS()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
+<div class="main">
+<div class="topbar">
+<div>🟢 Conectado a <span id="liveUser"></span></div>
+<div>
+TTS
+<label class="switch">
+<input type="checkbox" id="ttsToggle" checked onchange="toggleTTS()">
+<span class="slider"></span>
+</label>
+</div>
+</div>
 
-        <div id="chat" class="section active"></div>
-        <div id="gifts" class="section"></div>
-    </div>
+<div id="chat" class="section active"></div>
+<div id="gifts" class="section"></div>
+
+</div>
 </div>
 
 <script>
 const socket = io();
 let ttsEnabled = true;
 
-function speak(text){
-    if(!ttsEnabled) return;
-    const speech=new SpeechSynthesisUtterance(text);
-    speech.lang="es-MX";
-    speech.rate=1;
-    window.speechSynthesis.speak(speech);
+function validateKey(){
+const key=document.getElementById("accessKey").value;
+socket.emit("validateKey", key);
 }
+
+socket.on("keyValid",()=>{
+document.getElementById("accessScreen").style.display="none";
+document.getElementById("loginScreen").style.display="flex";
+});
+
+socket.on("keyInvalid",()=>{
+document.getElementById("accessStatus").innerText="Clave incorrecta";
+});
 
 function connectLive(){
-    const username=document.getElementById("username").value;
-    socket.emit("startConnection",{username});
-}
-
-function disconnectLive(){
-    socket.emit("disconnectLive");
-    location.reload();
-}
-
-function showSection(id){
-    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
-
-function toggleTTS(){
-    ttsEnabled=document.getElementById("ttsToggle").checked;
+const username=document.getElementById("username").value;
+socket.emit("startConnection",{username});
 }
 
 socket.on("status",(msg)=>{
-    if(msg==="connected"){
-        document.getElementById("login").style.display="none";
-        document.getElementById("dashboard").style.display="flex";
-        document.getElementById("liveUser").innerText=document.getElementById("username").value;
-    }
+if(msg==="connected"){
+document.getElementById("loginScreen").style.display="none";
+document.getElementById("dashboard").style.display="flex";
+document.getElementById("liveUser").innerText=document.getElementById("username").value;
+}
 });
 
+function disconnectLive(){
+socket.emit("disconnectLive");
+location.reload();
+}
+
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+function toggleTTS(){
+ttsEnabled=document.getElementById("ttsToggle").checked;
+}
+
+function speak(text){
+if(!ttsEnabled) return;
+const speech=new SpeechSynthesisUtterance(text);
+speech.lang="es-MX";
+window.speechSynthesis.speak(speech);
+}
+
 socket.on("chat",(data)=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
-    document.getElementById("chat").prepend(div);
-    speak(`${data.user} dice ${data.message}`);
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
+document.getElementById("chat").prepend(div);
+speak(`${data.user} dice ${data.message}`);
 });
 
 socket.on("gift",(data)=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
-    document.getElementById("gifts").prepend(div);
-    speak(`${data.user} envió ${data.gift}`);
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+document.getElementById("gifts").prepend(div);
+speak(`${data.user} envió ${data.gift}`);
 });
 </script>
 

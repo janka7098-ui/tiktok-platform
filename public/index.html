@@ -6,134 +6,110 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI',sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 
 body{
-    background: radial-gradient(circle at top,#0f0f1f,#06060f);
+    background:linear-gradient(135deg,#0b0b1a,#050510);
     color:white;
+    height:100vh;
+    overflow:hidden;
 }
 
 /* LOGIN */
 
-#login-view{
+#login{
     height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
 }
 
-.login-card{
-    width:380px;
+.card{
+    background:#12122b;
     padding:40px;
-    border-radius:25px;
-    background:rgba(20,20,40,0.85);
-    backdrop-filter:blur(15px);
-    box-shadow:0 0 60px rgba(130,0,255,0.4);
+    border-radius:20px;
+    width:350px;
     text-align:center;
-}
-
-.logo{
-    width:160px;
-    margin-bottom:25px;
+    box-shadow:0 0 40px rgba(0,255,157,0.3);
 }
 
 input{
     width:100%;
-    padding:14px;
+    padding:12px;
     border:none;
-    border-radius:10px;
-    margin-bottom:20px;
-    background:#1a1a30;
+    border-radius:8px;
+    margin:15px 0;
+    background:#1d1d3f;
     color:white;
-    font-size:14px;
 }
 
 button{
-    width:100%;
-    padding:14px;
+    padding:10px 15px;
     border:none;
-    border-radius:12px;
-    background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-    font-weight:bold;
-    font-size:15px;
+    border-radius:8px;
     cursor:pointer;
-    transition:0.3s;
+    background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+    color:white;
+    font-weight:bold;
 }
 
-button:hover{
-    transform:scale(1.05);
-    box-shadow:0 0 20px #00ff9d;
-}
-
-.status{
-    margin-top:15px;
-    font-size:14px;
-}
+.status{margin-top:10px;}
 
 /* DASHBOARD */
 
-#dashboard-view{
+#dashboard{
     display:none;
     height:100vh;
     display:flex;
 }
 
 .sidebar{
-    width:240px;
-    background:#0e0e1c;
-    padding:30px 20px;
-    border-right:1px solid rgba(255,255,255,0.05);
+    width:220px;
+    background:#0e0e20;
+    padding:20px;
 }
 
-.sidebar img{
-    width:120px;
-    margin-bottom:30px;
-}
-
-.menu-item{
-    padding:12px;
+.sidebar button{
+    width:100%;
     margin-bottom:10px;
-    border-radius:10px;
-    background:#141428;
-    cursor:pointer;
-    transition:0.3s;
+    background:#1c1c3a;
 }
 
-.menu-item:hover{
+.sidebar button:hover{
     background:linear-gradient(90deg,#7b2ff7,#00ff9d);
 }
 
 .main{
     flex:1;
-    padding:40px;
+    padding:20px;
 }
 
 .topbar{
-    background:#111124;
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:25px;
-    box-shadow:0 0 20px rgba(0,255,157,0.2);
-}
-
-.event-container{
-    background:#111124;
-    padding:20px;
-    border-radius:15px;
-    height:60vh;
-    overflow-y:auto;
-}
-
-.event{
-    background:#1a1a35;
-    padding:12px;
+    background:#151535;
+    padding:15px;
     border-radius:10px;
-    margin-bottom:10px;
+    margin-bottom:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.section{
+    display:none;
+    height:75vh;
+    overflow-y:auto;
+    background:#151535;
+    padding:15px;
+    border-radius:10px;
+}
+
+.active{display:block;}
+
+.item{
+    background:#1d1d40;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
     border-left:4px solid #00ff9d;
 }
 </style>
@@ -141,100 +117,103 @@ button:hover{
 <body>
 
 <!-- LOGIN -->
-<div id="login-view">
-    <div class="login-card">
-        <img src="Logotipo.png" class="Logotipo">
-        <input id="username" placeholder="Usuario TikTok sin @" />
-        <button onclick="connect()">Conectar a LIVE</button>
+<div id="login">
+    <div class="card">
+        <h2>Nexora Live</h2>
+        <input id="username" placeholder="Usuario sin @" />
+        <button onclick="connectLive()">Conectar</button>
         <div class="status" id="status">Desconectado</div>
     </div>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard-view">
-
+<div id="dashboard">
     <div class="sidebar">
-        <img src="logo.png">
-        <div class="menu-item">Dashboard</div>
-        <div class="menu-item">Regalos</div>
-        <div class="menu-item">Chat</div>
-        <div class="menu-item">Configuración</div>
+        <button onclick="showSection('chat')">Chat</button>
+        <button onclick="showSection('gifts')">Regalos</button>
+        <button onclick="toggleTTS()" id="ttsBtn">🔊 TTS ON</button>
+        <button onclick="disconnectLive()" style="background:#ff3b3b;">Desconectar</button>
     </div>
 
     <div class="main">
         <div class="topbar">
-            🟢 Conectado a <span id="liveUser"></span>
+            <div>🟢 Conectado a <span id="liveUser"></span></div>
         </div>
 
-        <div class="event-container" id="events"></div>
+        <div id="chat" class="section active"></div>
+        <div id="gifts" class="section"></div>
     </div>
-
 </div>
 
 <script>
 const socket = io();
-let ttsEnabled = false;
+let ttsEnabled = true;
 
-/* 🔊 FUNCION TTS */
+/* VOZ */
 function speak(text){
     if(!ttsEnabled) return;
-
     const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "es-MX";
-    speech.rate = 1;
-    speech.pitch = 1;
-    speech.volume = 1;
+    speech.lang="es-MX";
+    speech.rate=1;
     window.speechSynthesis.speak(speech);
 }
 
-function connect(){
+/* CONECTAR */
+function connectLive(){
     const username=document.getElementById("username").value;
     socket.emit("startConnection",{username});
 }
 
-/* ESTADO CONEXION */
+/* DESCONECTAR */
+function disconnectLive(){
+    socket.emit("disconnectLive");
+    location.reload();
+}
+
+/* CAMBIAR SECCION */
+function showSection(id){
+    document.querySelectorAll(".section").forEach(sec=>sec.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+/* TOGGLE TTS */
+function toggleTTS(){
+    ttsEnabled=!ttsEnabled;
+    const btn=document.getElementById("ttsBtn");
+    btn.innerText=ttsEnabled?"🔊 TTS ON":"🔇 TTS OFF";
+}
+
+/* STATUS */
 socket.on("status",(msg)=>{
-    const status=document.getElementById("status");
-
     if(msg==="connected"){
-        status.innerHTML="🟢 Conectado";
-        document.getElementById("login-view").style.display="none";
-        document.getElementById("dashboard-view").style.display="flex";
-        document.getElementById("liveUser").innerText=
-            document.getElementById("username").value;
-
-        ttsEnabled = true; // activar voz después de interacción
+        document.getElementById("login").style.display="none";
+        document.getElementById("dashboard").style.display="flex";
+        document.getElementById("liveUser").innerText=document.getElementById("username").value;
     }
 
     if(msg==="error"){
-        status.innerHTML="🔴 Error al conectar";
-    }
-
-    if(msg==="disconnected"){
-        location.reload();
+        document.getElementById("status").innerText="Error al conectar";
     }
 });
 
-/* 🎁 GIFTS */
-socket.on("gift",(data)=>{
-    const container=document.getElementById("events");
-    const div=document.createElement("div");
-    div.className="event";
-    div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
-    container.prepend(div);
-
-    speak(`${data.user} envió ${data.gift}`);
-});
-
-/* 💬 CHAT CON VOZ */
+/* CHAT */
 socket.on("chat",(data)=>{
-    const container=document.getElementById("events");
     const div=document.createElement("div");
-    div.className="event";
+    div.className="item";
     div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
-    container.prepend(div);
+    document.getElementById("chat").prepend(div);
 
     speak(`${data.user} dice ${data.message}`);
+});
+
+/* GIFTS */
+socket.on("gift",(data)=>{
+    const div=document.createElement("div");
+    div.className="item";
+    div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+    document.getElementById("gifts").prepend(div);
+
+    speak(`${data.user} envió ${data.gift}`);
 });
 </script>
 

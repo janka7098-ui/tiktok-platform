@@ -12,10 +12,46 @@ body{
 background:radial-gradient(circle at top,#111132,#050510);
 color:white;
 height:100vh;
-overflow:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-#dashboard{display:none;height:100vh;flex-direction:column;}
+.card{
+background:#141428;
+padding:40px;
+border-radius:20px;
+width:380px;
+text-align:center;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+background:#1a1a35;
+border:none;
+border-radius:8px;
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+font-weight:bold;
+}
+
+#dashboard{
+display:none;
+width:100%;
+height:100vh;
+flex-direction:column;
+}
 
 .topbar{
 height:60px;
@@ -27,28 +63,10 @@ padding:0 20px;
 border-bottom:1px solid #222;
 }
 
-.status{
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-.dot{
-width:12px;
-height:12px;
-border-radius:50%;
-background:#00ff9d;
-}
-
-.tts-btn{
-background:#1a1a35;
-padding:8px 14px;
-border-radius:8px;
-cursor:pointer;
-}
-
-.tts-btn.active{
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+.sidebar{
+width:220px;
+background:#0e0e1c;
+padding:20px;
 }
 
 .container{
@@ -56,10 +74,10 @@ flex:1;
 display:flex;
 }
 
-.sidebar{
-width:220px;
-background:#0e0e1c;
+.main{
+flex:1;
 padding:20px;
+overflow:auto;
 }
 
 .menu-btn{
@@ -72,12 +90,6 @@ color:white;
 cursor:pointer;
 }
 
-.main{
-flex:1;
-padding:20px;
-overflow-y:auto;
-}
-
 .section{display:none;}
 .section.active{display:block;}
 
@@ -88,41 +100,30 @@ border-radius:8px;
 margin-bottom:10px;
 border-left:4px solid #00ff9d;
 }
-
-input, select{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-background:#1a1a35;
-border:none;
-border-radius:6px;
-color:white;
-}
-
-button{
-padding:10px;
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-border:none;
-border-radius:6px;
-color:white;
-cursor:pointer;
-}
-
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="loginScreen" class="card">
+<h2>NEXORA ACCESS</h2>
+<input id="accessKey" placeholder="Clave de acceso">
+<input id="tiktokUser" placeholder="Usuario TikTok sin @">
+<input id="robloxUser" placeholder="Usuario Roblox">
+<button onclick="login()">Entrar</button>
+<p id="loginMsg"></p>
+</div>
+
+<!-- DASHBOARD -->
 <div id="dashboard">
 
 <div class="topbar">
-<div class="status">
-<div class="dot"></div>
-<div>Conectado a <strong id="liveUser"></strong></div>
+<div>
+🟢 Conectado a <strong id="liveUser"></strong>  
+| Roblox: <strong id="rbUser"></strong>
 </div>
 
-<div id="ttsToggle" class="tts-btn active" onclick="toggleTTS()">
-🔊 TTS ACTIVADO
-</div>
+<button onclick="disconnectLive()">Desconectar</button>
 </div>
 
 <div class="container">
@@ -130,77 +131,50 @@ cursor:pointer;
 <div class="sidebar">
 <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
 <button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
-<button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
-<button class="menu-btn" onclick="disconnectLive()">⛔ Desconectar</button>
 </div>
 
 <div class="main">
-
 <div id="chat" class="section active"></div>
 <div id="gifts" class="section"></div>
-
-<div id="actions" class="section">
-
-<h3>Crear Acción</h3>
-
-<input id="actionGift" placeholder="Nombre exacto del regalo (ej: Rose)">
-<input id="actionAmount" type="number" value="1" placeholder="Cantidad mínima">
-
-<select id="actionType">
-<option value="sound">Sonido</option>
-<option value="animation">Animación</option>
-</select>
-
-<input id="actionFile" placeholder="Ej: /media/rosa.mp3">
-<button onclick="createAction()">Crear Acción</button>
-
-<br><br>
-<h3>Acciones Configuradas</h3>
-<div id="actionList"></div>
-
 </div>
 
-</div>
 </div>
 </div>
 
 <script>
 const socket = io();
-let actions = [];
-let ttsEnabled = true;
 
-/* SIMULAMOS CONEXIÓN YA ACTIVA */
+function login(){
+
+const key=document.getElementById("accessKey").value.trim();
+const tiktok=document.getElementById("tiktokUser").value.trim();
+const roblox=document.getElementById("robloxUser").value.trim();
+
+if(!key || !tiktok || !roblox){
+document.getElementById("loginMsg").innerText="Completa todos los campos";
+return;
+}
+
+socket.emit("validateAndConnect",{
+key,
+tiktok,
+roblox
+});
+}
+
+socket.on("loginError",(msg)=>{
+document.getElementById("loginMsg").innerText=msg;
+});
+
+socket.on("connected",(data)=>{
+
+document.getElementById("loginScreen").style.display="none";
 document.getElementById("dashboard").style.display="flex";
-document.getElementById("liveUser").innerText="marciita_gg";
 
-/* TTS */
+document.getElementById("liveUser").innerText=data.tiktok;
+document.getElementById("rbUser").innerText=data.roblox;
 
-function toggleTTS(){
-ttsEnabled = !ttsEnabled;
-const btn=document.getElementById("ttsToggle");
-
-if(ttsEnabled){
-btn.classList.add("active");
-btn.innerText="🔊 TTS ACTIVADO";
-}else{
-btn.classList.remove("active");
-btn.innerText="🔇 TTS DESACTIVADO";
-}
-}
-
-function speak(text){
-if(!ttsEnabled) return;
-const speech=new SpeechSynthesisUtterance(text);
-speech.lang="es-MX";
-window.speechSynthesis.speak(speech);
-}
-
-/* SECCIONES */
-
-function showSection(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-}
+});
 
 /* EVENTOS */
 
@@ -209,7 +183,6 @@ const div=document.createElement("div");
 div.className="card-event";
 div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
 document.getElementById("chat").prepend(div);
-speak(`${data.user} dice ${data.message}`);
 });
 
 socket.on("gift",(data)=>{
@@ -217,66 +190,17 @@ const div=document.createElement("div");
 div.className="card-event";
 div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
 document.getElementById("gifts").prepend(div);
-
-executeAction(data.gift, data.amount);
 });
 
-/* ACCIONES */
+/* UI */
 
-function createAction(){
-const gift=document.getElementById("actionGift").value.trim();
-const minAmount=parseInt(document.getElementById("actionAmount").value);
-const type=document.getElementById("actionType").value;
-const file=document.getElementById("actionFile").value.trim();
-
-if(!gift || !file) return;
-
-actions.push({
-id:Date.now(),
-gift,
-minAmount,
-type,
-file,
-enabled:true
-});
-
-renderActions();
-}
-
-function renderActions(){
-const container=document.getElementById("actionList");
-container.innerHTML="";
-
-actions.forEach(a=>{
-const div=document.createElement("div");
-div.className="card-event";
-div.innerHTML=`🎁 ${a.gift} (x${a.minAmount}) → ${a.type}`;
-container.appendChild(div);
-});
-}
-
-function executeAction(giftName, amount){
-
-const action=actions.find(a=>
-a.enabled &&
-a.gift.toLowerCase()===giftName.toLowerCase() &&
-amount>=a.minAmount
-);
-
-if(!action) return;
-
-if(action.type==="sound"){
-const audio=new Audio(action.file);
-audio.volume=1;
-audio.play().catch(err=>console.log("Error audio:",err));
-}
-
-if(action.type==="animation"){
-alert(`✨ ${giftName} x${amount} ✨`);
-}
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
 function disconnectLive(){
+socket.emit("disconnectLive");
 location.reload();
 }
 </script>

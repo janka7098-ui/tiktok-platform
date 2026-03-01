@@ -15,48 +15,46 @@ height:100vh;
 overflow:hidden;
 }
 
-.logo{
-width:120px;
-margin-bottom:20px;
-}
+#dashboard{display:none;height:100vh;flex-direction:column;}
 
-.screen{
-height:100vh;
+.topbar{
+height:60px;
+background:#0e0e1c;
 display:flex;
-justify-content:center;
 align-items:center;
+justify-content:space-between;
+padding:0 20px;
+border-bottom:1px solid #222;
 }
 
-.card{
-background:#141428;
-padding:40px;
-border-radius:20px;
-width:360px;
-text-align:center;
+.status{
+display:flex;
+align-items:center;
+gap:10px;
 }
 
-input, select{
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
+.dot{
+width:12px;
+height:12px;
+border-radius:50%;
+background:#00ff9d;
+}
+
+.tts-btn{
 background:#1a1a35;
-color:white;
-margin-bottom:12px;
-}
-
-button{
-padding:12px;
-border:none;
+padding:8px 14px;
 border-radius:8px;
 cursor:pointer;
-font-weight:bold;
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-color:white;
-width:100%;
 }
 
-#dashboard{display:none;height:100vh;display:flex;}
+.tts-btn.active{
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+}
+
+.container{
+flex:1;
+display:flex;
+}
 
 .sidebar{
 width:220px;
@@ -85,73 +83,58 @@ overflow-y:auto;
 
 .card-event{
 background:#1a1a35;
-padding:10px;
+padding:12px;
 border-radius:8px;
 margin-bottom:10px;
 border-left:4px solid #00ff9d;
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:10px;
 }
 
-.action-buttons button{
-width:auto;
-padding:5px 10px;
-font-size:12px;
-margin-left:5px;
-}
-
-#overlayContainer{
-position:fixed;
-top:0;
-left:0;
+input, select{
 width:100%;
-height:100%;
-pointer-events:none;
-display:flex;
-justify-content:center;
-align-items:center;
-z-index:9999;
+padding:10px;
+margin-bottom:10px;
+background:#1a1a35;
+border:none;
+border-radius:6px;
+color:white;
 }
+
+button{
+padding:10px;
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+border:none;
+border-radius:6px;
+color:white;
+cursor:pointer;
+}
+
 </style>
 </head>
 <body>
 
-<!-- ACCESS -->
-<div id="accessScreen" class="screen">
-<div class="card">
-<img src="/Logotipo.png" class="logo">
-<input id="accessKey" placeholder="Clave de acceso">
-<button onclick="validateKey()">Acceder</button>
-<p id="accessStatus"></p>
-</div>
-</div>
-
-<!-- LOGIN -->
-<div id="loginScreen" class="screen" style="display:none;">
-<div class="card">
-<img src="/Logotipo.png" class="logo">
-<input id="username" placeholder="Usuario TikTok sin @">
-<button onclick="connectLive()">Conectar LIVE</button>
-<p id="status"></p>
-</div>
-</div>
-
-<!-- DASHBOARD -->
 <div id="dashboard">
+
+<div class="topbar">
+<div class="status">
+<div class="dot"></div>
+<div>Conectado a <strong id="liveUser"></strong></div>
+</div>
+
+<div id="ttsToggle" class="tts-btn active" onclick="toggleTTS()">
+🔊 TTS ACTIVADO
+</div>
+</div>
+
+<div class="container">
 
 <div class="sidebar">
 <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
 <button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
 <button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
-<button class="menu-btn" onclick="toggleTTS()">🔊 TTS ON/OFF</button>
 <button class="menu-btn" onclick="disconnectLive()">⛔ Desconectar</button>
 </div>
 
 <div class="main">
-
-<h3>🟢 Conectado a <span id="liveUser"></span></h3>
 
 <div id="chat" class="section active"></div>
 <div id="gifts" class="section"></div>
@@ -160,14 +143,15 @@ z-index:9999;
 
 <h3>Crear Acción</h3>
 
-<input id="actionGift" placeholder="Nombre del regalo (ej: Rose)">
+<input id="actionGift" placeholder="Nombre exacto del regalo (ej: Rose)">
 <input id="actionAmount" type="number" value="1" placeholder="Cantidad mínima">
+
 <select id="actionType">
 <option value="sound">Sonido</option>
-<option value="video">Video</option>
 <option value="animation">Animación</option>
 </select>
-<input id="actionFile" placeholder="Ruta archivo (ej: /media/rosa.mp4)">
+
+<input id="actionFile" placeholder="Ej: /media/rosa.mp3">
 <button onclick="createAction()">Crear Acción</button>
 
 <br><br>
@@ -178,64 +162,44 @@ z-index:9999;
 
 </div>
 </div>
-
-<div id="overlayContainer"></div>
+</div>
 
 <script>
 const socket = io();
 let actions = [];
 let ttsEnabled = true;
 
-/* LOGIN */
-
-function validateKey(){
-const key=document.getElementById("accessKey").value;
-socket.emit("validateKey", key);
-}
-
-socket.on("keyValid",()=>{
-document.getElementById("accessScreen").style.display="none";
-document.getElementById("loginScreen").style.display="flex";
-});
-
-socket.on("keyInvalid",()=>{
-document.getElementById("accessStatus").innerText="Clave incorrecta";
-});
-
-function connectLive(){
-const username=document.getElementById("username").value;
-socket.emit("startConnection",{username});
-}
-
-socket.on("status",(msg)=>{
-if(msg==="connected"){
-document.getElementById("loginScreen").style.display="none";
+/* SIMULAMOS CONEXIÓN YA ACTIVA */
 document.getElementById("dashboard").style.display="flex";
-document.getElementById("liveUser").innerText=document.getElementById("username").value;
-}
-});
-
-function disconnectLive(){
-socket.emit("disconnectLive");
-location.reload();
-}
-
-function showSection(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-}
+document.getElementById("liveUser").innerText="marciita_gg";
 
 /* TTS */
 
+function toggleTTS(){
+ttsEnabled = !ttsEnabled;
+const btn=document.getElementById("ttsToggle");
+
+if(ttsEnabled){
+btn.classList.add("active");
+btn.innerText="🔊 TTS ACTIVADO";
+}else{
+btn.classList.remove("active");
+btn.innerText="🔇 TTS DESACTIVADO";
+}
+}
+
 function speak(text){
 if(!ttsEnabled) return;
-const speech = new SpeechSynthesisUtterance(text);
+const speech=new SpeechSynthesisUtterance(text);
 speech.lang="es-MX";
 window.speechSynthesis.speak(speech);
 }
 
-function toggleTTS(){
-ttsEnabled = !ttsEnabled;
+/* SECCIONES */
+
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
 }
 
 /* EVENTOS */
@@ -243,7 +207,7 @@ ttsEnabled = !ttsEnabled;
 socket.on("chat",(data)=>{
 const div=document.createElement("div");
 div.className="card-event";
-div.innerHTML=`💬 <span><strong>${data.user}</strong>: ${data.message}</span>`;
+div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
 document.getElementById("chat").prepend(div);
 speak(`${data.user} dice ${data.message}`);
 });
@@ -251,7 +215,7 @@ speak(`${data.user} dice ${data.message}`);
 socket.on("gift",(data)=>{
 const div=document.createElement("div");
 div.className="card-event";
-div.innerHTML=`🎁 <span><strong>${data.user}</strong> envió ${data.gift} x${data.amount}</span>`;
+div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
 document.getElementById("gifts").prepend(div);
 
 executeAction(data.gift, data.amount);
@@ -260,7 +224,6 @@ executeAction(data.gift, data.amount);
 /* ACCIONES */
 
 function createAction(){
-
 const gift=document.getElementById("actionGift").value.trim();
 const minAmount=parseInt(document.getElementById("actionAmount").value);
 const type=document.getElementById("actionType").value;
@@ -281,36 +244,15 @@ renderActions();
 }
 
 function renderActions(){
-
 const container=document.getElementById("actionList");
 container.innerHTML="";
 
 actions.forEach(a=>{
-
 const div=document.createElement("div");
 div.className="card-event";
-
-div.innerHTML=`
-<span>🎁 ${a.gift} (x${a.minAmount}) → ${a.type}</span>
-<div class="action-buttons">
-<button onclick="toggleAction(${a.id})">${a.enabled ? "ON" : "OFF"}</button>
-<button onclick="deleteAction(${a.id})">❌</button>
-</div>
-`;
-
+div.innerHTML=`🎁 ${a.gift} (x${a.minAmount}) → ${a.type}`;
 container.appendChild(div);
 });
-}
-
-function toggleAction(id){
-const action=actions.find(a=>a.id===id);
-action.enabled=!action.enabled;
-renderActions();
-}
-
-function deleteAction(id){
-actions=actions.filter(a=>a.id!==id);
-renderActions();
 }
 
 function executeAction(giftName, amount){
@@ -323,23 +265,19 @@ amount>=a.minAmount
 
 if(!action) return;
 
-const overlay=document.getElementById("overlayContainer");
-
 if(action.type==="sound"){
-new Audio(action.file).play();
-}
-
-if(action.type==="video"){
-overlay.innerHTML=`<video autoplay style="max-width:60%;">
-<source src="${action.file}" type="video/mp4">
-</video>`;
-setTimeout(()=>overlay.innerHTML="",5000);
+const audio=new Audio(action.file);
+audio.volume=1;
+audio.play().catch(err=>console.log("Error audio:",err));
 }
 
 if(action.type==="animation"){
-overlay.innerHTML=`<div style="font-size:60px;">✨ ${giftName} x${amount} ✨</div>`;
-setTimeout(()=>overlay.innerHTML="",3000);
+alert(`✨ ${giftName} x${amount} ✨`);
 }
+}
+
+function disconnectLive(){
+location.reload();
 }
 </script>
 

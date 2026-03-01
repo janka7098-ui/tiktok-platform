@@ -17,11 +17,12 @@ justify-content:center;
 align-items:center;
 }
 
+/* LOGIN */
 .card{
 background:#141428;
 padding:40px;
 border-radius:20px;
-width:380px;
+width:360px;
 text-align:center;
 }
 
@@ -46,6 +47,7 @@ cursor:pointer;
 font-weight:bold;
 }
 
+/* DASHBOARD */
 #dashboard{
 display:none;
 width:100%;
@@ -63,21 +65,15 @@ padding:0 20px;
 border-bottom:1px solid #222;
 }
 
-.sidebar{
-width:220px;
-background:#0e0e1c;
-padding:20px;
-}
-
 .container{
 flex:1;
 display:flex;
 }
 
-.main{
-flex:1;
+.sidebar{
+width:220px;
+background:#0e0e1c;
 padding:20px;
-overflow:auto;
 }
 
 .menu-btn{
@@ -88,6 +84,12 @@ background:#1a1a35;
 border-radius:8px;
 color:white;
 cursor:pointer;
+}
+
+.main{
+flex:1;
+padding:20px;
+overflow:auto;
 }
 
 .section{display:none;}
@@ -104,13 +106,12 @@ border-left:4px solid #00ff9d;
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN SCREEN -->
 <div id="loginScreen" class="card">
 <h2>NEXORA ACCESS</h2>
 <input id="accessKey" placeholder="Clave de acceso">
 <input id="tiktokUser" placeholder="Usuario TikTok sin @">
-<input id="robloxUser" placeholder="Usuario Roblox">
-<button onclick="login()">Entrar</button>
+<button onclick="validateAndConnect()">Entrar</button>
 <p id="loginMsg"></p>
 </div>
 
@@ -119,10 +120,8 @@ border-left:4px solid #00ff9d;
 
 <div class="topbar">
 <div>
-🟢 Conectado a <strong id="liveUser"></strong>  
-| Roblox: <strong id="rbUser"></strong>
+🟢 Conectado a <strong id="liveUser"></strong>
 </div>
-
 <button onclick="disconnectLive()">Desconectar</button>
 </div>
 
@@ -144,35 +143,56 @@ border-left:4px solid #00ff9d;
 <script>
 const socket = io();
 
-function login(){
+let tempUsername = "";
+
+/* PASO 1: VALIDAR CLAVE */
+function validateAndConnect(){
 
 const key=document.getElementById("accessKey").value.trim();
-const tiktok=document.getElementById("tiktokUser").value.trim();
-const roblox=document.getElementById("robloxUser").value.trim();
+const username=document.getElementById("tiktokUser").value.trim();
 
-if(!key || !tiktok || !roblox){
+if(!key || !username){
 document.getElementById("loginMsg").innerText="Completa todos los campos";
 return;
 }
 
-socket.emit("validateAndConnect",{
-key,
-tiktok,
-roblox
-});
+tempUsername = username;
+
+// Validar clave primero
+socket.emit("validateKey", key);
+
 }
 
-socket.on("loginError",(msg)=>{
-document.getElementById("loginMsg").innerText=msg;
+/* RESPUESTA CLAVE */
+
+socket.on("keyValid",()=>{
+// Ahora conectar TikTok
+socket.emit("startConnection",{ username: tempUsername });
 });
 
-socket.on("connected",(data)=>{
+socket.on("keyInvalid",()=>{
+document.getElementById("loginMsg").innerText="Clave incorrecta";
+});
+
+/* RESPUESTA CONEXIÓN */
+
+socket.on("status",(status)=>{
+
+if(status==="connected"){
 
 document.getElementById("loginScreen").style.display="none";
 document.getElementById("dashboard").style.display="flex";
+document.getElementById("liveUser").innerText=tempUsername;
 
-document.getElementById("liveUser").innerText=data.tiktok;
-document.getElementById("rbUser").innerText=data.roblox;
+}
+
+if(status==="error"){
+document.getElementById("loginMsg").innerText="No se pudo conectar a TikTok";
+}
+
+if(status==="disconnected"){
+location.reload();
+}
 
 });
 
@@ -201,7 +221,6 @@ document.getElementById(id).classList.add("active");
 
 function disconnectLive(){
 socket.emit("disconnectLive");
-location.reload();
 }
 </script>
 

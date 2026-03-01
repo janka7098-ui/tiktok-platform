@@ -31,13 +31,21 @@ io.on("connection", (socket) => {
 
         console.log(`🔥 Intentando conectar a TikTok: ${username}`);
 
-        tiktokConnection = new WebcastPushConnection(username);
+        // 🔥 CONEXIÓN FORZANDO POLLING
+        tiktokConnection = new WebcastPushConnection(username, {
+            enableExtendedGiftInfo: true,
+            processInitialData: false,
+            fetchRoomInfoOnConnect: true,
+            requestPollingIntervalMs: 2000
+        });
 
         const connectToTikTok = async () => {
             try {
-                await tiktokConnection.connect();
-                console.log("✅ Conectado a TikTok LIVE");
+                await tiktokConnection.connect({
+                    enableWebsocketUpgrade: false // 🚫 Desactiva websocket
+                });
 
+                console.log("✅ Conectado a TikTok LIVE");
                 socket.emit("connected");
 
                 // 🎁 Regalos
@@ -80,7 +88,7 @@ io.on("connection", (socket) => {
                     });
                 });
 
-                // 🔌 Si se desconecta TikTok
+                // 🔌 Si TikTok se desconecta
                 tiktokConnection.on("disconnected", () => {
                     console.log("⚠ TikTok se desconectó");
                     socket.emit("disconnected");
@@ -100,12 +108,17 @@ io.on("connection", (socket) => {
 
             reconnectInterval = setInterval(async () => {
                 console.log("🔁 Reintentando conexión...");
+
                 try {
-                    await tiktokConnection.connect();
+                    await tiktokConnection.connect({
+                        enableWebsocketUpgrade: false
+                    });
+
                     console.log("✅ Reconectado correctamente");
                     clearInterval(reconnectInterval);
                     reconnectInterval = null;
                     socket.emit("connected");
+
                 } catch (err) {
                     console.log("❌ Falló reconexión:", err.message);
                 }

@@ -15,9 +15,11 @@ const allowedKeys = [
 ];
 
 const activeConnections = new Map();
+const userActions = new Map(); // 🔥 Guardado de acciones por usuario
 
 io.on("connection", (socket) => {
 
+  // VALIDAR CLAVE
   socket.on("validateKey", (key) => {
     if (allowedKeys.includes(key)) {
       socket.emit("keyValid");
@@ -26,6 +28,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // CONECTAR A TIKTOK
   socket.on("startConnection", async ({ username }) => {
 
     if (!username) return;
@@ -44,9 +47,8 @@ io.on("connection", (socket) => {
 
       socket.emit("status", "connected");
 
-      // 🎁 REGALOS (ANTI DUPLICADO)
+      // REGALOS (ANTI DUPLICADO)
       tiktok.on("gift", (data) => {
-
         if (data.repeatEnd) {
           socket.emit("gift", {
             user: data.nickname,
@@ -54,10 +56,9 @@ io.on("connection", (socket) => {
             amount: data.repeatCount
           });
         }
-
       });
 
-      // 💬 CHAT
+      // CHAT
       tiktok.on("chat", (data) => {
         socket.emit("chat", {
           user: data.nickname,
@@ -68,9 +69,39 @@ io.on("connection", (socket) => {
     } catch (err) {
       socket.emit("status", "error");
     }
-
   });
 
+  // GUARDAR ACCIÓN
+  socket.on("saveAction", ({ username, action }) => {
+
+    if (!userActions.has(username)) {
+      userActions.set(username, []);
+    }
+
+    const actions = userActions.get(username);
+    actions.push(action);
+
+    socket.emit("actionsUpdated", actions);
+  });
+
+  // OBTENER ACCIONES
+  socket.on("getActions", (username) => {
+    const actions = userActions.get(username) || [];
+    socket.emit("actionsUpdated", actions);
+  });
+
+  // ELIMINAR ACCIÓN
+  socket.on("deleteAction", ({ username, index }) => {
+
+    if (!userActions.has(username)) return;
+
+    const actions = userActions.get(username);
+    actions.splice(index, 1);
+
+    socket.emit("actionsUpdated", actions);
+  });
+
+  // DESCONECTAR LIVE
   socket.on("disconnectLive", () => {
     if (activeConnections.has(socket.id)) {
       try { activeConnections.get(socket.id).disconnect(); } catch {}

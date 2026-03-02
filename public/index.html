@@ -49,7 +49,7 @@ margin-bottom:20px;
 
 .logo-sidebar{
 width:140px;
-margin-bottom:25px;
+margin:0 auto 25px auto;
 display:block;
 }
 
@@ -111,6 +111,7 @@ width:230px;
 background:#0c0c1c;
 padding:20px;
 border-right:1px solid #1f1f3d;
+text-align:center;
 }
 
 .menu-btn{
@@ -286,6 +287,12 @@ let ttsEnabled = true;
 let actions = [];
 let selectedVoice = null;
 
+/* CARGAR ACCIONES GUARDADAS */
+const savedActions = localStorage.getItem("nexora_actions");
+if(savedActions){
+actions = JSON.parse(savedActions);
+}
+
 /* LOGIN */
 
 function validateAndConnect(){
@@ -314,6 +321,7 @@ if(status==="connected"){
 document.getElementById("loginScreen").style.display="none";
 document.getElementById("dashboard").style.display="flex";
 document.getElementById("liveUser").innerText=tempUsername;
+renderActions();
 }
 
 if(status==="error"){
@@ -348,6 +356,7 @@ speechSynthesis.onvoiceschanged = loadVoices;
 
 document.addEventListener("DOMContentLoaded",()=>{
 loadVoices();
+renderActions();
 document.getElementById("voiceSelector").addEventListener("change",function(){
 const voices = speechSynthesis.getVoices();
 selectedVoice = voices[this.value];
@@ -415,6 +424,7 @@ const file=document.getElementById("actionFile").value.trim();
 if(!gift || !file) return;
 
 actions.push({ gift, file });
+localStorage.setItem("nexora_actions", JSON.stringify(actions));
 renderActions();
 }
 
@@ -434,6 +444,7 @@ container.appendChild(div);
 
 function deleteAction(index){
 actions.splice(index,1);
+localStorage.setItem("nexora_actions", JSON.stringify(actions));
 renderActions();
 }
 

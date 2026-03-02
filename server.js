@@ -39,7 +39,7 @@ app.get("/gift-list", (req, res) => {
 });
 
 /* =========================
-   PROXY AVATAR
+   PROXY AVATAR (CORS FIX)
 ========================= */
 
 app.get("/avatar-proxy", async (req, res) => {
@@ -63,8 +63,15 @@ const allowedKeys = [
 ];
 
 const activeConnections = new Map();
+const userActions = new Map();
+
+/* =========================
+   SOCKET
+========================= */
 
 io.on("connection", (socket) => {
+
+  /* ===== INICIAR CONEXIÓN ===== */
 
   socket.on("startConnection", async ({ username, key }) => {
 
@@ -89,6 +96,8 @@ io.on("connection", (socket) => {
 
       socket.emit("status", "connected");
 
+      /* ===== OBTENER AVATAR ===== */
+
       try {
         const roomInfo = await tiktok.getRoomInfo();
         const avatarUrl = roomInfo?.owner?.avatarLarger;
@@ -99,10 +108,11 @@ io.on("connection", (socket) => {
             profilePictureUrl: `/avatar-proxy?url=${encodeURIComponent(avatarUrl)}`
           });
         }
-
       } catch (err) {
         console.log("Error avatar:", err);
       }
+
+      /* ===== REGALOS LIVE ===== */
 
       tiktok.on("gift", (data) => {
         if (data.repeatEnd) {
@@ -111,8 +121,20 @@ io.on("connection", (socket) => {
             gift: data.giftName,
             amount: data.repeatCount
           });
+
+          // Ejecutar acción si existe
+          const actions = userActions.get(username) || [];
+          const action = actions.find(a => 
+            a.gift.toLowerCase() === data.giftName.toLowerCase()
+          );
+
+          if (action) {
+            socket.emit("triggerSound", action.file);
+          }
         }
       });
+
+      /* ===== CHAT LIVE ===== */
 
       tiktok.on("chat", (data) => {
         socket.emit("chat", {
@@ -126,6 +148,41 @@ io.on("connection", (socket) => {
     }
   });
 
+  /* =========================
+     ACCIONES POR USUARIO
+  ========================= */
+
+  socket.on("saveAction", ({ username, action }) => {
+
+    if (!userActions.has(username)) {
+      userActions.set(username, []);
+    }
+
+    const actions = userActions.get(username);
+    actions.push(action);
+
+    socket.emit("actionsUpdated", actions);
+  });
+
+  socket.on("getActions", (username) => {
+    const actions = userActions.get(username) || [];
+    socket.emit("actionsUpdated", actions);
+  });
+
+  socket.on("deleteAction", ({ username, index }) => {
+
+    if (!userActions.has(username)) return;
+
+    const actions = userActions.get(username);
+    actions.splice(index, 1);
+
+    socket.emit("actionsUpdated", actions);
+  });
+
+  /* =========================
+     DESCONECTAR
+  ========================= */
+
   socket.on("disconnectLive", () => {
     if (activeConnections.has(socket.id)) {
       try { activeConnections.get(socket.id).disconnect(); } catch {}
@@ -134,7 +191,18 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("disconnect", () => {
+    if (activeConnections.has(socket.id)) {
+      try { activeConnections.get(socket.id).disconnect(); } catch {}
+      activeConnections.delete(socket.id);
+    }
+  });
+
 });
+
+/* =========================
+   START SERVER
+========================= */
 
 const PORT = process.env.PORT || 10000;
 

@@ -7,29 +7,11 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Segoe UI',sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:linear-gradient(160deg,#0b0b18,#050510);color:white;height:100vh;display:flex;}
+#dashboard{display:flex;flex-direction:column;width:100%;height:100vh;}
 
-body{
-background:linear-gradient(160deg,#0b0b18,#050510);
-color:white;
-height:100vh;
-display:flex;
-}
-
-#dashboard{
-display:flex;
-flex-direction:column;
-width:100%;
-height:100vh;
-}
-
-/* ===== TOPBAR ===== */
-
+/* TOPBAR */
 .topbar{
 height:80px;
 background:#0e0e1f;
@@ -40,23 +22,9 @@ padding:0 25px;
 border-bottom:1px solid #1f1f3d;
 }
 
-/* LOGO EN TOPBAR */
-
-.top-logo{
-display:flex;
-align-items:center;
-gap:15px;
-}
-
 .top-logo img{
 width:120px;
 filter:drop-shadow(0 0 12px #00ff9d);
-transition:0.3s;
-}
-
-.top-logo img:hover{
-transform:scale(1.05);
-filter:drop-shadow(0 0 20px #7b2ff7);
 }
 
 .connection-box{
@@ -66,10 +34,7 @@ gap:12px;
 }
 
 .status-dot{
-width:10px;
-height:10px;
-border-radius:50%;
-background:#ff4d4d;
+width:10px;height:10px;border-radius:50%;background:#ff4d4d;
 }
 
 .status-dot.connected{
@@ -78,95 +43,39 @@ box-shadow:0 0 10px #00ff9d;
 }
 
 .profile-frame{
-width:42px;
-height:42px;
-border-radius:50%;
-padding:2px;
+width:42px;height:42px;border-radius:50%;padding:2px;
 background:linear-gradient(135deg,#7b2ff7,#00ff9d);
-box-shadow:0 0 12px rgba(0,255,157,0.6);
 display:none;
 }
 
 .profile-frame img{
-width:100%;
-height:100%;
-border-radius:50%;
-object-fit:cover;
-background:#000;
+width:100%;height:100%;border-radius:50%;object-fit:cover;
 }
 
-/* ===== SIDEBAR ===== */
-
-.container{
-flex:1;
-display:flex;
-}
+.container{flex:1;display:flex;}
 
 .sidebar{
-width:230px;
-background:#0c0c1c;
-padding:20px;
-border-right:1px solid #1f1f3d;
+width:230px;background:#0c0c1c;padding:20px;border-right:1px solid #1f1f3d;
 }
 
 .menu-btn{
-width:100%;
-padding:12px;
-margin-bottom:10px;
-background:#161633;
-border-radius:10px;
-color:white;
-cursor:pointer;
-transition:0.3s;
-border:1px solid transparent;
+width:100%;padding:12px;margin-bottom:10px;
+background:#161633;border-radius:10px;color:white;
+cursor:pointer;border:1px solid transparent;
 }
 
 .menu-btn:hover{
-background:#1f1f3d;
-border-color:#7b2ff7;
-box-shadow:0 0 10px rgba(123,47,247,0.3);
+background:#1f1f3d;border-color:#7b2ff7;
 }
 
-/* ===== MAIN ===== */
-
-.main{
-flex:1;
-padding:25px;
-overflow:auto;
-}
+.main{flex:1;padding:25px;}
 
 .section{display:none;}
 .section.active{display:block;}
 
-.card-event{
-background:#161633;
-padding:14px;
-border-radius:10px;
-margin-bottom:12px;
-border-left:4px solid #00ff9d;
-}
-
-.action-card{
-background:#161633;
-padding:12px;
-border-radius:10px;
-margin-bottom:10px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-border-left:4px solid #7b2ff7;
-}
-
-/* TTS */
-
 .tts-switch{
-width:60px;
-height:30px;
-background:#333;
-border-radius:50px;
-position:relative;
-cursor:pointer;
-transition:0.3s;
+width:60px;height:30px;background:#333;border-radius:50px;
+position:relative;cursor:pointer;
 }
 
 .tts-switch.active{
@@ -174,55 +83,61 @@ background:linear-gradient(90deg,#7b2ff7,#00ff9d);
 }
 
 .tts-circle{
-width:24px;
-height:24px;
-background:white;
-border-radius:50%;
-position:absolute;
-top:3px;
-left:3px;
-transition:0.3s;
+width:24px;height:24px;background:white;border-radius:50%;
+position:absolute;top:3px;left:3px;transition:0.3s;
 }
 
 .tts-switch.active .tts-circle{
 left:33px;
 }
 
-/* Inputs */
-
 input{
-width:100%;
-padding:12px;
-margin-bottom:12px;
-background:#1a1a35;
-border:1px solid #222;
-border-radius:8px;
-color:white;
+width:100%;padding:12px;margin-bottom:12px;
+background:#1a1a35;border:1px solid #222;border-radius:8px;color:white;
 }
 
 button{
 padding:12px;
 background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
-font-weight:bold;
-transition:0.3s;
+border:none;border-radius:8px;color:white;
+cursor:pointer;font-weight:bold;
 }
 
-button:hover{
-transform:scale(1.05);
-box-shadow:0 0 15px #00ff9d;
+/* LOADER */
+
+#loader{
+position:fixed;
+top:0;left:0;width:100%;height:100%;
+background:rgba(5,5,16,0.85);
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+display:none;
+}
+
+.loader-ring{
+width:100px;height:100px;
+border:4px solid transparent;
+border-top:4px solid #7b2ff7;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
 }
 </style>
 </head>
 
 <body>
 
-<div id="dashboard">
+<div id="loader">
+<div class="loader-ring"></div>
+</div>
 
-<!-- ===== TOPBAR ===== -->
+<div id="dashboard">
 
 <div class="topbar">
 
@@ -241,13 +156,16 @@ box-shadow:0 0 15px #00ff9d;
 </div>
 
 <div style="display:flex;align-items:center;gap:20px;">
-<div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
+
+<div id="ttsToggle" class="tts-switch active">
 <div class="tts-circle"></div>
 </div>
-<select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;"></select>
-<button onclick="disconnectLive()">Desconectar</button>
-</div>
 
+<select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;"></select>
+
+<button onclick="disconnectLive()">Desconectar</button>
+
+</div>
 </div>
 
 <div class="container">
@@ -256,7 +174,6 @@ box-shadow:0 0 15px #00ff9d;
 <button class="menu-btn" onclick="showSection('conexion')">🔌 Conexión</button>
 <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
 <button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
-<button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
 </div>
 
 <div class="main">
@@ -271,19 +188,8 @@ box-shadow:0 0 15px #00ff9d;
 <div id="chat" class="section"></div>
 <div id="gifts" class="section"></div>
 
-<div id="actions" class="section">
-<h3>Crear Acción por Regalo</h3>
-<input id="actionGift" placeholder="Nombre del regalo">
-<input id="actionFile" placeholder="Ruta sonido ej: /media/rosa.mp3">
-<button onclick="createAction()">Crear Acción</button>
-<br><br>
-<h3>Acciones Configuradas</h3>
-<div id="actionList"></div>
-</div>
-
 </div>
 </div>
-
 </div>
 
 <script>
@@ -292,16 +198,82 @@ let tempUsername="";
 let ttsEnabled=true;
 let selectedVoice=null;
 
-/* CONEXIÓN */
+/* VOICES CORRECTO */
+
+function loadVoices(){
+const voices=window.speechSynthesis.getVoices();
+const selector=document.getElementById("voiceSelector");
+selector.innerHTML="";
+voices.forEach((voice,i)=>{
+const option=document.createElement("option");
+option.value=i;
+option.textContent=voice.name+" ("+voice.lang+")";
+selector.appendChild(option);
+});
+if(voices.length>0) selectedVoice=voices[0];
+}
+
+speechSynthesis.onvoiceschanged=loadVoices;
+window.onload=loadVoices;
+
+document.getElementById("voiceSelector").addEventListener("change",function(){
+selectedVoice=speechSynthesis.getVoices()[this.value];
+});
+
+/* TTS */
+
+document.getElementById("ttsToggle").addEventListener("click",function(){
+ttsEnabled=!ttsEnabled;
+this.classList.toggle("active");
+});
+
+function speak(text){
+if(!ttsEnabled) return;
+const utter=new SpeechSynthesisUtterance(text);
+if(selectedVoice) utter.voice=selectedVoice;
+speechSynthesis.speak(utter);
+}
+
+/* LOADER */
+
+function showLoader(){ document.getElementById("loader").style.display="flex"; }
+function hideLoader(){ document.getElementById("loader").style.display="none"; }
+
+/* CONEXION */
 
 function connectTikTok(){
 const username=document.getElementById("tiktokUser").value.trim();
 const key=document.getElementById("accessKey").value.trim();
-if(!username || !key){alert("Completa usuario y clave");return;}
+if(!username||!key){alert("Completa usuario y clave");return;}
 tempUsername=username;
-socket.emit("startConnection",{ username, key });
-socket.emit("getActions", username);
+showLoader();
+socket.emit("startConnection",{username,key});
 }
+
+socket.on("status",(status)=>{
+if(status==="invalid_key"){hideLoader();alert("Clave inválida");return;}
+if(status==="connected"){
+hideLoader();
+document.getElementById("connectionStatus").innerText="Conectado como";
+document.getElementById("connectedUser").innerText=" @"+tempUsername;
+document.getElementById("statusDot").classList.add("connected");
+}
+if(status==="error"){hideLoader();alert("Error al conectar");}
+if(status==="disconnected"){
+document.getElementById("connectionStatus").innerText="Desconectado";
+document.getElementById("connectedUser").innerText="";
+document.getElementById("statusDot").classList.remove("connected");
+}
+});
+
+/* CHAT */
+
+socket.on("chat",(data)=>{
+const div=document.createElement("div");
+div.innerHTML="💬 <b>"+data.user+"</b>: "+data.message;
+document.getElementById("chat").prepend(div);
+speak(data.user+" dice "+data.message);
+});
 
 /* NAV */
 

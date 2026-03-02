@@ -2,13 +2,13 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Nexora - StreamTrix Theme</title>
-    <link rel="icon" type="image/png" href="Logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexora - Panel de Control</title>
+    <link rel="icon" type="image/png" href="public/Logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
-        /* --- VARIABLES DE COLOR STREAMTRIX --- */
         :root {
             --bg-deep: #0F0A1A;
             --bg-card: #1A112A;
@@ -19,298 +19,187 @@
             --border-color: rgba(138, 46, 255, 0.2);
         }
 
-        /* --- RESET Y BASE --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-deep); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-        #dashboard { display: flex; flex-direction: column; width: 100%; height: 100vh; }
-
-        /* --- TOPBAR --- */
-        .topbar {
-            height: 80px;
-            background-color: var(--bg-card);
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            border-bottom: 1px solid var(--border-color);
+            height: 100vh;
+            overflow: hidden;
         }
-        .top-logo img {
-            width: 120px;
-            filter: drop-shadow(0 0 10px rgba(0, 255, 171, 0.4));
-        }
-        .top-logo span { color: var(--neon-green); font-weight: 800; font-size: 1.5rem; }
-
-        .connection-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(15, 10, 26, 0.5);
-            padding: 8px 15px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .status-dot {
-            width: 12px; height: 12px; border-radius: 50%; background: #ff4d4d;
-            box-shadow: 0 0 8px #ff4d4d; transition: all 0.3s;
-        }
-        .status-dot.connected {
-            background: var(--neon-green);
-            box-shadow: 0 0 12px rgba(0, 255, 171, 0.8);
-        }
-        #connectionStatus { font-size: 0.9rem; color: var(--text-muted); }
-        #connectedUser { color: var(--neon-green); font-weight: bold; font-size: 0.9rem; }
-
-        .profile-frame {
-            width: 35px; height: 35px; border-radius: 50%; padding: 2px;
-            background: linear-gradient(135deg, var(--neon-purple), var(--neon-green));
-            display: none;
-        }
-        .profile-frame img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-
-        /* --- CONTENEDOR PRINCIPAL --- */
-        .container { flex: 1; display: flex; overflow: hidden; }
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: 250px; background-color: var(--bg-deep); padding: 25px 20px;
+            width: 260px;
+            background-color: var(--bg-deep);
             border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; gap: 10px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
         }
-        .menu-btn {
-            width: 100%; padding: 12px 15px; text-align: left;
-            background: transparent; border-radius: 8px; color: var(--text-muted);
-            cursor: pointer; border: none; font-weight: 600; font-size: 1rem;
-            transition: all 0.3s ease; border-left: 4px solid transparent;
+
+        .logo-container { margin-bottom: 40px; text-align: center; }
+        .logo-container img { width: 140px; filter: drop-shadow(0 0 10px var(--neon-purple)); }
+
+        .nav-item {
+            padding: 12px 15px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: left;
+            width: 100%;
         }
-        .menu-btn:hover, .menu-btn.active {
+
+        .nav-item:hover, .nav-item.active {
             background: linear-gradient(90deg, rgba(138,46,255,0.15) 0%, transparent 100%);
             color: var(--neon-green);
             border-left: 4px solid var(--neon-green);
+            border-color: var(--border-color);
         }
 
-        /* --- MAIN CONTENT --- */
-        .main { flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg-deep); }
-        .section { display: none; animation: fadeIn 0.3s ease; }
+        /* --- CONTENIDO --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header {
+            background-color: var(--bg-card);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section { display: none; padding: 40px; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { color: var(--text-main); margin-bottom: 25px; font-weight: 800; font-size: 1.8rem; }
+        /* --- GRID DE REGALOS --- */
+        #gift-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
 
-        /* --- FORMULARIOS E INPUTS --- */
-        input {
-            width: 100%; max-width: 400px; padding: 14px; margin-bottom: 15px; display: block;
-            background: #120c1f; border: 1px solid var(--border-color); border-radius: 8px;
-            color: var(--text-main); font-size: 1rem; outline: none; transition: 0.3s;
+        .gift-card {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        input:focus { border-color: var(--neon-purple); box-shadow: 0 0 10px rgba(138, 46, 255, 0.2); }
-        
-        button {
-            padding: 14px 24px; background: linear-gradient(135deg, #00b377, var(--neon-green));
-            border: none; border-radius: 8px; color: #000; cursor: pointer;
-            font-weight: 800; font-size: 1rem; transition: 0.3s; box-shadow: 0 0 15px rgba(0, 255, 171, 0.3);
-        }
-        button:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 255, 171, 0.5); }
-        
-        .btn-disconnect {
-            background: transparent; color: var(--text-muted); border: 1px solid var(--text-muted);
-            box-shadow: none; padding: 10px 15px; font-size: 0.9rem;
-        }
-        .btn-disconnect:hover { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border-color: #ff4d4d; box-shadow: none; }
 
-        /* --- TTS & SELECTORES --- */
-        .tts-switch {
-            width: 50px; height: 26px; background: #2a1b40; border-radius: 50px;
-            position: relative; cursor: pointer; transition: 0.4s;
-        }
-        .tts-switch.active { background: var(--neon-green); box-shadow: 0 0 12px rgba(0, 255, 171, 0.5); }
-        .tts-circle {
-            width: 18px; height: 18px; background: white; border-radius: 50%;
-            position: absolute; top: 4px; left: 4px; transition: 0.4s;
-        }
-        .tts-switch.active .tts-circle { transform: translateX(24px); }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        select {
-            padding: 10px; background: #120c1f; color: var(--text-main);
-            border: 1px solid var(--border-color); border-radius: 8px; outline: none;
-            cursor: pointer; font-family: 'Inter', sans-serif;
-        }
-        select:focus { border-color: var(--neon-purple); }
+        .gift-card img { width: 50px; height: 50px; margin-bottom: 10px; }
+        .gift-card strong { display: block; color: var(--neon-green); }
+        .gift-card span { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* --- CHAT Y REGALOS FEED --- */
-        #chat div, #gifts div {
-            background: var(--bg-card); padding: 15px; margin-bottom: 10px;
-            border-radius: 8px; border-left: 3px solid var(--neon-purple);
-            font-size: 0.95rem; color: var(--text-muted);
+        /* --- BOTÓN Y OTROS --- */
+        .btn-primary {
+            width: 100%; padding: 14px; background: linear-gradient(90deg, var(--neon-purple), #6a1bc2);
+            border: none; border-radius: 10px; color: white; font-weight: 800; cursor: pointer;
         }
-        #chat b, #gifts b { color: var(--neon-green); font-weight: 600; }
-
-        /* --- LOADER --- */
-        #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 10, 26, 0.9); display: none; justify-content: center;
-            align-items: center; z-index: 9999; backdrop-filter: blur(5px);
-        }
-        .loader-ring {
-            width: 80px; height: 80px; border: 4px solid rgba(138, 46, 255, 0.2);
-            border-top: 4px solid var(--neon-green); border-radius: 50%;
-            animation: spin 1s linear infinite; box-shadow: 0 0 20px rgba(0, 255, 171, 0.2);
-        }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        input { width: 100%; padding: 14px; margin-top: 8px; margin-bottom: 20px; background: #120b24; border: 1px solid var(--border-color); border-radius: 10px; color: white; }
     </style>
 </head>
-
 <body>
 
-<div id="loader"><div class="loader-ring"></div></div>
+    <aside class="sidebar">
+        <div class="logo-container"><img src="public/Logo.png" alt="Nexora"></div>
+        <button class="nav-item active" onclick="showSection('conexion')">🔌 Conexión</button>
+        <button class="nav-item" onclick="showSection('chat')">💬 Chat en Vivo</button>
+        <button class="nav-item" onclick="showSection('gifts')">🎁 Historial de Regalos</button>
+    </aside>
 
-<div id="dashboard">
-    <div class="topbar">
-        <div class="top-logo">
-            <img src="Logo.png" alt="Nexora Logo">
-        </div>
+    <div class="main-content">
+        <header>
+            <div id="statusBadge" style="color:#ff4d4d; font-weight:800;">● DESCONECTADO</div>
+        </header>
 
-        <div class="connection-box">
-            <span id="statusDot" class="status-dot"></span>
-            <strong id="connectionStatus">Desconectado</strong>
-            <span id="connectedUser"></span>
-            <div id="profileFrame" class="profile-frame"><img id="profileImage" src=""></div>
-        </div>
-
-        <div style="display:flex; align-items:center; gap:20px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">TTS</span>
-                <div id="ttsToggle" class="tts-switch active"><div class="tts-circle"></div></div>
-            </div>
-            
-            <select id="voiceSelector"></select>
-            <button class="btn-disconnect" onclick="disconnectLive()">Desconectar</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="sidebar">
-            <button class="menu-btn active" onclick="showSection('conexion', this)">🔌 Conexión</button>
-            <button class="menu-btn" onclick="showSection('chat', this)">💬 Chat en Vivo</button>
-            <button class="menu-btn" onclick="showSection('gifts', this)">🎁 Historial de Regalos</button>
-        </div>
-
-        <div class="main">
+        <main>
             <div id="conexion" class="section active">
-                <h2>Vincular Cuenta TikTok</h2>
-                <div style="background: var(--bg-card); padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); display: inline-block;">
-                    <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Ingresa tus credenciales para conectar con tu directo.</p>
-                    <input id="tiktokUser" placeholder="Usuario TikTok (sin @)">
-                    <input type="password" id="accessKey" placeholder="Clave de acceso">
-                    <button onclick="connectTikTok()" style="margin-top: 10px; width: 100%; max-width: 400px;">Iniciar Conexión</button>
+                <h1>🔌 Vincular TikTok</h1>
+                <div style="max-width: 500px; margin-top:20px;">
+                    <input id="tiktokUser" placeholder="Usuario de TikTok">
+                    <input id="accessKey" type="password" placeholder="Clave de acceso">
+                    <button class="btn-primary" onclick="connectTikTok()">CONECTAR</button>
                 </div>
             </div>
 
             <div id="chat" class="section">
-                <h2>💬 Chat en Vivo</h2>
-                </div>
-            
+                <h1>💬 Chat en Vivo</h1>
+                <div id="chat-container" style="margin-top:20px;"></div>
+            </div>
+
             <div id="gifts" class="section">
-                <h2>🎁 Regalos Recibidos</h2>
-                </div>
-        </div>
+                <h1>🎁 Regalos Recibidos</h1>
+                <div id="gift-list">
+                    </div>
+            </div>
+        </main>
     </div>
-</div>
 
-<script>
-// LÓGICA ORIGINAL INTACTA
-const socket = io();
-let tempUsername="";
-let ttsEnabled=true;
-let selectedVoice=null;
+    <script>
+        const socket = io();
 
-/* VOICES CORRECTO */
-function loadVoices(){
-    const voices=window.speechSynthesis.getVoices();
-    const selector=document.getElementById("voiceSelector");
-    selector.innerHTML="";
-    voices.forEach((voice,i)=>{
-        const option=document.createElement("option");
-        option.value=i;
-        option.textContent=voice.name+" ("+voice.lang+")";
-        selector.appendChild(option);
-    });
-    if(voices.length>0) selectedVoice=voices[0];
-}
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
 
-speechSynthesis.onvoiceschanged=loadVoices;
-window.onload=loadVoices;
+        function connectTikTok() {
+            const username = document.getElementById("tiktokUser").value.trim();
+            const key = document.getElementById("accessKey").value.trim();
+            socket.emit("startConnection", { username, key });
+        }
 
-document.getElementById("voiceSelector").addEventListener("change",function(){
-    selectedVoice=speechSynthesis.getVoices()[this.value];
-});
+        // --- DETECTAR STATUS ---
+        socket.on("status", (status) => {
+            const badge = document.getElementById("statusBadge");
+            if (status === "connected") {
+                badge.innerText = "● CONECTADO";
+                badge.style.color = "#00FFAB";
+            }
+        });
 
-/* TTS */
-document.getElementById("ttsToggle").addEventListener("click",function(){
-    ttsEnabled=!ttsEnabled;
-    this.classList.toggle("active");
-});
+        // --- DETECTAR CHAT ---
+        socket.on("chat", (data) => {
+            const container = document.getElementById("chat-container");
+            const div = document.createElement("div");
+            div.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
+            container.prepend(div);
+        });
 
-function speak(text){
-    if(!ttsEnabled) return;
-    const utter=new SpeechSynthesisUtterance(text);
-    if(selectedVoice) utter.voice=selectedVoice;
-    speechSynthesis.speak(utter);
-}
+        // --- [CLAVE] DETECTAR REGALOS ---
+        socket.on("gift", (data) => {
+            console.log("Regalo recibido:", data); // Para debug en consola
+            const giftList = document.getElementById("gift-list");
+            
+            const card = document.createElement("div");
+            card.className = "gift-card";
+            
+            // Estructura de la tarjeta de regalo
+            card.innerHTML = `
+                <img src="${data.giftPictureUrl || 'https://via.placeholder.com/50'}" alt="gift">
+                <strong>${data.uniqueId}</strong>
+                <span>Envió ${data.giftName} (x${data.repeatCount})</span>
+            `;
+            
+            giftList.prepend(card);
 
-/* LOADER */
-function showLoader(){ document.getElementById("loader").style.display="flex"; }
-function hideLoader(){ document.getElementById("loader").style.display="none"; }
-
-/* CONEXION */
-function connectTikTok(){
-    const username=document.getElementById("tiktokUser").value.trim();
-    const key=document.getElementById("accessKey").value.trim();
-    if(!username||!key){alert("Completa usuario y clave");return;}
-    tempUsername=username;
-    showLoader();
-    socket.emit("startConnection",{username,key});
-}
-
-socket.on("status",(status)=>{
-    if(status==="invalid_key"){hideLoader();alert("Clave inválida");return;}
-    if(status==="connected"){
-        hideLoader();
-        document.getElementById("connectionStatus").innerText="Conectado como";
-        document.getElementById("connectedUser").innerText=" @"+tempUsername;
-        document.getElementById("statusDot").classList.add("connected");
-    }
-    if(status==="error"){hideLoader();alert("Error al conectar");}
-    if(status==="disconnected"){
-        document.getElementById("connectionStatus").innerText="Desconectado";
-        document.getElementById("connectedUser").innerText="";
-        document.getElementById("statusDot").classList.remove("connected");
-    }
-});
-
-/* CHAT */
-socket.on("chat",(data)=>{
-    const div=document.createElement("div");
-    div.innerHTML="<b>"+data.user+"</b>: "+data.message;
-    document.getElementById("chat").prepend(div);
-    speak(data.user+" dice "+data.message);
-});
-
-/* NAV (Actualizado para el estilo del botón) */
-function showSection(id, btn) {
-    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    
-    // Si se pasa el botón, actualiza la clase visual 'active' en el menú lateral
-    if(btn) {
-        document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-    }
-}
-
-function disconnectLive(){
-    socket.emit("disconnectLive");
-}
-</script>
-
+            // Opcional: Hablar cuando llegue un regalo
+            const utter = new SpeechSynthesisUtterance(`${data.uniqueId} envió un regalo`);
+            window.speechSynthesis.speak(utter);
+        });
+    </script>
 </body>
 </html>

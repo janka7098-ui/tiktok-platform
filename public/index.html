@@ -20,30 +20,10 @@ height:100vh;
 display:flex;
 }
 
-/* LOGIN */
-
-#loginScreen{
-margin:auto;
-background:#111126;
-padding:40px;
-border-radius:20px;
-width:380px;
-box-shadow:0 0 40px rgba(123,47,247,0.2);
-border:1px solid #1f1f3d;
-text-align:center;
-}
-
-#loginScreen h2{
-margin-bottom:20px;
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-}
-
 /* DASHBOARD */
 
 #dashboard{
-display:none;
+display:flex;
 flex-direction:column;
 width:100%;
 height:100vh;
@@ -69,13 +49,15 @@ width:230px;
 background:#0c0c1c;
 padding:20px;
 border-right:1px solid #1f1f3d;
-text-align:center;
 }
 
-.logo-sidebar{
-width:140px;
-margin:0 auto 25px auto;
-display:block;
+.logo-box{
+text-align:center;
+margin-bottom:30px;
+}
+
+.logo-box img{
+width:80px;
 }
 
 .menu-btn{
@@ -111,6 +93,7 @@ padding:14px;
 border-radius:10px;
 margin-bottom:12px;
 border-left:4px solid #00ff9d;
+box-shadow:0 0 10px rgba(0,255,157,0.1);
 }
 
 .action-card{
@@ -124,61 +107,7 @@ align-items:center;
 border-left:4px solid #7b2ff7;
 }
 
-/* TIENDA VISUAL */
-
-.gift-store{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
-gap:12px;
-max-height:300px;
-overflow-y:auto;
-padding:10px;
-background:#0f0f22;
-border-radius:12px;
-border:1px solid #1f1f3d;
-margin-bottom:12px;
-}
-
-.gift-card{
-background:#161633;
-border-radius:12px;
-padding:10px;
-text-align:center;
-cursor:pointer;
-transition:0.2s;
-border:2px solid transparent;
-}
-
-.gift-card:hover{
-transform:scale(1.05);
-border-color:#7b2ff7;
-box-shadow:0 0 12px rgba(123,47,247,0.4);
-}
-
-.gift-card.selected{
-border-color:#00ff9d;
-box-shadow:0 0 15px #00ff9d;
-}
-
-.gift-card img{
-width:50px;
-height:50px;
-object-fit:contain;
-margin-bottom:6px;
-}
-
-.gift-name{
-font-size:13px;
-margin-bottom:4px;
-}
-
-.gift-price{
-font-size:12px;
-color:#00ff9d;
-font-weight:bold;
-}
-
-/* TTS */
+/* TTS SWITCH */
 
 .tts-container{
 display:flex;
@@ -220,70 +149,118 @@ left:33px;
 font-weight:bold;
 }
 
-.tts-status.on{color:#00ff9d;}
-.tts-status.off{color:#ff4d4d;}
+.tts-status.on{
+color:#00ff9d;
+}
+
+.tts-status.off{
+color:#ff4d4d;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+background:#1a1a35;
+border:1px solid #222;
+border-radius:8px;
+color:white;
+}
+
+button{
+padding:12px;
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+font-weight:bold;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px #00ff9d;
+}
+
+.status-dot{
+width:10px;
+height:10px;
+border-radius:50%;
+display:inline-block;
+margin-right:8px;
+background:#ff4d4d;
+}
+.status-dot.connected{
+background:#00ff9d;
+box-shadow:0 0 8px #00ff9d;
+}
 </style>
 </head>
 
 <body>
 
-<div id="loginScreen">
-<h2>NEXORA ACCESS</h2>
-<input id="accessKey" placeholder="Clave de acceso">
-<input id="tiktokUser" placeholder="Usuario TikTok sin @">
-<button onclick="validateAndConnect()">Entrar</button>
-<p id="loginMsg"></p>
-</div>
-
 <div id="dashboard">
 
 <div class="topbar">
 <div>
-🟢 Conectado a <strong id="liveUser"></strong>
+<span id="statusDot" class="status-dot"></span>
+<strong id="connectionStatus">Desconectado</strong>
 </div>
 
 <div style="display:flex; align-items:center; gap:20px;">
+
 <div class="tts-container">
-<div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
-<div class="tts-circle"></div>
-</div>
-<span id="ttsText" class="tts-status on">ACTIVADO</span>
+  <div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
+    <div class="tts-circle"></div>
+  </div>
+  <span id="ttsText" class="tts-status on">ACTIVADO</span>
 </div>
 
-<select id="voiceSelector"></select>
+<select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;">
+<option>Cargando voces...</option>
+</select>
 
 <button onclick="disconnectLive()">Desconectar</button>
+
 </div>
 </div>
 
 <div class="container">
 
 <div class="sidebar">
-<img src="/Logo.png" class="logo-sidebar">
+
+<div class="logo-box">
+<img src="Logo.png">
+</div>
+
+<button class="menu-btn" onclick="showSection('conexion')">🔌 Conexión</button>
 <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
 <button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
 <button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
+
 </div>
 
 <div class="main">
 
-<div id="chat" class="section active"></div>
+<div id="conexion" class="section active">
+<h2>🔌 Vincular Cuenta TikTok</h2>
+<br>
+<input id="tiktokUser" placeholder="Usuario TikTok sin @">
+<button onclick="connectTikTok()">Conectar a TikTok LIVE</button>
+</div>
+
+<div id="chat" class="section"></div>
 <div id="gifts" class="section"></div>
 
 <div id="actions" class="section">
-
 <h3>Crear Acción por Regalo</h3>
-
-<input id="giftSearch" placeholder="Buscar regalo...">
-<div id="giftStore" class="gift-store"></div>
-<input type="hidden" id="actionGift">
-
+<input id="actionGift" placeholder="Nombre del regalo">
 <input id="actionFile" placeholder="Ruta sonido ej: /media/rosa.mp3">
 <button onclick="createAction()">Crear Acción</button>
-
-<h3 style="margin-top:20px;">Acciones Configuradas</h3>
+<br><br>
+<h3>Acciones Configuradas</h3>
 <div id="actionList"></div>
-
 </div>
 
 </div>
@@ -293,103 +270,149 @@ font-weight:bold;
 <script>
 const socket = io();
 
-let tempUsername="";
-let ttsEnabled=true;
-let actions=[];
-let selectedVoice=null;
-let allGifts=[];
+let tempUsername = "";
+let ttsEnabled = true;
+let selectedVoice = null;
 
-/* CARGAR REGALOS DESDE SERVIDOR */
-async function loadGifts(){
-const res=await fetch("/gift-list");
-allGifts=await res.json();
-renderGiftStore(allGifts);
+/* CONEXIÓN */
+
+function connectTikTok(){
+const username = document.getElementById("tiktokUser").value.trim();
+if(!username) return;
+tempUsername = username;
+socket.emit("startConnection",{ username });
+socket.emit("getActions", username);
 }
-
-function renderGiftStore(list){
-const container=document.getElementById("giftStore");
-container.innerHTML="";
-
-list.forEach(g=>{
-const div=document.createElement("div");
-div.className="gift-card";
-
-div.innerHTML=`
-<img src="/regalos/${g.name}.png"
-onerror="this.src='/regalos/default.png'">
-<div class="gift-name">${g.name}</div>
-<div class="gift-price">${g.diamonds} 💎</div>
-`;
-
-div.onclick=()=>{
-document.querySelectorAll(".gift-card").forEach(c=>c.classList.remove("selected"));
-div.classList.add("selected");
-document.getElementById("actionGift").value=g.name;
-};
-
-container.appendChild(div);
-});
-}
-
-function filterGifts(){
-const value=document.getElementById("giftSearch").value.toLowerCase();
-const filtered=allGifts.filter(g=>g.name.toLowerCase().includes(value));
-renderGiftStore(filtered);
-}
-
-/* LOGIN Y SOCKETS (igual que antes) */
-
-function validateAndConnect(){
-const key=document.getElementById("accessKey").value.trim();
-const username=document.getElementById("tiktokUser").value.trim();
-if(!key||!username)return;
-tempUsername=username;
-socket.emit("validateKey",key);
-}
-
-socket.on("keyValid",()=>socket.emit("startConnection",{username:tempUsername}));
 
 socket.on("status",(status)=>{
+
 if(status==="connected"){
-document.getElementById("loginScreen").style.display="none";
-document.getElementById("dashboard").style.display="flex";
-document.getElementById("liveUser").innerText=tempUsername;
-loadGifts();
+document.getElementById("connectionStatus").innerText="Conectado";
+document.getElementById("statusDot").classList.add("connected");
 }
+
+if(status==="error"){
+document.getElementById("connectionStatus").innerText="Error";
+}
+
+if(status==="disconnected"){
+document.getElementById("connectionStatus").innerText="Desconectado";
+document.getElementById("statusDot").classList.remove("connected");
+}
+});
+
+/* VOICES */
+
+function loadVoices(){
+const voices = speechSynthesis.getVoices();
+const selector = document.getElementById("voiceSelector");
+selector.innerHTML = "";
+voices.forEach((voice,index)=>{
+const option = document.createElement("option");
+option.value = index;
+option.textContent = `${voice.name} (${voice.lang})`;
+selector.appendChild(option);
+});
+if(voices.length>0) selectedVoice = voices[0];
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+document.addEventListener("DOMContentLoaded",loadVoices);
+
+document.getElementById("voiceSelector").addEventListener("change",function(){
+const voices = speechSynthesis.getVoices();
+selectedVoice = voices[this.value];
+});
+
+/* TTS */
+
+function toggleTTS(){
+ttsEnabled=!ttsEnabled;
+const toggle=document.getElementById("ttsToggle");
+const text=document.getElementById("ttsText");
+
+if(ttsEnabled){
+toggle.classList.add("active");
+text.innerText="ACTIVADO";
+text.classList.remove("off");
+text.classList.add("on");
+}else{
+toggle.classList.remove("active");
+text.innerText="DESACTIVADO";
+text.classList.remove("on");
+text.classList.add("off");
+}
+}
+
+function speak(text){
+if(!ttsEnabled) return;
+const speech=new SpeechSynthesisUtterance(text);
+if(selectedVoice) speech.voice = selectedVoice;
+window.speechSynthesis.speak(speech);
+}
+
+/* CHAT */
+
+socket.on("chat",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
+document.getElementById("chat").prepend(div);
+speak(`${data.user} dice ${data.message}`);
+});
+
+/* REGALOS */
+
+socket.on("gift",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+document.getElementById("gifts").prepend(div);
 });
 
 /* ACCIONES */
 
 function createAction(){
-const gift=document.getElementById("actionGift").value;
+const gift=document.getElementById("actionGift").value.trim();
 const file=document.getElementById("actionFile").value.trim();
-if(!gift||!file)return;
+if(!gift || !file) return;
 
-actions.push({gift,file});
-renderActions();
+socket.emit("saveAction",{
+username: tempUsername,
+action:{ gift, file }
+});
 }
 
-function renderActions(){
+socket.on("actionsUpdated",(actions)=>{
 const container=document.getElementById("actionList");
 container.innerHTML="";
-actions.forEach((a,i)=>{
+actions.forEach((a,index)=>{
 const div=document.createElement("div");
 div.className="action-card";
-div.innerHTML=`<span>${a.gift}</span>
-<button onclick="deleteAction(${i})">❌</button>`;
+div.innerHTML=`
+<span>🎁 ${a.gift}</span>
+<button onclick="deleteAction(${index})">❌</button>
+`;
 container.appendChild(div);
 });
-}
-
-function deleteAction(i){
-actions.splice(i,1);
-renderActions();
-}
-
-/* BUSCADOR */
-document.addEventListener("DOMContentLoaded",()=>{
-document.getElementById("giftSearch").addEventListener("input",filterGifts);
 });
+
+function deleteAction(index){
+socket.emit("deleteAction",{
+username: tempUsername,
+index
+});
+}
+
+/* NAV */
+
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+function disconnectLive(){
+socket.emit("disconnectLive");
+}
 </script>
 
 </body>

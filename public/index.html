@@ -20,6 +20,15 @@ height:100vh;
 display:flex;
 }
 
+/* ===== DASHBOARD ===== */
+
+#dashboard{
+display:flex;
+flex-direction:column;
+width:100%;
+height:100vh;
+}
+
 /* ===== TOPBAR ===== */
 
 .topbar{
@@ -32,30 +41,34 @@ padding:0 25px;
 border-bottom:1px solid #1f1f3d;
 }
 
-.status-box{
+.connection-box{
 display:flex;
 align-items:center;
-gap:15px;
-font-size:18px;
+gap:12px;
 }
 
 .status-dot{
 width:10px;
 height:10px;
 border-radius:50%;
+background:#ff4d4d;
+}
+
+.status-dot.connected{
 background:#00ff9d;
 box-shadow:0 0 10px #00ff9d;
 }
 
+/* Avatar */
+
 .profile-frame{
-width:50px;
-height:50px;
+width:42px;
+height:42px;
 border-radius:50%;
-padding:3px;
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-display:flex;
-align-items:center;
-justify-content:center;
+padding:2px;
+background:linear-gradient(135deg,#7b2ff7,#00ff9d);
+box-shadow:0 0 12px rgba(0,255,157,0.6);
+display:none;
 }
 
 .profile-frame img{
@@ -63,19 +76,10 @@ width:100%;
 height:100%;
 border-radius:50%;
 object-fit:cover;
-background:#111;
+background:#000;
 }
 
-.logo-box{
-text-align:center;
-margin:20px 0;
-}
-
-.logo-box img{
-width:130px;
-}
-
-/* ===== LAYOUT ===== */
+/* ===== SIDEBAR ===== */
 
 .container{
 flex:1;
@@ -83,72 +87,71 @@ display:flex;
 }
 
 .sidebar{
-width:240px;
+width:230px;
 background:#0c0c1c;
 padding:20px;
 border-right:1px solid #1f1f3d;
 }
 
+.logo-box{
+text-align:center;
+margin-bottom:30px;
+}
+
+.logo-box img{
+width:80px;
+}
+
 .menu-btn{
 width:100%;
-padding:14px;
-margin-bottom:12px;
+padding:12px;
+margin-bottom:10px;
 background:#161633;
-border-radius:12px;
+border-radius:10px;
 color:white;
 cursor:pointer;
-border:none;
 transition:0.3s;
+border:1px solid transparent;
 }
 
 .menu-btn:hover{
 background:#1f1f3d;
-box-shadow:0 0 10px rgba(123,47,247,0.4);
+border-color:#7b2ff7;
+box-shadow:0 0 10px rgba(123,47,247,0.3);
 }
+
+/* ===== MAIN ===== */
 
 .main{
 flex:1;
-padding:30px;
+padding:25px;
 overflow:auto;
-}
-
-/* ===== INPUTS ===== */
-
-input{
-width:100%;
-padding:14px;
-margin-bottom:15px;
-background:#1a1a35;
-border:1px solid #222;
-border-radius:10px;
-color:white;
-font-size:16px;
-}
-
-button{
-padding:12px 20px;
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-border:none;
-border-radius:10px;
-color:white;
-cursor:pointer;
-font-weight:bold;
-transition:0.3s;
-}
-
-button:hover{
-transform:scale(1.05);
-box-shadow:0 0 15px #00ff9d;
 }
 
 .section{display:none;}
 .section.active{display:block;}
 
-.tts-container{
-display:flex;
-align-items:center;
-gap:15px;
+.card-event{
+background:#161633;
+padding:14px;
+border-radius:10px;
+margin-bottom:12px;
+border-left:4px solid #00ff9d;
+box-shadow:0 0 10px rgba(0,255,157,0.1);
 }
+
+.action-card{
+background:#161633;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-left:4px solid #7b2ff7;
+}
+
+/* ===== TTS SWITCH ===== */
 
 .tts-switch{
 width:60px;
@@ -157,6 +160,7 @@ background:#333;
 border-radius:50px;
 position:relative;
 cursor:pointer;
+transition:0.3s;
 }
 
 .tts-switch.active{
@@ -177,38 +181,70 @@ transition:0.3s;
 .tts-switch.active .tts-circle{
 left:33px;
 }
+
+/* Inputs */
+
+input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+background:#1a1a35;
+border:1px solid #222;
+border-radius:8px;
+color:white;
+}
+
+button{
+padding:12px;
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+font-weight:bold;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px #00ff9d;
+}
 </style>
 </head>
 
 <body>
 
-<div style="width:100%;display:flex;flex-direction:column;">
+<div id="dashboard">
 
-<!-- TOPBAR -->
+<!-- ===== TOPBAR ===== -->
+
 <div class="topbar">
 
-<div class="status-box">
-<div class="status-dot"></div>
-<div id="connectionText">Desconectado</div>
-<div class="profile-frame" id="profileContainer" style="display:none;">
+<div class="connection-box">
+<span id="statusDot" class="status-dot"></span>
+<strong id="connectionStatus">Desconectado</strong>
+<span id="connectedUser" style="color:#00ff9d;font-weight:bold;"></span>
+
+<div id="profileFrame" class="profile-frame">
 <img id="profileImage">
 </div>
 </div>
 
 <div style="display:flex;align-items:center;gap:20px;">
-<div class="tts-container">
+
 <div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
 <div class="tts-circle"></div>
 </div>
+
 <select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;"></select>
-</div>
 
 <button onclick="disconnectLive()">Desconectar</button>
-</div>
 
 </div>
+</div>
 
-<!-- CONTENT -->
+<!-- ===== CONTENT ===== -->
+
 <div class="container">
 
 <div class="sidebar">
@@ -219,6 +255,8 @@ left:33px;
 
 <button class="menu-btn" onclick="showSection('conexion')">🔌 Conexión</button>
 <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
+<button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
+<button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
 
 </div>
 
@@ -226,146 +264,165 @@ left:33px;
 
 <!-- CONEXIÓN -->
 <div id="conexion" class="section active">
-<h2>Vincular Cuenta TikTok</h2>
-<br>
+<h2>🔌 Vincular Cuenta TikTok</h2>
 <input id="tiktokUser" placeholder="Usuario TikTok sin @">
-<input id="accessKey" placeholder="Clave de acceso">
 <button onclick="connectTikTok()">Conectar a TikTok LIVE</button>
 </div>
 
 <!-- CHAT -->
-<div id="chat" class="section">
-<h2>Chat en Vivo</h2>
-<div id="chatMessages"></div>
+<div id="chat" class="section"></div>
+
+<!-- REGALOS -->
+<div id="gifts" class="section"></div>
+
+<!-- ACCIONES -->
+<div id="actions" class="section">
+<h3>Crear Acción por Regalo</h3>
+<input id="actionGift" placeholder="Nombre del regalo">
+<input id="actionFile" placeholder="Ruta sonido ej: /media/rosa.mp3">
+<button onclick="createAction()">Crear Acción</button>
+
+<br><br>
+<h3>Acciones Configuradas</h3>
+<div id="actionList"></div>
 </div>
 
 </div>
 </div>
+
 </div>
 
 <script>
 const socket = io();
+let tempUsername="";
+let ttsEnabled=true;
+let selectedVoice=null;
 
-let ttsEnabled = true;
-let selectedVoice = null;
-let currentUsername = "";
-
-/* ======================
-   CONECTAR
-====================== */
+/* ===== CONEXIÓN ===== */
 
 function connectTikTok(){
 const username=document.getElementById("tiktokUser").value.trim();
-const key=document.getElementById("accessKey").value.trim();
-
-if(!username || !key){
-alert("Completa usuario y clave");
-return;
+if(!username) return;
+tempUsername=username;
+socket.emit("startConnection",{ username });
+socket.emit("getActions", username);
 }
-
-currentUsername = username;
-
-socket.emit("startConnection",{ username, key });
-}
-
-/* ======================
-   STATUS
-====================== */
 
 socket.on("status",(status)=>{
 
 if(status==="connected"){
-document.getElementById("connectionText").innerHTML=
-`Conectado como <span style="color:#00ff9d">@${currentUsername}</span>`;
-}
-
-if(status==="invalid_key"){
-alert("Clave inválida");
-}
-
-if(status==="error"){
-alert("Error al conectar");
+document.getElementById("connectionStatus").innerText="Conectado como";
+document.getElementById("connectedUser").innerText=" @" + tempUsername;
+document.getElementById("statusDot").classList.add("connected");
 }
 
 if(status==="disconnected"){
-location.reload();
+document.getElementById("connectionStatus").innerText="Desconectado";
+document.getElementById("connectedUser").innerText="";
+document.getElementById("statusDot").classList.remove("connected");
+document.getElementById("profileFrame").style.display="none";
 }
+
 });
 
-/* ======================
-   FOTO PERFIL
-====================== */
+/* ===== FOTO PERFIL ===== */
 
 socket.on("connectedUserData",(data)=>{
 if(data.profilePictureUrl){
 document.getElementById("profileImage").src=data.profilePictureUrl;
-document.getElementById("profileContainer").style.display="flex";
+document.getElementById("profileFrame").style.display="block";
 }
 });
 
-/* ======================
-   CHAT
-====================== */
+/* ===== VOICES ===== */
 
-socket.on("chat",(data)=>{
-const div=document.createElement("div");
-div.innerHTML=`<strong>${data.user}</strong>: ${data.message}`;
-document.getElementById("chatMessages").prepend(div);
-speak(`${data.user} dice ${data.message}`);
+function loadVoices(){
+const voices=speechSynthesis.getVoices();
+const selector=document.getElementById("voiceSelector");
+selector.innerHTML="";
+voices.forEach((voice,index)=>{
+const option=document.createElement("option");
+option.value=index;
+option.textContent=`${voice.name} (${voice.lang})`;
+selector.appendChild(option);
+});
+if(voices.length>0) selectedVoice=voices[0];
+}
+speechSynthesis.onvoiceschanged=loadVoices;
+document.addEventListener("DOMContentLoaded",loadVoices);
+
+document.getElementById("voiceSelector").addEventListener("change",function(){
+const voices=speechSynthesis.getVoices();
+selectedVoice=voices[this.value];
 });
 
-/* ======================
-   TTS
-====================== */
+/* ===== TTS ===== */
 
 function toggleTTS(){
 ttsEnabled=!ttsEnabled;
 const toggle=document.getElementById("ttsToggle");
-if(ttsEnabled){
-toggle.classList.add("active");
-}else{
-toggle.classList.remove("active");
+ttsEnabled ? toggle.classList.add("active") : toggle.classList.remove("active");
 }
-}
-
-function loadVoices(){
-const voices = speechSynthesis.getVoices();
-const selector = document.getElementById("voiceSelector");
-selector.innerHTML = "";
-
-voices.forEach((voice,index)=>{
-const option = document.createElement("option");
-option.value = index;
-option.textContent = `${voice.name} (${voice.lang})`;
-selector.appendChild(option);
-});
-
-if(voices.length>0){
-selectedVoice = voices[0];
-}
-}
-
-speechSynthesis.onvoiceschanged = loadVoices;
-
-document.addEventListener("DOMContentLoaded",()=>{
-loadVoices();
-document.getElementById("voiceSelector").addEventListener("change",function(){
-const voices = speechSynthesis.getVoices();
-selectedVoice = voices[this.value];
-});
-});
 
 function speak(text){
 if(!ttsEnabled) return;
-
 const speech=new SpeechSynthesisUtterance(text);
-if(selectedVoice){ speech.voice = selectedVoice; }
+if(selectedVoice) speech.voice=selectedVoice;
 window.speechSynthesis.speak(speech);
 }
 
-/* ======================
-   SECCIONES
-====================== */
+/* ===== CHAT ===== */
+
+socket.on("chat",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
+document.getElementById("chat").prepend(div);
+speak(`${data.user} dice ${data.message}`);
+});
+
+/* ===== REGALOS ===== */
+
+socket.on("gift",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+document.getElementById("gifts").prepend(div);
+});
+
+/* ===== ACCIONES ===== */
+
+function createAction(){
+const gift=document.getElementById("actionGift").value.trim();
+const file=document.getElementById("actionFile").value.trim();
+if(!gift || !file) return;
+
+socket.emit("saveAction",{
+username: tempUsername,
+action:{ gift, file }
+});
+}
+
+socket.on("actionsUpdated",(actions)=>{
+const container=document.getElementById("actionList");
+container.innerHTML="";
+actions.forEach((a,index)=>{
+const div=document.createElement("div");
+div.className="action-card";
+div.innerHTML=`<span>🎁 ${a.gift}</span>
+<button onclick="deleteAction(${index})">❌</button>`;
+container.appendChild(div);
+});
+});
+
+function deleteAction(index){
+socket.emit("deleteAction",{
+username: tempUsername,
+index
+});
+}
+
+/* ===== NAV ===== */
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));

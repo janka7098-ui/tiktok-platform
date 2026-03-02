@@ -31,41 +31,33 @@
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: 260px;
+            width: 250px;
             background-color: var(--bg-deep);
             border-right: 1px solid var(--border-color);
-            padding: 25px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
         }
 
-        .logo-container { margin-bottom: 40px; text-align: center; }
-        .logo-container img { width: 140px; filter: drop-shadow(0 0 10px var(--neon-purple)); }
+        .logo-box { text-align: center; margin-bottom: 40px; }
+        .logo-box img { width: 110px; filter: drop-shadow(0 0 10px var(--neon-purple)); }
 
-        .nav-item {
-            padding: 12px 15px;
-            color: var(--text-muted);
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 1px solid transparent;
-            background: transparent;
-            text-align: left;
-            width: 100%;
+        .menu-btn {
+            width: 100%; padding: 12px 15px; margin-bottom: 10px;
+            background: transparent; border-radius: 8px; color: var(--text-muted);
+            cursor: pointer; transition: 0.3s; border: 1px solid transparent;
+            text-align: left; font-weight: 600;
         }
 
-        .nav-item:hover, .nav-item.active {
-            background: linear-gradient(90deg, rgba(138,46,255,0.15) 0%, transparent 100%);
+        .menu-btn:hover, .menu-btn.active {
+            background: linear-gradient(90deg, rgba(138,46,255,0.1) 0%, transparent 100%);
             color: var(--neon-green);
             border-left: 4px solid var(--neon-green);
-            border-color: var(--border-color);
         }
 
-        /* --- CONTENIDO --- */
+        /* --- MAIN CONTENT --- */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
         header {
             background-color: var(--bg-card);
             padding: 15px 30px;
@@ -75,131 +67,224 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        .section { display: none; padding: 40px; }
+        .status-badge {
+            background: rgba(255, 77, 77, 0.1);
+            color: #ff4d4d;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            border: 1px solid #ff4d4d;
+        }
+
+        .status-badge.connected {
+            background: rgba(0, 255, 171, 0.1);
+            color: var(--neon-green);
+            border-color: var(--neon-green);
+        }
+
+        /* --- CARDS & ELEMENTS --- */
+        .section { display: none; padding: 30px; }
         .section.active { display: block; }
 
-        /* --- GRID DE REGALOS --- */
-        #gift-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .gift-card {
+        .card-event {
             background: var(--bg-card);
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--neon-green);
             border: 1px solid var(--border-color);
-            text-align: center;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-left: 4px solid var(--neon-green);
         }
 
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .gift-card img { width: 50px; height: 50px; margin-bottom: 10px; }
-        .gift-card strong { display: block; color: var(--neon-green); }
-        .gift-card span { font-size: 0.8rem; color: var(--text-muted); }
-
-        /* --- BOTÓN Y OTROS --- */
-        .btn-primary {
-            width: 100%; padding: 14px; background: linear-gradient(90deg, var(--neon-purple), #6a1bc2);
-            border: none; border-radius: 10px; color: white; font-weight: 800; cursor: pointer;
+        input, select {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            background: #120b24; border: 1px solid var(--border-color);
+            border-radius: 8px; color: white; outline: none;
         }
-        input { width: 100%; padding: 14px; margin-top: 8px; margin-bottom: 20px; background: #120b24; border: 1px solid var(--border-color); border-radius: 10px; color: white; }
+
+        button.main-btn {
+            padding: 12px 25px;
+            background: linear-gradient(90deg, var(--neon-purple), #5a1dc2);
+            border: none; border-radius: 8px; color: white;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+
+        button.main-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--neon-purple); }
+
+        /* --- TTS SWITCH --- */
+        .tts-switch {
+            width: 50px; height: 26px; background: #333;
+            border-radius: 50px; position: relative; cursor: pointer;
+        }
+        .tts-switch.active { background: var(--neon-green); }
+        .tts-circle {
+            width: 20px; height: 20px; background: white; border-radius: 50%;
+            position: absolute; top: 3px; left: 3px; transition: 0.3s;
+        }
+        .tts-switch.active .tts-circle { left: 27px; }
+
+        .profile-frame {
+            width: 40px; height: 40px; border-radius: 50%;
+            border: 2px solid var(--neon-green); display: none; overflow: hidden;
+        }
+        .profile-frame img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
-        <div class="logo-container"><img src="public/Logo.png" alt="Nexora"></div>
-        <button class="nav-item active" onclick="showSection('conexion')">🔌 Conexión</button>
-        <button class="nav-item" onclick="showSection('chat')">💬 Chat en Vivo</button>
-        <button class="nav-item" onclick="showSection('gifts')">🎁 Historial de Regalos</button>
+        <div class="logo-box">
+            <img src="public/Logo.png" alt="Logo">
+        </div>
+        <button class="menu-btn active" onclick="showSection('conexion', this)">🔌 Conexión</button>
+        <button class="menu-btn" onclick="showSection('chat', this)">💬 Chat</button>
+        <button class="menu-btn" onclick="showSection('gifts', this)">🎁 Regalos</button>
+        <button class="menu-btn" onclick="showSection('actions', this)">⚡ Acciones</button>
     </aside>
 
     <div class="main-content">
         <header>
-            <div id="statusBadge" style="color:#ff4d4d; font-weight:800;">● DESCONECTADO</div>
+            <div id="statusBadge" class="status-badge">● DESCONECTADO</div>
+            
+            <div style="display:flex; align-items:center; gap:20px;">
+                <div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
+                    <div class="tts-circle"></div>
+                </div>
+                
+                <select id="voiceSelector" style="width:200px; margin:0;"></select>
+
+                <div id="profileFrame" class="profile-frame">
+                    <img id="profileImage" src="">
+                </div>
+                
+                <span id="connectedUser" style="color:var(--neon-green); font-weight:bold;"></span>
+                <button onclick="disconnectLive()" style="background:none; border:1px solid #ff4d4d; color:#ff4d4d; padding:5px 10px; border-radius:5px; cursor:pointer;">Desconectar</button>
+            </div>
         </header>
 
         <main>
             <div id="conexion" class="section active">
-                <h1>🔌 Vincular TikTok</h1>
-                <div style="max-width: 500px; margin-top:20px;">
-                    <input id="tiktokUser" placeholder="Usuario de TikTok">
+                <h2>Vincular TikTok LIVE</h2>
+                <div style="max-width: 500px; margin-top:20px;" class="card-event">
+                    <input id="tiktokUser" placeholder="Usuario TikTok sin @">
                     <input id="accessKey" type="password" placeholder="Clave de acceso">
-                    <button class="btn-primary" onclick="connectTikTok()">CONECTAR</button>
+                    <button class="main-btn" onclick="connectTikTok()">CONECTAR AHORA</button>
                 </div>
             </div>
 
             <div id="chat" class="section">
-                <h1>💬 Chat en Vivo</h1>
-                <div id="chat-container" style="margin-top:20px;"></div>
+                <h2>Mensajes en Vivo</h2>
+                <div id="chat-list" style="margin-top:20px;"></div>
             </div>
 
             <div id="gifts" class="section">
-                <h1>🎁 Regalos Recibidos</h1>
-                <div id="gift-list">
-                    </div>
+                <h2>Historial de Regalos</h2>
+                <div id="gifts-list" style="margin-top:20px;"></div>
+            </div>
+
+            <div id="actions" class="section">
+                <h2>⚡ Configurar Acciones</h2>
+                <div class="card-event" style="max-width: 500px; border-left-color: var(--neon-purple);">
+                    <input id="actionGift" placeholder="Nombre del regalo (ej: Rosa)">
+                    <input id="actionFile" placeholder="Ruta del sonido (ej: /media/susto.mp3)">
+                    <button class="main-btn" onclick="createAction()">CREAR ACCIÓN</button>
+                </div>
+                <h3 style="margin-top:30px;">Acciones Guardadas</h3>
+                <div id="actionList"></div>
             </div>
         </main>
     </div>
 
     <script>
         const socket = io();
+        let tempUsername = "";
+        let ttsEnabled = true;
+        let selectedVoice = null;
 
-        function showSection(id) {
+        // --- NAVEGACIÓN ---
+        function showSection(id, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('active');
+            btn.classList.add('active');
         }
 
+        // --- CONEXIÓN ---
         function connectTikTok() {
             const username = document.getElementById("tiktokUser").value.trim();
             const key = document.getElementById("accessKey").value.trim();
+            if(!username || !key) return alert("Completa los datos");
+            tempUsername = username;
             socket.emit("startConnection", { username, key });
+            socket.emit("getActions", username);
         }
 
-        // --- DETECTAR STATUS ---
         socket.on("status", (status) => {
             const badge = document.getElementById("statusBadge");
-            if (status === "connected") {
+            if(status === "connected") {
                 badge.innerText = "● CONECTADO";
-                badge.style.color = "#00FFAB";
+                badge.classList.add("connected");
+                document.getElementById("connectedUser").innerText = "@" + tempUsername;
+            } else if(status === "disconnected") {
+                badge.innerText = "● DESCONECTADO";
+                badge.classList.remove("connected");
+                document.getElementById("profileFrame").style.display = "none";
+            } else if(status === "invalid_key") alert("Clave inválida");
+        });
+
+        socket.on("connectedUserData", (data) => {
+            if(data.profilePictureUrl) {
+                document.getElementById("profileImage").src = data.profilePictureUrl;
+                document.getElementById("profileFrame").style.display = "block";
             }
         });
 
-        // --- DETECTAR CHAT ---
+        // --- TTS ---
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            const selector = document.getElementById("voiceSelector");
+            selector.innerHTML = "";
+            voices.forEach((v, i) => {
+                const opt = document.createElement("option");
+                opt.value = i; opt.textContent = v.name;
+                selector.appendChild(opt);
+            });
+            if(voices.length > 0) selectedVoice = voices[0];
+        }
+        speechSynthesis.onvoiceschanged = loadVoices;
+        window.onload = loadVoices;
+
+        function toggleTTS() {
+            ttsEnabled = !ttsEnabled;
+            document.getElementById("ttsToggle").classList.toggle("active");
+        }
+
+        function speak(text) {
+            if(!ttsEnabled) return;
+            const msg = new SpeechSynthesisUtterance(text);
+            if(selectedVoice) msg.voice = selectedVoice;
+            window.speechSynthesis.speak(msg);
+        }
+
+        // --- EVENTOS SOCKET ---
         socket.on("chat", (data) => {
-            const container = document.getElementById("chat-container");
             const div = document.createElement("div");
-            div.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
-            container.prepend(div);
+            div.className = "card-event";
+            div.innerHTML = `💬 <strong>${data.user}</strong>: ${data.message}`;
+            document.getElementById("chat-list").prepend(div);
+            speak(`${data.user} dice ${data.message}`);
         });
 
-        // --- [CLAVE] DETECTAR REGALOS ---
         socket.on("gift", (data) => {
-            console.log("Regalo recibido:", data); // Para debug en consola
-            const giftList = document.getElementById("gift-list");
-            
-            const card = document.createElement("div");
-            card.className = "gift-card";
-            
-            // Estructura de la tarjeta de regalo
-            card.innerHTML = `
-                <img src="${data.giftPictureUrl || 'https://via.placeholder.com/50'}" alt="gift">
-                <strong>${data.uniqueId}</strong>
-                <span>Envió ${data.giftName} (x${data.repeatCount})</span>
-            `;
-            
-            giftList.prepend(card);
-
-            // Opcional: Hablar cuando llegue un regalo
-            const utter = new SpeechSynthesisUtterance(`${data.uniqueId} envió un regalo`);
-            window.speechSynthesis.speak(utter);
+            const div = document.createElement("div");
+            div.className = "card-event";
+            div.style.borderLeftColor = "var(--neon-purple)";
+            div.innerHTML = `🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+            document.getElementById("gifts-list").prepend(div);
         });
+
+        function disconnectLive() { socket.emit("disconnectLive"); }
     </script>
 </body>
 </html>

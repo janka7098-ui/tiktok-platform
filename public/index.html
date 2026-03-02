@@ -20,7 +20,7 @@ height:100vh;
 display:flex;
 }
 
-/* DASHBOARD */
+/* ===== DASHBOARD ===== */
 
 #dashboard{
 display:flex;
@@ -29,8 +29,10 @@ width:100%;
 height:100vh;
 }
 
+/* ===== TOPBAR ===== */
+
 .topbar{
-height:65px;
+height:70px;
 background:#0e0e1f;
 display:flex;
 align-items:center;
@@ -38,6 +40,46 @@ justify-content:space-between;
 padding:0 25px;
 border-bottom:1px solid #1f1f3d;
 }
+
+.connection-box{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.status-dot{
+width:10px;
+height:10px;
+border-radius:50%;
+background:#ff4d4d;
+}
+
+.status-dot.connected{
+background:#00ff9d;
+box-shadow:0 0 10px #00ff9d;
+}
+
+/* Avatar */
+
+.profile-frame{
+width:42px;
+height:42px;
+border-radius:50%;
+padding:2px;
+background:linear-gradient(135deg,#7b2ff7,#00ff9d);
+box-shadow:0 0 12px rgba(0,255,157,0.6);
+display:none;
+}
+
+.profile-frame img{
+width:100%;
+height:100%;
+border-radius:50%;
+object-fit:cover;
+background:#000;
+}
+
+/* ===== SIDEBAR ===== */
 
 .container{
 flex:1;
@@ -78,6 +120,8 @@ border-color:#7b2ff7;
 box-shadow:0 0 10px rgba(123,47,247,0.3);
 }
 
+/* ===== MAIN ===== */
+
 .main{
 flex:1;
 padding:25px;
@@ -107,13 +151,7 @@ align-items:center;
 border-left:4px solid #7b2ff7;
 }
 
-/* TTS SWITCH */
-
-.tts-container{
-display:flex;
-align-items:center;
-gap:12px;
-}
+/* ===== TTS SWITCH ===== */
 
 .tts-switch{
 width:60px;
@@ -127,7 +165,6 @@ transition:0.3s;
 
 .tts-switch.active{
 background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-box-shadow:0 0 10px #00ff9d;
 }
 
 .tts-circle{
@@ -145,17 +182,7 @@ transition:0.3s;
 left:33px;
 }
 
-.tts-status{
-font-weight:bold;
-}
-
-.tts-status.on{
-color:#00ff9d;
-}
-
-.tts-status.off{
-color:#ff4d4d;
-}
+/* Inputs */
 
 input{
 width:100%;
@@ -182,19 +209,6 @@ button:hover{
 transform:scale(1.05);
 box-shadow:0 0 15px #00ff9d;
 }
-
-.status-dot{
-width:10px;
-height:10px;
-border-radius:50%;
-display:inline-block;
-margin-right:8px;
-background:#ff4d4d;
-}
-.status-dot.connected{
-background:#00ff9d;
-box-shadow:0 0 8px #00ff9d;
-}
 </style>
 </head>
 
@@ -202,29 +216,34 @@ box-shadow:0 0 8px #00ff9d;
 
 <div id="dashboard">
 
+<!-- ===== TOPBAR ===== -->
+
 <div class="topbar">
-<div>
+
+<div class="connection-box">
 <span id="statusDot" class="status-dot"></span>
 <strong id="connectionStatus">Desconectado</strong>
+<span id="connectedUser" style="color:#00ff9d;font-weight:bold;"></span>
+
+<div id="profileFrame" class="profile-frame">
+<img id="profileImage">
+</div>
 </div>
 
-<div style="display:flex; align-items:center; gap:20px;">
+<div style="display:flex;align-items:center;gap:20px;">
 
-<div class="tts-container">
-  <div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
-    <div class="tts-circle"></div>
-  </div>
-  <span id="ttsText" class="tts-status on">ACTIVADO</span>
+<div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
+<div class="tts-circle"></div>
 </div>
 
-<select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;">
-<option>Cargando voces...</option>
-</select>
+<select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;"></select>
 
 <button onclick="disconnectLive()">Desconectar</button>
 
 </div>
 </div>
+
+<!-- ===== CONTENT ===== -->
 
 <div class="container">
 
@@ -243,21 +262,26 @@ box-shadow:0 0 8px #00ff9d;
 
 <div class="main">
 
+<!-- CONEXIÓN -->
 <div id="conexion" class="section active">
 <h2>🔌 Vincular Cuenta TikTok</h2>
-<br>
 <input id="tiktokUser" placeholder="Usuario TikTok sin @">
 <button onclick="connectTikTok()">Conectar a TikTok LIVE</button>
 </div>
 
+<!-- CHAT -->
 <div id="chat" class="section"></div>
+
+<!-- REGALOS -->
 <div id="gifts" class="section"></div>
 
+<!-- ACCIONES -->
 <div id="actions" class="section">
 <h3>Crear Acción por Regalo</h3>
 <input id="actionGift" placeholder="Nombre del regalo">
 <input id="actionFile" placeholder="Ruta sonido ej: /media/rosa.mp3">
 <button onclick="createAction()">Crear Acción</button>
+
 <br><br>
 <h3>Acciones Configuradas</h3>
 <div id="actionList"></div>
@@ -265,21 +289,21 @@ box-shadow:0 0 8px #00ff9d;
 
 </div>
 </div>
+
 </div>
 
 <script>
 const socket = io();
+let tempUsername="";
+let ttsEnabled=true;
+let selectedVoice=null;
 
-let tempUsername = "";
-let ttsEnabled = true;
-let selectedVoice = null;
-
-/* CONEXIÓN */
+/* ===== CONEXIÓN ===== */
 
 function connectTikTok(){
-const username = document.getElementById("tiktokUser").value.trim();
+const username=document.getElementById("tiktokUser").value.trim();
 if(!username) return;
-tempUsername = username;
+tempUsername=username;
 socket.emit("startConnection",{ username });
 socket.emit("getActions", username);
 }
@@ -287,70 +311,67 @@ socket.emit("getActions", username);
 socket.on("status",(status)=>{
 
 if(status==="connected"){
-document.getElementById("connectionStatus").innerText="Conectado";
+document.getElementById("connectionStatus").innerText="Conectado como";
+document.getElementById("connectedUser").innerText=" @" + tempUsername;
 document.getElementById("statusDot").classList.add("connected");
-}
-
-if(status==="error"){
-document.getElementById("connectionStatus").innerText="Error";
 }
 
 if(status==="disconnected"){
 document.getElementById("connectionStatus").innerText="Desconectado";
+document.getElementById("connectedUser").innerText="";
 document.getElementById("statusDot").classList.remove("connected");
+document.getElementById("profileFrame").style.display="none";
+}
+
+});
+
+/* ===== FOTO PERFIL ===== */
+
+socket.on("connectedUserData",(data)=>{
+if(data.profilePictureUrl){
+document.getElementById("profileImage").src=data.profilePictureUrl;
+document.getElementById("profileFrame").style.display="block";
 }
 });
 
-/* VOICES */
+/* ===== VOICES ===== */
 
 function loadVoices(){
-const voices = speechSynthesis.getVoices();
-const selector = document.getElementById("voiceSelector");
-selector.innerHTML = "";
+const voices=speechSynthesis.getVoices();
+const selector=document.getElementById("voiceSelector");
+selector.innerHTML="";
 voices.forEach((voice,index)=>{
-const option = document.createElement("option");
-option.value = index;
-option.textContent = `${voice.name} (${voice.lang})`;
+const option=document.createElement("option");
+option.value=index;
+option.textContent=`${voice.name} (${voice.lang})`;
 selector.appendChild(option);
 });
-if(voices.length>0) selectedVoice = voices[0];
+if(voices.length>0) selectedVoice=voices[0];
 }
-speechSynthesis.onvoiceschanged = loadVoices;
+speechSynthesis.onvoiceschanged=loadVoices;
 document.addEventListener("DOMContentLoaded",loadVoices);
 
 document.getElementById("voiceSelector").addEventListener("change",function(){
-const voices = speechSynthesis.getVoices();
-selectedVoice = voices[this.value];
+const voices=speechSynthesis.getVoices();
+selectedVoice=voices[this.value];
 });
 
-/* TTS */
+/* ===== TTS ===== */
 
 function toggleTTS(){
 ttsEnabled=!ttsEnabled;
 const toggle=document.getElementById("ttsToggle");
-const text=document.getElementById("ttsText");
-
-if(ttsEnabled){
-toggle.classList.add("active");
-text.innerText="ACTIVADO";
-text.classList.remove("off");
-text.classList.add("on");
-}else{
-toggle.classList.remove("active");
-text.innerText="DESACTIVADO";
-text.classList.remove("on");
-text.classList.add("off");
-}
+ttsEnabled ? toggle.classList.add("active") : toggle.classList.remove("active");
 }
 
 function speak(text){
 if(!ttsEnabled) return;
 const speech=new SpeechSynthesisUtterance(text);
-if(selectedVoice) speech.voice = selectedVoice;
+if(selectedVoice) speech.voice=selectedVoice;
 window.speechSynthesis.speak(speech);
 }
 
-/* CHAT */
+/* ===== CHAT ===== */
 
 socket.on("chat",(data)=>{
 const div=document.createElement("div");
@@ -360,7 +381,7 @@ document.getElementById("chat").prepend(div);
 speak(`${data.user} dice ${data.message}`);
 });
 
-/* REGALOS */
+/* ===== REGALOS ===== */
 
 socket.on("gift",(data)=>{
 const div=document.createElement("div");
@@ -369,7 +390,7 @@ div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.am
 document.getElementById("gifts").prepend(div);
 });
 
-/* ACCIONES */
+/* ===== ACCIONES ===== */
 
 function createAction(){
 const gift=document.getElementById("actionGift").value.trim();
@@ -388,10 +409,8 @@ container.innerHTML="";
 actions.forEach((a,index)=>{
 const div=document.createElement("div");
 div.className="action-card";
-div.innerHTML=`
-<span>🎁 ${a.gift}</span>
-<button onclick="deleteAction(${index})">❌</button>
-`;
+div.innerHTML=`<span>🎁 ${a.gift}</span>
+<button onclick="deleteAction(${index})">❌</button>`;
 container.appendChild(div);
 });
 });
@@ -403,7 +422,7 @@ index
 });
 }
 
-/* NAV */
+/* ===== NAV ===== */
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));

@@ -80,17 +80,18 @@ io.on("connection", (socket) => {
 
             tiktok.on("gift", (data) => {
                 if (data.repeatEnd) {
+                    // MODIFICACIÓN MÍNIMA: Enviamos la ruta de la imagen local
                     socket.emit("gift", {
                         user: data.nickname,
                         gift: data.giftName,
-                        amount: data.repeatCount
+                        amount: data.repeatCount,
+                        image: `/regalos/${data.giftName}.png`
                     });
                     
                     const actions = userActions.get(username) || [];
                     const action = actions.find(a => a.gift.toLowerCase() === data.giftName.toLowerCase());
                     
                     if (action) {
-                        // AJUSTE: Si es link, dispara axios. Si no, dispara sonido.
                         if (action.type === "link") {
                             axios.get(`${action.file}?user=${encodeURIComponent(data.nickname)}&gift=${data.giftName}&amount=${data.repeatCount}`)
                                  .catch(e => console.log("Juego offline o URL inválida"));
@@ -110,16 +111,10 @@ io.on("connection", (socket) => {
         }
     });
 
-    /* =========================
-       SUBIR Y GUARDAR MP3
-    ========================= */
     socket.on("uploadAndSave", ({ username, gift, fileName, fileData }) => {
         if (!username || !fileData) return;
-
         const userFolder = path.join(__dirname, "public", "uploads", username);
-        if (!fs.existsSync(userFolder)) {
-            fs.mkdirSync(userFolder, { recursive: true });
-        }
+        if (!fs.existsSync(userFolder)) fs.mkdirSync(userFolder, { recursive: true });
 
         const base64Data = fileData.split(';base64,').pop();
         const finalFileName = `${Date.now()}_${fileName}`;
@@ -127,31 +122,23 @@ io.on("connection", (socket) => {
 
         fs.writeFile(filePath, base64Data, { encoding: 'base64' }, (err) => {
             if (err) return;
-
             if (!userActions.has(username)) userActions.set(username, []);
             const actions = userActions.get(username);
-            
-            // AJUSTE: Añadimos type: "mp3"
             actions.push({
                 gift: gift,
                 file: `/uploads/${username}/${finalFileName}`,
                 type: "mp3"
             });
-            
             socket.emit("actionsUpdated", actions);
             socket.emit("status", "connected");
         });
     });
 
-    // AJUSTE: Nuevo evento para guardar links de juego sin subir archivos
     socket.on("saveAction", ({ username, action }) => {
         if (!username) return;
         if (!userActions.has(username)) userActions.set(username, []);
-        
         const actions = userActions.get(username);
-        // action ya viene con {gift, file, type: "link"} desde el cliente
         actions.push(action);
-        
         socket.emit("actionsUpdated", actions);
     });
 

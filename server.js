@@ -4,6 +4,7 @@ const { WebcastPushConnection } = require("tiktok-live-connector");
 const socketIo = require("socket.io");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 
 const app = express();
 const server = http.createServer(app);
@@ -12,29 +13,18 @@ const io = socketIo(server);
 app.use(express.static("public"));
 
 /* =========================
-   LISTA AUTOMÁTICA DE REGALOS
+   PROXY AVATAR (SOLUCIÓN CORS)
 ========================= */
 
-app.get("/gift-list", (req, res) => {
-
-  const giftsPath = path.join(__dirname, "public", "regalos");
-
-  fs.readdir(giftsPath, (err, files) => {
-    if (err) {
-      console.log("Error leyendo carpeta regalos:", err);
-      return res.json([]);
-    }
-
-    const giftList = files
-      .filter(file => file.endsWith(".png"))
-      .map(file => ({
-        name: file.replace(".png", ""),
-        diamonds: 0
-      }));
-
-    res.json(giftList);
-  });
-
+app.get("/avatar-proxy", async (req, res) => {
+  try {
+    const url = req.query.url;
+    const response = await axios.get(url, { responseType: "arraybuffer" });
+    res.set("Content-Type", "image/jpeg");
+    res.send(response.data);
+  } catch (err) {
+    res.status(500).send("Error avatar");
+  }
 });
 
 /* =========================
@@ -49,27 +39,18 @@ const allowedKeys = [
 const activeConnections = new Map();
 const userActions = new Map();
 
-/* =========================
-   SOCKET.IO
-========================= */
-
 io.on("connection", (socket) => {
 
-  /* ===== VALIDAR CLAVE ===== */
+  /* ===== INICIAR CONEXIÓN ===== */
 
-  socket.on("validateKey", (key) => {
-    if (allowedKeys.includes(key)) {
-      socket.emit("keyValid");
-    } else {
-      socket.emit("keyInvalid");
+  socket.on("startConnection", async ({ username, key }) => {
+
+    if (!username || !key) return;
+
+    if (!allowedKeys.includes(key)) {
+      socket.emit("status", "invalid_key");
+      return;
     }
-  });
-
-  /* ===== INICIAR CONEXIÓN TIKTOK ===== */
-
-  socket.on("startConnection", async ({ username }) => {
-
-    if (!username) return;
 
     if (activeConnections.has(socket.id)) {
       try { activeConnections.get(socket.id).disconnect(); } catch {}
@@ -85,21 +66,21 @@ io.on("connection", (socket) => {
 
       socket.emit("status", "connected");
 
-      /* =========================
-         OBTENER FOTO REAL PERFIL
-      ========================= */
+      /* ===== OBTENER AVATAR ===== */
 
       try {
-
         const roomInfo = await tiktok.getRoomInfo();
+        const avatarUrl = roomInfo?.owner?.avatarLarger;
 
-        socket.emit("connectedUserData", {
-          username: username,
-          profilePictureUrl: roomInfo?.owner?.avatarLarger || null
-        });
+        if (avatarUrl) {
+          socket.emit("connectedUserData", {
+            username,
+            profilePictureUrl: `/avatar-proxy?url=${encodeURIComponent(avatarUrl)}`
+          });
+        }
 
       } catch (err) {
-        console.log("No se pudo obtener avatar:", err);
+        console.log("Error avatar:", err);
       }
 
       /* ===== REGALOS ===== */
@@ -124,45 +105,9 @@ io.on("connection", (socket) => {
       });
 
     } catch (err) {
-      console.log("Error conexión TikTok:", err);
       socket.emit("status", "error");
     }
   });
-
-  /* =========================
-     ACCIONES POR USUARIO
-  ========================= */
-
-  socket.on("saveAction", ({ username, action }) => {
-
-    if (!userActions.has(username)) {
-      userActions.set(username, []);
-    }
-
-    const actions = userActions.get(username);
-    actions.push(action);
-
-    socket.emit("actionsUpdated", actions);
-  });
-
-  socket.on("getActions", (username) => {
-    const actions = userActions.get(username) || [];
-    socket.emit("actionsUpdated", actions);
-  });
-
-  socket.on("deleteAction", ({ username, index }) => {
-
-    if (!userActions.has(username)) return;
-
-    const actions = userActions.get(username);
-    actions.splice(index, 1);
-
-    socket.emit("actionsUpdated", actions);
-  });
-
-  /* =========================
-     DESCONECTAR
-  ========================= */
 
   socket.on("disconnectLive", () => {
     if (activeConnections.has(socket.id)) {
@@ -172,18 +117,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
-    if (activeConnections.has(socket.id)) {
-      try { activeConnections.get(socket.id).disconnect(); } catch {}
-      activeConnections.delete(socket.id);
-    }
-  });
-
 });
-
-/* =========================
-   SERVER
-========================= */
 
 const PORT = process.env.PORT || 10000;
 

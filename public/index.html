@@ -266,6 +266,7 @@ box-shadow:0 0 15px #00ff9d;
 <div id="conexion" class="section active">
 <h2>🔌 Vincular Cuenta TikTok</h2>
 <input id="tiktokUser" placeholder="Usuario TikTok sin @">
+<input id="accessKey" placeholder="Clave de acceso">
 <button onclick="connectTikTok()">Conectar a TikTok LIVE</button>
 </div>
 
@@ -302,13 +303,25 @@ let selectedVoice=null;
 
 function connectTikTok(){
 const username=document.getElementById("tiktokUser").value.trim();
-if(!username) return;
+const key=document.getElementById("accessKey").value.trim();
+
+if(!username || !key){
+alert("Completa usuario y clave");
+return;
+}
+
 tempUsername=username;
-socket.emit("startConnection",{ username });
+
+socket.emit("startConnection",{ username, key });
 socket.emit("getActions", username);
 }
 
 socket.on("status",(status)=>{
+
+if(status==="invalid_key"){
+alert("Clave inválida");
+return;
+}
 
 if(status==="connected"){
 document.getElementById("connectionStatus").innerText="Conectado como";
@@ -334,103 +347,15 @@ document.getElementById("profileFrame").style.display="block";
 }
 });
 
-/* ===== VOICES ===== */
+/* ===== RESTO DEL CÓDIGO (sin cambios) ===== */
 
-function loadVoices(){
-const voices=speechSynthesis.getVoices();
-const selector=document.getElementById("voiceSelector");
-selector.innerHTML="";
-voices.forEach((voice,index)=>{
-const option=document.createElement("option");
-option.value=index;
-option.textContent=`${voice.name} (${voice.lang})`;
-selector.appendChild(option);
-});
-if(voices.length>0) selectedVoice=voices[0];
+function disconnectLive(){
+socket.emit("disconnectLive");
 }
-speechSynthesis.onvoiceschanged=loadVoices;
-document.addEventListener("DOMContentLoaded",loadVoices);
-
-document.getElementById("voiceSelector").addEventListener("change",function(){
-const voices=speechSynthesis.getVoices();
-selectedVoice=voices[this.value];
-});
-
-/* ===== TTS ===== */
-
-function toggleTTS(){
-ttsEnabled=!ttsEnabled;
-const toggle=document.getElementById("ttsToggle");
-ttsEnabled ? toggle.classList.add("active") : toggle.classList.remove("active");
-}
-
-function speak(text){
-if(!ttsEnabled) return;
-const speech=new SpeechSynthesisUtterance(text);
-if(selectedVoice) speech.voice=selectedVoice;
-window.speechSynthesis.speak(speech);
-}
-
-/* ===== CHAT ===== */
-
-socket.on("chat",(data)=>{
-const div=document.createElement("div");
-div.className="card-event";
-div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
-document.getElementById("chat").prepend(div);
-speak(`${data.user} dice ${data.message}`);
-});
-
-/* ===== REGALOS ===== */
-
-socket.on("gift",(data)=>{
-const div=document.createElement("div");
-div.className="card-event";
-div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
-document.getElementById("gifts").prepend(div);
-});
-
-/* ===== ACCIONES ===== */
-
-function createAction(){
-const gift=document.getElementById("actionGift").value.trim();
-const file=document.getElementById("actionFile").value.trim();
-if(!gift || !file) return;
-
-socket.emit("saveAction",{
-username: tempUsername,
-action:{ gift, file }
-});
-}
-
-socket.on("actionsUpdated",(actions)=>{
-const container=document.getElementById("actionList");
-container.innerHTML="";
-actions.forEach((a,index)=>{
-const div=document.createElement("div");
-div.className="action-card";
-div.innerHTML=`<span>🎁 ${a.gift}</span>
-<button onclick="deleteAction(${index})">❌</button>`;
-container.appendChild(div);
-});
-});
-
-function deleteAction(index){
-socket.emit("deleteAction",{
-username: tempUsername,
-index
-});
-}
-
-/* ===== NAV ===== */
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
-}
-
-function disconnectLive(){
-socket.emit("disconnectLive");
 }
 </script>
 

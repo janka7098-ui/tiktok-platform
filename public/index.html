@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Nexora Panel</title>
+<title>Nexora</title>
+<link rel="icon" type="image/png" href="public/Logo.png">
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
@@ -58,8 +59,6 @@ background:#ff4d4d;
 background:#00ff9d;
 box-shadow:0 0 10px #00ff9d;
 }
-
-/* Avatar */
 
 .profile-frame{
 width:42px;
@@ -216,8 +215,6 @@ box-shadow:0 0 15px #00ff9d;
 
 <div id="dashboard">
 
-<!-- ===== TOPBAR ===== -->
-
 <div class="topbar">
 
 <div class="connection-box">
@@ -243,8 +240,6 @@ box-shadow:0 0 15px #00ff9d;
 </div>
 </div>
 
-<!-- ===== CONTENT ===== -->
-
 <div class="container">
 
 <div class="sidebar">
@@ -262,7 +257,6 @@ box-shadow:0 0 15px #00ff9d;
 
 <div class="main">
 
-<!-- CONEXIÓN -->
 <div id="conexion" class="section active">
 <h2>🔌 Vincular Cuenta TikTok</h2>
 <input id="tiktokUser" placeholder="Usuario TikTok sin @">
@@ -270,19 +264,14 @@ box-shadow:0 0 15px #00ff9d;
 <button onclick="connectTikTok()">Conectar a TikTok LIVE</button>
 </div>
 
-<!-- CHAT -->
 <div id="chat" class="section"></div>
-
-<!-- REGALOS -->
 <div id="gifts" class="section"></div>
 
-<!-- ACCIONES -->
 <div id="actions" class="section">
 <h3>Crear Acción por Regalo</h3>
 <input id="actionGift" placeholder="Nombre del regalo">
 <input id="actionFile" placeholder="Ruta sonido ej: /media/rosa.mp3">
 <button onclick="createAction()">Crear Acción</button>
-
 <br><br>
 <h3>Acciones Configuradas</h3>
 <div id="actionList"></div>
@@ -290,7 +279,6 @@ box-shadow:0 0 15px #00ff9d;
 
 </div>
 </div>
-
 </div>
 
 <script>
@@ -347,15 +335,74 @@ document.getElementById("profileFrame").style.display="block";
 }
 });
 
-/* ===== RESTO DEL CÓDIGO (sin cambios) ===== */
+/* ===== VOICES ===== */
 
-function disconnectLive(){
-socket.emit("disconnectLive");
+function loadVoices(){
+const voices=speechSynthesis.getVoices();
+const selector=document.getElementById("voiceSelector");
+selector.innerHTML="";
+voices.forEach((voice,index)=>{
+const option=document.createElement("option");
+option.value=index;
+option.textContent=`${voice.name} (${voice.lang})`;
+selector.appendChild(option);
+});
+if(voices.length>0) selectedVoice=voices[0];
 }
+speechSynthesis.onvoiceschanged=loadVoices;
+document.addEventListener("DOMContentLoaded",loadVoices);
+
+document.getElementById("voiceSelector").addEventListener("change",function(){
+const voices=speechSynthesis.getVoices();
+selectedVoice=voices[this.value];
+});
+
+/* ===== TTS ===== */
+
+function toggleTTS(){
+ttsEnabled=!ttsEnabled;
+const toggle=document.getElementById("ttsToggle");
+ttsEnabled ? toggle.classList.add("active") : toggle.classList.remove("active");
+}
+
+function speak(text){
+if(!ttsEnabled) return;
+const speech=new SpeechSynthesisUtterance(text);
+if(selectedVoice) speech.voice=selectedVoice;
+speech.rate=1;
+speech.pitch=1;
+speech.volume=1;
+window.speechSynthesis.speak(speech);
+}
+
+/* ===== CHAT ===== */
+
+socket.on("chat",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
+document.getElementById("chat").prepend(div);
+speak(`${data.user} dice ${data.message}`);
+});
+
+/* ===== REGALOS ===== */
+
+socket.on("gift",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+document.getElementById("gifts").prepend(div);
+});
+
+/* ===== NAV ===== */
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
+}
+
+function disconnectLive(){
+socket.emit("disconnectLive");
 }
 </script>
 

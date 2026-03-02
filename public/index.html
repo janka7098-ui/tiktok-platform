@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexora - Panel de Control</title>
+    <title>Nexora - Panel Profesional</title>
     <link rel="icon" type="image/png" href="public/Logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
@@ -31,22 +31,22 @@
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: 250px;
+            width: 260px;
             background-color: var(--bg-deep);
             border-right: 1px solid var(--border-color);
-            padding: 20px;
+            padding: 25px;
             display: flex;
             flex-direction: column;
         }
 
         .logo-box { text-align: center; margin-bottom: 40px; }
-        .logo-box img { width: 110px; filter: drop-shadow(0 0 10px var(--neon-purple)); }
+        .logo-box img { width: 120px; filter: drop-shadow(0 0 10px var(--neon-purple)); }
 
         .menu-btn {
             width: 100%; padding: 12px 15px; margin-bottom: 10px;
             background: transparent; border-radius: 8px; color: var(--text-muted);
-            cursor: pointer; transition: 0.3s; border: 1px solid transparent;
-            text-align: left; font-weight: 600;
+            cursor: pointer; transition: 0.3s; border: none;
+            text-align: left; font-weight: 600; font-size: 0.9rem;
         }
 
         .menu-btn:hover, .menu-btn.active {
@@ -68,33 +68,23 @@
         }
 
         .status-badge {
-            background: rgba(255, 77, 77, 0.1);
-            color: #ff4d4d;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 800;
-            border: 1px solid #ff4d4d;
+            padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;
+            border: 1px solid #ff4d4d; color: #ff4d4d; transition: 0.4s;
         }
+        .status-badge.connected { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
 
-        .status-badge.connected {
-            background: rgba(0, 255, 171, 0.1);
-            color: var(--neon-green);
-            border-color: var(--neon-green);
-        }
-
-        /* --- CARDS & ELEMENTS --- */
-        .section { display: none; padding: 30px; }
+        /* --- SECCIONES Y CARDS --- */
+        .section { display: none; padding: 40px; }
         .section.active { display: block; }
 
+        .card {
+            background-color: var(--bg-card); padding: 25px; border-radius: 12px;
+            border: 1px solid var(--border-color); margin-bottom: 20px;
+        }
+
         .card-event {
-            background: var(--bg-card);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--neon-green);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--neon-green);
+            background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px;
+            margin-bottom: 10px; border-left: 4px solid var(--neon-purple);
         }
 
         input, select {
@@ -103,14 +93,29 @@
             border-radius: 8px; color: white; outline: none;
         }
 
-        button.main-btn {
-            padding: 12px 25px;
-            background: linear-gradient(90deg, var(--neon-purple), #5a1dc2);
-            border: none; border-radius: 8px; color: white;
-            font-weight: bold; cursor: pointer; transition: 0.3s;
+        /* --- BOTÓN CON CARGA --- */
+        .btn-primary {
+            width: 100%; padding: 14px; background: linear-gradient(90deg, var(--neon-purple), #6a1bc2);
+            border: none; border-radius: 10px; color: white; font-weight: 800;
+            cursor: pointer; transition: 0.3s; position: relative;
         }
+        .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
 
-        button.main-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--neon-purple); }
+        .btn-primary.loading { color: transparent; pointer-events: none; }
+        .btn-primary.loading::after {
+            content: ""; position: absolute; width: 20px; height: 20px;
+            top: 50%; left: 50%; margin: -10px 0 0 -10px;
+            border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- PERFIL --- */
+        .profile-frame {
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 2px solid var(--neon-green); display: none; overflow: hidden;
+        }
+        .profile-frame img { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- TTS SWITCH --- */
         .tts-switch {
@@ -123,20 +128,12 @@
             position: absolute; top: 3px; left: 3px; transition: 0.3s;
         }
         .tts-switch.active .tts-circle { left: 27px; }
-
-        .profile-frame {
-            width: 40px; height: 40px; border-radius: 50%;
-            border: 2px solid var(--neon-green); display: none; overflow: hidden;
-        }
-        .profile-frame img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
-        <div class="logo-box">
-            <img src="public/Logo.png" alt="Logo">
-        </div>
+        <div class="logo-box"><img src="public/Logo.png" alt="Nexora"></div>
         <button class="menu-btn active" onclick="showSection('conexion', this)">🔌 Conexión</button>
         <button class="menu-btn" onclick="showSection('chat', this)">💬 Chat</button>
         <button class="menu-btn" onclick="showSection('gifts', this)">🎁 Regalos</button>
@@ -147,51 +144,51 @@
         <header>
             <div id="statusBadge" class="status-badge">● DESCONECTADO</div>
             
-            <div style="display:flex; align-items:center; gap:20px;">
+            <div style="display:flex; align-items:center; gap:15px;">
                 <div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
                     <div class="tts-circle"></div>
                 </div>
                 
-                <select id="voiceSelector" style="width:200px; margin:0;"></select>
+                <select id="voiceSelector" style="width:180px; margin:0;"></select>
 
                 <div id="profileFrame" class="profile-frame">
                     <img id="profileImage" src="">
                 </div>
                 
-                <span id="connectedUser" style="color:var(--neon-green); font-weight:bold;"></span>
-                <button onclick="disconnectLive()" style="background:none; border:1px solid #ff4d4d; color:#ff4d4d; padding:5px 10px; border-radius:5px; cursor:pointer;">Desconectar</button>
+                <span id="connectedUser" style="color:var(--neon-green); font-weight:bold; font-size:0.9rem;"></span>
+                <button onclick="disconnectLive()" style="background:none; border:1px solid #ff4d4d; color:#ff4d4d; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.7rem; font-weight:bold;">DESCONECTAR</button>
             </div>
         </header>
 
         <main>
             <div id="conexion" class="section active">
-                <h2>Vincular TikTok LIVE</h2>
-                <div style="max-width: 500px; margin-top:20px;" class="card-event">
+                <h1>🔌 Vincular TikTok LIVE</h1>
+                <div class="card" style="max-width: 500px; margin-top:20px;">
                     <input id="tiktokUser" placeholder="Usuario TikTok sin @">
                     <input id="accessKey" type="password" placeholder="Clave de acceso">
-                    <button class="main-btn" onclick="connectTikTok()">CONECTAR AHORA</button>
+                    <button id="btnConnect" class="btn-primary" onclick="connectTikTok()">CONECTAR AHORA</button>
                 </div>
             </div>
 
             <div id="chat" class="section">
-                <h2>Mensajes en Vivo</h2>
+                <h1>💬 Chat en tiempo real</h1>
                 <div id="chat-list" style="margin-top:20px;"></div>
             </div>
 
             <div id="gifts" class="section">
-                <h2>Historial de Regalos</h2>
+                <h1>🎁 Historial de Regalos</h1>
                 <div id="gifts-list" style="margin-top:20px;"></div>
             </div>
 
             <div id="actions" class="section">
-                <h2>⚡ Configurar Acciones</h2>
-                <div class="card-event" style="max-width: 500px; border-left-color: var(--neon-purple);">
+                <h1>⚡ Configurar Acciones por Regalo</h1>
+                <div class="card" style="max-width: 500px; margin-top:20px;">
                     <input id="actionGift" placeholder="Nombre del regalo (ej: Rosa)">
                     <input id="actionFile" placeholder="Ruta del sonido (ej: /media/susto.mp3)">
-                    <button class="main-btn" onclick="createAction()">CREAR ACCIÓN</button>
+                    <button class="btn-primary" onclick="createAction()">GUARDAR ACCIÓN</button>
                 </div>
-                <h3 style="margin-top:30px;">Acciones Guardadas</h3>
-                <div id="actionList"></div>
+                <h3>Acciones Activas</h3>
+                <div id="actionList" style="margin-top:15px;"></div>
             </div>
         </main>
     </div>
@@ -202,7 +199,6 @@
         let ttsEnabled = true;
         let selectedVoice = null;
 
-        // --- NAVEGACIÓN ---
         function showSection(id, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
@@ -210,18 +206,25 @@
             btn.classList.add('active');
         }
 
-        // --- CONEXIÓN ---
+        // --- CONEXIÓN Y CARGA ---
         function connectTikTok() {
+            const btn = document.getElementById("btnConnect");
             const username = document.getElementById("tiktokUser").value.trim();
             const key = document.getElementById("accessKey").value.trim();
+            
             if(!username || !key) return alert("Completa los datos");
+
+            btn.classList.add("loading");
             tempUsername = username;
+
             socket.emit("startConnection", { username, key });
             socket.emit("getActions", username);
         }
 
         socket.on("status", (status) => {
+            document.getElementById("btnConnect").classList.remove("loading");
             const badge = document.getElementById("statusBadge");
+            
             if(status === "connected") {
                 badge.innerText = "● CONECTADO";
                 badge.classList.add("connected");
@@ -230,7 +233,10 @@
                 badge.innerText = "● DESCONECTADO";
                 badge.classList.remove("connected");
                 document.getElementById("profileFrame").style.display = "none";
-            } else if(status === "invalid_key") alert("Clave inválida");
+                document.getElementById("connectedUser").innerText = "";
+            } else if(status === "invalid_key") {
+                alert("Clave de acceso inválida");
+            }
         });
 
         socket.on("connectedUserData", (data) => {
@@ -240,7 +246,7 @@
             }
         });
 
-        // --- TTS ---
+        // --- VOCES Y TTS ---
         function loadVoices() {
             const voices = speechSynthesis.getVoices();
             const selector = document.getElementById("voiceSelector");
@@ -267,11 +273,11 @@
             window.speechSynthesis.speak(msg);
         }
 
-        // --- EVENTOS SOCKET ---
+        // --- CHAT Y REGALOS ---
         socket.on("chat", (data) => {
             const div = document.createElement("div");
             div.className = "card-event";
-            div.innerHTML = `💬 <strong>${data.user}</strong>: ${data.message}`;
+            div.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
             document.getElementById("chat-list").prepend(div);
             speak(`${data.user} dice ${data.message}`);
         });
@@ -279,10 +285,29 @@
         socket.on("gift", (data) => {
             const div = document.createElement("div");
             div.className = "card-event";
-            div.style.borderLeftColor = "var(--neon-purple)";
+            div.style.borderLeftColor = "var(--neon-green)";
             div.innerHTML = `🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
             document.getElementById("gifts-list").prepend(div);
         });
+
+        // --- ACCIONES ---
+        function createAction() {
+            const gift = document.getElementById("actionGift").value.trim();
+            const file = document.getElementById("actionFile").value.trim();
+            if(!gift || !file) return alert("Completa los campos de acción");
+
+            socket.emit("createAction", { username: tempUsername, gift, file });
+            
+            // Agregar a la lista visualmente
+            const div = document.createElement("div");
+            div.className = "card-event";
+            div.style.borderLeftColor = "var(--neon-purple)";
+            div.innerHTML = `⚡ Regalo: <b>${gift}</b> → Sonido: <i>${file}</i>`;
+            document.getElementById("actionList").appendChild(div);
+
+            document.getElementById("actionGift").value = "";
+            document.getElementById("actionFile").value = "";
+        }
 
         function disconnectLive() { socket.emit("disconnectLive"); }
     </script>

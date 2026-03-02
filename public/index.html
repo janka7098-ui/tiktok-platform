@@ -1,239 +1,410 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamTrix - Ultimate Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="/socket.io/socket.io.js"></script>
-    <style>
-        :root {
-            --bg-deep: #0F0A1A;
-            --bg-card: #1A112A;
-            --neon-green: #00FFAB;
-            --neon-purple: #8A2EFF;
-            --text-main: #FFFFFF;
-            --text-muted: #B8B0CC;
-            --border-color: rgba(138, 46, 255, 0.2);
-        }
+<meta charset="UTF-8">
+<title>Nexora</title>
+<link rel="icon" type="image/png" href="Logo.png">
+<script src="/socket.io/socket.io.js"></script>
 
-        /* --- BASE --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
 
-        /* --- LOADING OVERLAY --- */
-        #loadingOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 10, 26, 0.9);
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; backdrop-filter: blur(5px);
-        }
-        .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid var(--border-color);
-            border-top: 5px solid var(--neon-green);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+body{
+background:linear-gradient(160deg,#0b0b18,#050510);
+color:white;
+height:100vh;
+display:flex;
+}
 
-        /* --- LAYOUT --- */
-        .sidebar { width: 250px; border-right: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; }
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .live-feed { width: 320px; background-color: var(--bg-card); border-left: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; }
+/* ===== DASHBOARD ===== */
 
-        /* --- TOPBAR --- */
-        header { background-color: var(--bg-card); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
-        .status-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff4d4d; }
-        .status-dot.active { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+#dashboard{
+display:flex;
+flex-direction:column;
+width:100%;
+height:100vh;
+}
 
-        /* --- UI ELEMENTS --- */
-        .logo { font-size: 1.5rem; font-weight: 800; margin-bottom: 40px; }
-        .logo span { color: var(--neon-green); }
-        .nav-item { padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: 0.3s; }
-        .nav-item:hover, .nav-item.active { background: rgba(138,46,255,0.1); color: var(--neon-green); border-left: 4px solid var(--neon-green); }
-        
-        .card { background: var(--bg-card); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-        input, select { background: #0F0A1A; border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; color: white; margin-bottom: 10px; width: 100%; }
-        button { background: linear-gradient(90deg, var(--neon-purple), #5a1bcc); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(138, 46, 255, 0.4); }
+/* ===== TOPBAR ===== */
 
-        .feed-item { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 3px solid var(--neon-purple); animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+.topbar{
+height:70px;
+background:#0e0e1f;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 25px;
+border-bottom:1px solid #1f1f3d;
+}
 
-        /* Switch Styling */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--neon-green); }
-        input:checked + .slider:before { transform: translateX(20px); }
-    </style>
+.connection-box{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.status-dot{
+width:10px;
+height:10px;
+border-radius:50%;
+background:#ff4d4d;
+}
+
+.status-dot.connected{
+background:#00ff9d;
+box-shadow:0 0 10px #00ff9d;
+}
+
+.profile-frame{
+width:42px;
+height:42px;
+border-radius:50%;
+padding:2px;
+background:linear-gradient(135deg,#7b2ff7,#00ff9d);
+box-shadow:0 0 12px rgba(0,255,157,0.6);
+display:none;
+}
+
+.profile-frame img{
+width:100%;
+height:100%;
+border-radius:50%;
+object-fit:cover;
+background:#000;
+}
+
+/* ===== SIDEBAR ===== */
+
+.container{
+flex:1;
+display:flex;
+}
+
+.sidebar{
+width:230px;
+background:#0c0c1c;
+padding:20px;
+border-right:1px solid #1f1f3d;
+}
+
+.logo-box{
+text-align:center;
+margin-bottom:30px;
+}
+
+.logo-box img{
+width:80px;
+}
+
+.menu-btn{
+width:100%;
+padding:12px;
+margin-bottom:10px;
+background:#161633;
+border-radius:10px;
+color:white;
+cursor:pointer;
+transition:0.3s;
+border:1px solid transparent;
+}
+
+.menu-btn:hover{
+background:#1f1f3d;
+border-color:#7b2ff7;
+box-shadow:0 0 10px rgba(123,47,247,0.3);
+}
+
+/* ===== MAIN ===== */
+
+.main{
+flex:1;
+padding:25px;
+overflow:auto;
+}
+
+.section{display:none;}
+.section.active{display:block;}
+
+.card-event{
+background:#161633;
+padding:14px;
+border-radius:10px;
+margin-bottom:12px;
+border-left:4px solid #00ff9d;
+box-shadow:0 0 10px rgba(0,255,157,0.1);
+}
+
+.action-card{
+background:#161633;
+padding:12px;
+border-radius:10px;
+margin-bottom:10px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-left:4px solid #7b2ff7;
+}
+
+/* ===== TTS SWITCH ===== */
+
+.tts-switch{
+width:60px;
+height:30px;
+background:#333;
+border-radius:50px;
+position:relative;
+cursor:pointer;
+transition:0.3s;
+}
+
+.tts-switch.active{
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+}
+
+.tts-circle{
+width:24px;
+height:24px;
+background:white;
+border-radius:50%;
+position:absolute;
+top:3px;
+left:3px;
+transition:0.3s;
+}
+
+.tts-switch.active .tts-circle{
+left:33px;
+}
+
+/* Inputs */
+
+input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+background:#1a1a35;
+border:1px solid #222;
+border-radius:8px;
+color:white;
+}
+
+button{
+padding:12px;
+background:linear-gradient(90deg,#7b2ff7,#00ff9d);
+border:none;
+border-radius:8px;
+color:white;
+cursor:pointer;
+font-weight:bold;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+box-shadow:0 0 15px #00ff9d;
+}
+</style>
 </head>
+
 <body>
 
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <p style="margin-top: 15px; color: var(--neon-green);">Vinculando con TikTok...</p>
-    </div>
+<div id="dashboard">
 
-    <aside class="sidebar">
-        <div class="logo">Stream<span>Trix</span></div>
-        <div class="nav-item active" onclick="showSection('dashboard')">Panel Principal</div>
-        <div class="nav-item" onclick="showSection('actions-config')">Configurar Eventos</div>
-        <div class="nav-item">Historial</div>
-        <div style="margin-top: auto;">
-            <button onclick="disconnectLive()" style="width:100%; background: #ff4d4d;">Desconectar</button>
-        </div>
-    </aside>
+<div class="topbar">
 
-    <div class="main-content">
-        <header>
-            <div class="status-badge">
-                <span id="statusDot" class="status-dot"></span>
-                <span id="statusText">DESCONECTADO</span>
-                <span id="connectedUser" style="color:var(--neon-green); margin-left:10px;"></span>
-            </div>
-            <div style="display:flex; gap:15px; align-items:center;">
-                <select id="voiceSelector" style="margin:0; width: 180px; font-size: 0.8rem;"></select>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:0.8rem; color:var(--text-muted);">TTS</span>
-                    <label class="switch">
-                        <input type="checkbox" id="ttsToggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-        </header>
+<div class="connection-box">
+<span id="statusDot" class="status-dot"></span>
+<strong id="connectionStatus">Desconectado</strong>
+<span id="connectedUser" style="color:#00ff9d;font-weight:bold;"></span>
 
-        <main style="padding: 30px;">
-            <div id="section-dashboard">
-                <div class="card">
-                    <h2>🔌 Conexión</h2>
-                    <p style="color:var(--text-muted); margin-bottom: 15px;">Ingresa tus credenciales para empezar.</p>
-                    <input id="tiktokUser" placeholder="Usuario de TikTok (ej: el_pepe)">
-                    <input id="accessKey" type="password" placeholder="Clave de acceso Nexora">
-                    <button onclick="connectTikTok()" style="width: 100%;">Vincular Cuenta Ahora</button>
-                </div>
+<div id="profileFrame" class="profile-frame">
+<img id="profileImage">
+</div>
+</div>
 
-                <div class="stats-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
-                    <div class="card" style="text-align:center;">
-                        <div id="count-viewers" style="font-size: 1.5rem; color: var(--neon-green); font-weight: 800;">0</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Espectadores</div>
-                    </div>
-                    </div>
-            </div>
+<div style="display:flex;align-items:center;gap:20px;">
 
-            <div id="section-actions" style="display:none;">
-                <div class="card">
-                    <h3>⚡ Crear Nueva Acción</h3>
-                    <input id="actionGift" placeholder="Nombre del Regalo (ej: Rosa)">
-                    <input id="actionFile" placeholder="Comando o Sonido (ej: /scary.mp3)">
-                    <button onclick="createAction()">Guardar Acción</button>
-                </div>
-                <div id="actionList"></div>
-            </div>
-        </main>
-    </div>
+<div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
+<div class="tts-circle"></div>
+</div>
 
-    <aside class="live-feed">
-        <h3 style="margin-bottom:15px; color: var(--neon-purple);">Actividad en Vivo</h3>
-        <div id="feed-container" style="overflow-y:auto; flex:1;">
-            <div class="feed-item" style="border-left-color: var(--neon-green);">
-                <strong>Sistema:</strong> Esperando conexión...
-            </div>
-        </div>
-    </aside>
+<select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;"></select>
 
-    <script>
-        const socket = io();
-        let ttsEnabled = true;
-        let selectedVoice = null;
+<button onclick="disconnectLive()">Desconectar</button>
 
-        // --- NAVEGACIÓN ---
-        function showSection(section) {
-            document.getElementById('section-dashboard').style.display = section === 'dashboard' ? 'block' : 'none';
-            document.getElementById('section-actions').style.display = section === 'actions-config' ? 'block' : 'none';
-        }
+</div>
+</div>
 
-        // --- CONEXIÓN ---
-        function connectTikTok() {
-            const username = document.getElementById("tiktokUser").value.trim();
-            const key = document.getElementById("accessKey").value.trim();
+<div class="container">
 
-            if(!username) return alert("Escribe tu usuario");
-            
-            // Mostrar Animación de Carga
-            document.getElementById("loadingOverlay").style.display = "flex";
+<div class="sidebar">
 
-            socket.emit("startConnection", { username, key });
-        }
+<div class="logo-box">
+<img src="Logo.png">
+</div>
 
-        socket.on("status", (status) => {
-            // Ocultar carga al recibir respuesta
-            document.getElementById("loadingOverlay").style.display = "none";
+<button class="menu-btn" onclick="showSection('conexion')">🔌 Conexión</button>
+<button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
+<button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
+<button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
 
-            if(status === "connected") {
-                document.getElementById("statusDot").classList.add("active");
-                document.getElementById("statusText").innerText = "CONECTADO";
-                document.getElementById("connectedUser").innerText = "@" + document.getElementById("tiktokUser").value;
-            } else {
-                document.getElementById("statusDot").classList.remove("active");
-                document.getElementById("statusText").innerText = "DESCONECTADO";
-            }
-        });
+</div>
 
-        // --- TTS LÓGICA ---
-        function loadVoices() {
-            const voices = window.speechSynthesis.getVoices();
-            const selector = document.getElementById("voiceSelector");
-            selector.innerHTML = voices.map((v, i) => `<option value="${i}">${v.name}</option>`).join('');
-            selectedVoice = voices[0];
-        }
+<div class="main">
 
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        document.getElementById("voiceSelector").addEventListener("change", (e) => {
-            selectedVoice = window.speechSynthesis.getVoices()[e.target.value];
-        });
+<div id="conexion" class="section active">
+<h2>🔌 Vincular Cuenta TikTok</h2>
+<input id="tiktokUser" placeholder="Usuario TikTok sin @">
+<input id="accessKey" placeholder="Clave de acceso">
+<button onclick="connectTikTok()">Conectar a TikTok LIVE</button>
+</div>
 
-        function speak(text) {
-            if(!document.getElementById("ttsToggle").checked) return;
-            const msg = new SpeechSynthesisUtterance(text);
-            if(selectedVoice) msg.voice = selectedVoice;
-            window.speechSynthesis.speak(msg);
-        }
+<div id="chat" class="section"></div>
+<div id="gifts" class="section"></div>
 
-        // --- EVENTOS DE SOCKET ---
-        socket.on("chat", (data) => {
-            addFeedItem("💬", data.user, data.message, "var(--neon-purple)");
-            speak(`${data.user} dice: ${data.message}`);
-        });
+<div id="actions" class="section">
+<h3>Crear Acción por Regalo</h3>
+<input id="actionGift" placeholder="Nombre del regalo">
+<input id="actionFile" placeholder="Ruta sonido ej: /media/rosa.mp3">
+<button onclick="createAction()">Crear Acción</button>
+<br><br>
+<h3>Acciones Configuradas</h3>
+<div id="actionList"></div>
+</div>
 
-        socket.on("gift", (data) => {
-            addFeedItem("🎁", data.user, `envió ${data.gift} x${data.amount}`, "var(--neon-green)");
-        });
+</div>
+</div>
+</div>
 
-        function addFeedItem(icon, user, text, color) {
-            const container = document.getElementById("feed-container");
-            const div = document.createElement("div");
-            div.className = "feed-item";
-            div.style.borderLeftColor = color;
-            div.innerHTML = `${icon} <strong>${user}</strong> ${text}`;
-            container.prepend(div);
-        }
+<script>
+const socket = io();
+let tempUsername="";
+let ttsEnabled=true;
+let selectedVoice=null;
 
-        function disconnectLive() {
-            socket.emit("disconnectLive");
-            location.reload();
-        }
-    </script>
+/* ===== CONEXIÓN ===== */
+
+function connectTikTok(){
+const username=document.getElementById("tiktokUser").value.trim();
+const key=document.getElementById("accessKey").value.trim();
+
+if(!username || !key){
+alert("Completa usuario y clave");
+return;
+}
+
+tempUsername=username;
+
+socket.emit("startConnection",{ username, key });
+socket.emit("getActions", username);
+}
+
+socket.on("status",(status)=>{
+
+if(status==="invalid_key"){
+alert("Clave inválida");
+return;
+}
+
+if(status==="connected"){
+document.getElementById("connectionStatus").innerText="Conectado como";
+document.getElementById("connectedUser").innerText=" @" + tempUsername;
+document.getElementById("statusDot").classList.add("connected");
+}
+
+if(status==="disconnected"){
+document.getElementById("connectionStatus").innerText="Desconectado";
+document.getElementById("connectedUser").innerText="";
+document.getElementById("statusDot").classList.remove("connected");
+document.getElementById("profileFrame").style.display="none";
+}
+
+});
+
+/* ===== FOTO PERFIL ===== */
+
+socket.on("connectedUserData",(data)=>{
+if(data.profilePictureUrl){
+document.getElementById("profileImage").src=data.profilePictureUrl;
+document.getElementById("profileFrame").style.display="block";
+}
+});
+
+/* ===== VOICES ===== */
+
+function loadVoices(){
+const voices=speechSynthesis.getVoices();
+const selector=document.getElementById("voiceSelector");
+selector.innerHTML="";
+voices.forEach((voice,index)=>{
+const option=document.createElement("option");
+option.value=index;
+option.textContent=`${voice.name} (${voice.lang})`;
+selector.appendChild(option);
+});
+if(voices.length>0) selectedVoice=voices[0];
+}
+speechSynthesis.onvoiceschanged=loadVoices;
+document.addEventListener("DOMContentLoaded",loadVoices);
+
+document.getElementById("voiceSelector").addEventListener("change",function(){
+const voices=speechSynthesis.getVoices();
+selectedVoice=voices[this.value];
+});
+
+/* ===== TTS ===== */
+
+function toggleTTS(){
+ttsEnabled=!ttsEnabled;
+const toggle=document.getElementById("ttsToggle");
+ttsEnabled ? toggle.classList.add("active") : toggle.classList.remove("active");
+}
+
+function speak(text){
+if(!ttsEnabled) return;
+const speech=new SpeechSynthesisUtterance(text);
+if(selectedVoice) speech.voice=selectedVoice;
+speech.rate=1;
+speech.pitch=1;
+speech.volume=1;
+window.speechSynthesis.speak(speech);
+}
+
+/* ===== CHAT ===== */
+
+socket.on("chat",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`💬 <strong>${data.user}</strong>: ${data.message}`;
+document.getElementById("chat").prepend(div);
+speak(`${data.user} dice ${data.message}`);
+});
+
+/* ===== REGALOS ===== */
+
+socket.on("gift",(data)=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.amount}`;
+document.getElementById("gifts").prepend(div);
+});
+
+/* ===== NAV ===== */
+
+function showSection(id){
+document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+function disconnectLive(){
+socket.emit("disconnectLive");
+}
+</script>
+
 </body>
 </html>

@@ -192,12 +192,13 @@ div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.am
 document.getElementById("gifts").prepend(div);
 });
 
-/* ACCIONES */
+/* ===== CREAR EVENTOS ===== */
 
 function createAction(){
 const gift=document.getElementById("actionGift").value.trim();
 const file=document.getElementById("actionFile").value.trim();
 if(!gift || !file){alert("Completa los campos");return;}
+if(!tempUsername){alert("Primero conecta tu cuenta");return;}
 socket.emit("saveAction",{username: tempUsername,action:{ gift, file }});
 }
 
@@ -216,23 +217,6 @@ container.appendChild(div);
 function deleteAction(index){
 socket.emit("deleteAction",{username: tempUsername,index});
 }
-
-/* LISTA REGALOS */
-
-async function loadGiftList(){
-try{
-const response=await fetch("/gift-list");
-const gifts=await response.json();
-const container=document.getElementById("gifts");
-gifts.forEach(g=>{
-const div=document.createElement("div");
-div.className="card-event";
-div.innerHTML=`🎁 ${g.name}`;
-container.appendChild(div);
-});
-}catch(e){console.log(e);}
-}
-document.addEventListener("DOMContentLoaded",loadGiftList);
 
 /* NAV */
 

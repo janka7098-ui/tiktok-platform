@@ -7,207 +7,33 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Segoe UI',sans-serif;
-}
-
-body{
-background:linear-gradient(160deg,#0b0b18,#050510);
-color:white;
-height:100vh;
-display:flex;
-}
-
-/* ===== DASHBOARD ===== */
-
-#dashboard{
-display:flex;
-flex-direction:column;
-width:100%;
-height:100vh;
-}
-
-/* ===== TOPBAR ===== */
-
-.topbar{
-height:70px;
-background:#0e0e1f;
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 25px;
-border-bottom:1px solid #1f1f3d;
-}
-
-.connection-box{
-display:flex;
-align-items:center;
-gap:12px;
-}
-
-.status-dot{
-width:10px;
-height:10px;
-border-radius:50%;
-background:#ff4d4d;
-}
-
-.status-dot.connected{
-background:#00ff9d;
-box-shadow:0 0 10px #00ff9d;
-}
-
-.profile-frame{
-width:42px;
-height:42px;
-border-radius:50%;
-padding:2px;
-background:linear-gradient(135deg,#7b2ff7,#00ff9d);
-box-shadow:0 0 12px rgba(0,255,157,0.6);
-display:none;
-}
-
-.profile-frame img{
-width:100%;
-height:100%;
-border-radius:50%;
-object-fit:cover;
-background:#000;
-}
-
-/* ===== SIDEBAR ===== */
-
-.container{
-flex:1;
-display:flex;
-}
-
-.sidebar{
-width:230px;
-background:#0c0c1c;
-padding:20px;
-border-right:1px solid #1f1f3d;
-}
-
-.logo-box{
-text-align:center;
-margin-bottom:30px;
-}
-
-.logo-box img{
-width:80px;
-}
-
-.menu-btn{
-width:100%;
-padding:12px;
-margin-bottom:10px;
-background:#161633;
-border-radius:10px;
-color:white;
-cursor:pointer;
-transition:0.3s;
-border:1px solid transparent;
-}
-
-.menu-btn:hover{
-background:#1f1f3d;
-border-color:#7b2ff7;
-box-shadow:0 0 10px rgba(123,47,247,0.3);
-}
-
-/* ===== MAIN ===== */
-
-.main{
-flex:1;
-padding:25px;
-overflow:auto;
-}
-
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:linear-gradient(160deg,#0b0b18,#050510);color:white;height:100vh;display:flex;}
+#dashboard{display:flex;flex-direction:column;width:100%;height:100vh;}
+.topbar{height:70px;background:#0e0e1f;display:flex;align-items:center;justify-content:space-between;padding:0 25px;border-bottom:1px solid #1f1f3d;}
+.connection-box{display:flex;align-items:center;gap:12px;}
+.status-dot{width:10px;height:10px;border-radius:50%;background:#ff4d4d;}
+.status-dot.connected{background:#00ff9d;box-shadow:0 0 10px #00ff9d;}
+.profile-frame{width:42px;height:42px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#7b2ff7,#00ff9d);box-shadow:0 0 12px rgba(0,255,157,0.6);display:none;}
+.profile-frame img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#000;}
+.container{flex:1;display:flex;}
+.sidebar{width:230px;background:#0c0c1c;padding:20px;border-right:1px solid #1f1f3d;}
+.logo-box{text-align:center;margin-bottom:30px;}
+.logo-box img{width:80px;}
+.menu-btn{width:100%;padding:12px;margin-bottom:10px;background:#161633;border-radius:10px;color:white;cursor:pointer;transition:0.3s;border:1px solid transparent;}
+.menu-btn:hover{background:#1f1f3d;border-color:#7b2ff7;box-shadow:0 0 10px rgba(123,47,247,0.3);}
+.main{flex:1;padding:25px;overflow:auto;}
 .section{display:none;}
 .section.active{display:block;}
-
-.card-event{
-background:#161633;
-padding:14px;
-border-radius:10px;
-margin-bottom:12px;
-border-left:4px solid #00ff9d;
-box-shadow:0 0 10px rgba(0,255,157,0.1);
-}
-
-.action-card{
-background:#161633;
-padding:12px;
-border-radius:10px;
-margin-bottom:10px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-border-left:4px solid #7b2ff7;
-}
-
-/* ===== TTS SWITCH ===== */
-
-.tts-switch{
-width:60px;
-height:30px;
-background:#333;
-border-radius:50px;
-position:relative;
-cursor:pointer;
-transition:0.3s;
-}
-
-.tts-switch.active{
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-}
-
-.tts-circle{
-width:24px;
-height:24px;
-background:white;
-border-radius:50%;
-position:absolute;
-top:3px;
-left:3px;
-transition:0.3s;
-}
-
-.tts-switch.active .tts-circle{
-left:33px;
-}
-
-/* Inputs */
-
-input{
-width:100%;
-padding:12px;
-margin-bottom:12px;
-background:#1a1a35;
-border:1px solid #222;
-border-radius:8px;
-color:white;
-}
-
-button{
-padding:12px;
-background:linear-gradient(90deg,#7b2ff7,#00ff9d);
-border:none;
-border-radius:8px;
-color:white;
-cursor:pointer;
-font-weight:bold;
-transition:0.3s;
-}
-
-button:hover{
-transform:scale(1.05);
-box-shadow:0 0 15px #00ff9d;
-}
+.card-event{background:#161633;padding:14px;border-radius:10px;margin-bottom:12px;border-left:4px solid #00ff9d;}
+.action-card{background:#161633;padding:12px;border-radius:10px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;border-left:4px solid #7b2ff7;}
+.tts-switch{width:60px;height:30px;background:#333;border-radius:50px;position:relative;cursor:pointer;transition:0.3s;}
+.tts-switch.active{background:linear-gradient(90deg,#7b2ff7,#00ff9d);}
+.tts-circle{width:24px;height:24px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;transition:0.3s;}
+.tts-switch.active .tts-circle{left:33px;}
+input{width:100%;padding:12px;margin-bottom:12px;background:#1a1a35;border:1px solid #222;border-radius:8px;color:white;}
+button{padding:12px;background:linear-gradient(90deg,#7b2ff7,#00ff9d);border:none;border-radius:8px;color:white;cursor:pointer;font-weight:bold;transition:0.3s;}
+button:hover{transform:scale(1.05);box-shadow:0 0 15px #00ff9d;}
 </style>
 </head>
 
@@ -216,43 +42,34 @@ box-shadow:0 0 15px #00ff9d;
 <div id="dashboard">
 
 <div class="topbar">
-
 <div class="connection-box">
 <span id="statusDot" class="status-dot"></span>
 <strong id="connectionStatus">Desconectado</strong>
 <span id="connectedUser" style="color:#00ff9d;font-weight:bold;"></span>
-
 <div id="profileFrame" class="profile-frame">
 <img id="profileImage">
 </div>
 </div>
 
 <div style="display:flex;align-items:center;gap:20px;">
-
 <div id="ttsToggle" class="tts-switch active" onclick="toggleTTS()">
 <div class="tts-circle"></div>
 </div>
-
 <select id="voiceSelector" style="padding:6px;background:#161633;color:white;border:1px solid #222;border-radius:8px;"></select>
-
 <button onclick="disconnectLive()">Desconectar</button>
-
 </div>
 </div>
 
 <div class="container">
 
 <div class="sidebar">
-
 <div class="logo-box">
 <img src="Logo.png">
 </div>
-
 <button class="menu-btn" onclick="showSection('conexion')">🔌 Conexión</button>
 <button class="menu-btn" onclick="showSection('chat')">💬 Chat</button>
 <button class="menu-btn" onclick="showSection('gifts')">🎁 Regalos</button>
 <button class="menu-btn" onclick="showSection('actions')">⚡ Acciones</button>
-
 </div>
 
 <div class="main">
@@ -287,46 +104,33 @@ let tempUsername="";
 let ttsEnabled=true;
 let selectedVoice=null;
 
-/* ===== CONEXIÓN ===== */
+/* CONEXIÓN */
 
 function connectTikTok(){
 const username=document.getElementById("tiktokUser").value.trim();
 const key=document.getElementById("accessKey").value.trim();
-
-if(!username || !key){
-alert("Completa usuario y clave");
-return;
-}
-
+if(!username || !key){alert("Completa usuario y clave");return;}
 tempUsername=username;
-
 socket.emit("startConnection",{ username, key });
 socket.emit("getActions", username);
 }
 
 socket.on("status",(status)=>{
-
-if(status==="invalid_key"){
-alert("Clave inválida");
-return;
-}
-
+if(status==="invalid_key"){alert("Clave inválida");return;}
 if(status==="connected"){
 document.getElementById("connectionStatus").innerText="Conectado como";
 document.getElementById("connectedUser").innerText=" @" + tempUsername;
 document.getElementById("statusDot").classList.add("connected");
 }
-
 if(status==="disconnected"){
 document.getElementById("connectionStatus").innerText="Desconectado";
 document.getElementById("connectedUser").innerText="";
 document.getElementById("statusDot").classList.remove("connected");
 document.getElementById("profileFrame").style.display="none";
 }
-
 });
 
-/* ===== FOTO PERFIL ===== */
+/* AVATAR */
 
 socket.on("connectedUserData",(data)=>{
 if(data.profilePictureUrl){
@@ -335,7 +139,7 @@ document.getElementById("profileFrame").style.display="block";
 }
 });
 
-/* ===== VOICES ===== */
+/* VOICES */
 
 function loadVoices(){
 const voices=speechSynthesis.getVoices();
@@ -351,31 +155,25 @@ if(voices.length>0) selectedVoice=voices[0];
 }
 speechSynthesis.onvoiceschanged=loadVoices;
 document.addEventListener("DOMContentLoaded",loadVoices);
-
 document.getElementById("voiceSelector").addEventListener("change",function(){
-const voices=speechSynthesis.getVoices();
-selectedVoice=voices[this.value];
+selectedVoice=speechSynthesis.getVoices()[this.value];
 });
 
-/* ===== TTS ===== */
+/* TTS */
 
 function toggleTTS(){
 ttsEnabled=!ttsEnabled;
-const toggle=document.getElementById("ttsToggle");
-ttsEnabled ? toggle.classList.add("active") : toggle.classList.remove("active");
+document.getElementById("ttsToggle").classList.toggle("active");
 }
 
 function speak(text){
 if(!ttsEnabled) return;
 const speech=new SpeechSynthesisUtterance(text);
 if(selectedVoice) speech.voice=selectedVoice;
-speech.rate=1;
-speech.pitch=1;
-speech.volume=1;
 window.speechSynthesis.speak(speech);
 }
 
-/* ===== CHAT ===== */
+/* CHAT */
 
 socket.on("chat",(data)=>{
 const div=document.createElement("div");
@@ -385,7 +183,7 @@ document.getElementById("chat").prepend(div);
 speak(`${data.user} dice ${data.message}`);
 });
 
-/* ===== REGALOS ===== */
+/* REGALOS */
 
 socket.on("gift",(data)=>{
 const div=document.createElement("div");
@@ -394,7 +192,49 @@ div.innerHTML=`🎁 <strong>${data.user}</strong> envió ${data.gift} x${data.am
 document.getElementById("gifts").prepend(div);
 });
 
-/* ===== NAV ===== */
+/* ACCIONES */
+
+function createAction(){
+const gift=document.getElementById("actionGift").value.trim();
+const file=document.getElementById("actionFile").value.trim();
+if(!gift || !file){alert("Completa los campos");return;}
+socket.emit("saveAction",{username: tempUsername,action:{ gift, file }});
+}
+
+socket.on("actionsUpdated",(actions)=>{
+const container=document.getElementById("actionList");
+container.innerHTML="";
+actions.forEach((a,index)=>{
+const div=document.createElement("div");
+div.className="action-card";
+div.innerHTML=`<span>🎁 ${a.gift}</span>
+<button onclick="deleteAction(${index})">❌</button>`;
+container.appendChild(div);
+});
+});
+
+function deleteAction(index){
+socket.emit("deleteAction",{username: tempUsername,index});
+}
+
+/* LISTA REGALOS */
+
+async function loadGiftList(){
+try{
+const response=await fetch("/gift-list");
+const gifts=await response.json();
+const container=document.getElementById("gifts");
+gifts.forEach(g=>{
+const div=document.createElement("div");
+div.className="card-event";
+div.innerHTML=`🎁 ${g.name}`;
+container.appendChild(div);
+});
+}catch(e){console.log(e);}
+}
+document.addEventListener("DOMContentLoaded",loadGiftList);
+
+/* NAV */
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));

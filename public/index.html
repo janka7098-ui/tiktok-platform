@@ -37,7 +37,6 @@
             box-shadow: 0 0 30px rgba(57, 255, 20, 0.1);
         }
 
-        /* Estilo mejorado del Select (Imagen 2) */
         .gift-selector {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238A2BE2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
@@ -109,7 +108,7 @@
         </div>
 
         <div class="flex gap-4 items-center">
-            <div class="flex flex-col gap-1">
+            <div id="login-inputs" class="flex flex-col gap-1">
                 <input id="username" type="text" placeholder="@usuario_tiktok" class="bg-black/60 border border-zinc-800 px-4 py-2 rounded-lg text-sm focus:border-purple-500 outline-none w-56 transition-all font-medium">
                 <input id="key" type="password" placeholder="Access Key" class="bg-black/60 border border-zinc-800 px-4 py-2 rounded-lg text-sm focus:border-purple-500 outline-none w-56 transition-all font-medium">
             </div>
@@ -208,7 +207,6 @@
         const synth = window.speechSynthesis;
         let voices = [];
 
-        // CARGAR VOCES TTS
         function loadVoices() {
             voices = synth.getVoices();
             const voiceSelect = document.getElementById('tts-voice');
@@ -227,12 +225,10 @@
             synth.speak(utter);
         }
 
-        // Volumen UI
         document.getElementById('tts-volume').oninput = (e) => {
             document.getElementById('vol-perc').innerText = Math.round(e.target.value * 100) + "%";
         };
 
-        // --- LÓGICA DE MODOS ---
         let currentMode = 'mp3';
         function setMode(mode) {
             currentMode = mode;
@@ -259,8 +255,8 @@
         const btnDisconnect = document.getElementById('btn-disconnect');
         const statusText = document.getElementById('connection-status');
         const statusPulse = document.getElementById('status-pulse');
+        const loginInputs = document.getElementById('login-inputs');
 
-        // BOTÓN GUARDAR
         document.getElementById('btn-save-action').onclick = () => {
             const username = document.getElementById('username').value;
             const gift = document.getElementById('gift-select').value;
@@ -286,12 +282,20 @@
             }
         };
 
+        // EVENTO CONECTAR
         btnConnect.onclick = () => {
             const username = document.getElementById('username').value;
             const key = document.getElementById('key').value;
             if(!username || !key) return alert("Faltan datos");
             loader.style.display = 'flex';
             socket.emit("startConnection", { username, key });
+        };
+
+        // EVENTO DESCONECTAR (AÑADIDO)
+        btnDisconnect.onclick = () => {
+            const username = document.getElementById('username').value;
+            loader.style.display = 'flex';
+            socket.emit("stopConnection", { username });
         };
 
         socket.on("status", (status) => {
@@ -301,9 +305,18 @@
                 statusText.className = "text-[11px] uppercase tracking-[4px] text-green-500 font-bold italic";
                 statusPulse.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping";
                 btnConnect.classList.add('hidden');
+                loginInputs.classList.add('hidden'); // Ocultamos inputs para limpieza
                 btnDisconnect.classList.remove('hidden');
                 speak("Sistema Nexora Ultra activado.");
                 socket.emit("getActions", document.getElementById('username').value);
+            } else if (status === "disconnected") {
+                statusText.innerText = "DESCONECTADO";
+                statusText.className = "text-[11px] uppercase tracking-[4px] text-red-500 font-bold italic";
+                statusPulse.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                btnConnect.classList.remove('hidden');
+                loginInputs.classList.remove('hidden');
+                btnDisconnect.classList.add('hidden');
+                speak("Sistema fuera de línea.");
             }
         });
 
@@ -317,8 +330,6 @@
                 </div>
                 <span class="text-2xl font-black text-green-400">x${data.amount}</span>`;
             document.getElementById('gift-container').prepend(alertDiv);
-            
-            // TTS de regalo
             speak(`¡Gracias ${data.user} por enviar ${data.amount} ${data.gift}!`);
 
             const hist = document.createElement('div');

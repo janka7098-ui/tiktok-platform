@@ -170,39 +170,40 @@
 
     <div id="loader">
         <div class="spinner"></div>
-        <p class="mt-4 text-cyan-500 font-bold tracking-widest animate-pulse uppercase">Iniciando Core...</p>
+        <p class="mt-4 text-cyan-500 font-bold tracking-widest animate-pulse uppercase">Procesando Datos...</p>
     </div>
 
     <nav class="max-w-[1800px] mx-auto mb-4 flex items-center justify-between glass p-4">
         <div class="flex items-center gap-4">
-            <img src="/Logo.png" alt="Logo" class="h-[60px] w-[60px] object-contain rounded-full border border-white/10 shadow-lg" onerror="this.src='https://via.placeholder.com/60?text=NX'">
+            <img id="host-avatar" src="/Logo.png" alt="Logo" class="h-[60px] w-[60px] object-cover rounded-full border-2 border-transparent transition-all duration-500" onerror="this.src='/Logo.png'">
             <div class="flex flex-col">
-                <h1 class="text-3xl font-black italic tracking-tighter leading-none uppercase">NEXORA <span class="text-cyan-500">ARENA</span></h1>
+                <h1 id="host-title" class="text-3xl font-black italic tracking-tighter leading-none uppercase">NEXORA <span class="text-cyan-500">ULTRA</span></h1>
                 <div class="flex items-center gap-2 mt-1">
                     <div id="status-pulse" class="w-2 h-2 rounded-full bg-red-500"></div>
-                    <span id="connection-status" class="text-[10px] uppercase tracking-[3px] text-red-500 font-bold italic">Offline</span>
+                    <span id="connection-status" class="text-[10px] uppercase tracking-[3px] text-red-500 font-bold italic">Desconectado</span>
                 </div>
             </div>
         </div>
 
         <div class="flex gap-4 items-center">
-            <input id="username" type="text" placeholder="@usuario" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-40 font-medium">
-            <input id="key" type="password" placeholder="Key" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-32 font-medium">
+            <input id="username" type="text" placeholder="@usuario_tiktok" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-40 font-medium">
+            <input id="key" type="password" placeholder="Access Key" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-32 font-medium">
             <button id="btn-connect" class="bg-cyan-600 hover:bg-cyan-400 text-black px-6 py-2 rounded-lg font-black text-xs transition-all uppercase tracking-widest">Conectar</button>
             <button id="btn-disconnect" class="hidden bg-zinc-900 border border-red-600 text-red-500 px-6 py-2 rounded-lg font-black text-xs transition-all uppercase tracking-widest">Salir</button>
         </div>
     </nav>
 
     <div class="max-w-[1800px] mx-auto mb-6 flex gap-2 glass p-1">
-        <button onclick="showTab('dashboard')" id="tab-btn-dashboard" class="tab-btn flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
-            <i data-lucide="settings" class="w-4 h-4 text-purple-500"></i> Dashboard Maestro
+        <button onclick="showTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
+            <i data-lucide="layout-dashboard" class="w-4 h-4 text-purple-500"></i> Dashboard Maestro
         </button>
-        <button onclick="showTab('game')" id="tab-btn-game" class="tab-btn active flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
+        <button onclick="showTab('game')" id="tab-btn-game" class="tab-btn flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
             <i data-lucide="swords" class="w-4 h-4 text-cyan-500 animate-pulse"></i> Arena de Batalla
         </button>
     </div>
 
-    <main id="view-dashboard" class="hidden max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
+    <main id="view-dashboard" class="max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
+        
         <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
             <section class="glass p-6">
                 <h2 class="text-cyan-400 font-bold uppercase text-xs mb-4 flex items-center gap-2 italic tracking-widest"><i data-lucide="upload-cloud" class="w-4"></i> Configurar Alerta</h2>
@@ -233,14 +234,18 @@
             </section>
         </div>
 
-        <div class="col-span-12 lg:col-span-6 grid grid-cols-2 gap-6">
+        <div class="col-span-12 lg:col-span-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="glass flex flex-col overflow-hidden">
-                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400"><i data-lucide="message-square" class="inline w-3 mr-1"></i> CHAT EN VIVO</div>
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400"><i data-lucide="message-square" class="inline w-3 mr-1"></i> CHAT</div>
                 <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
             </div>
             <div class="glass flex flex-col overflow-hidden">
-                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-green-400"><i data-lucide="gift" class="inline w-3 mr-1"></i> REGALOS RECIENTES</div>
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-green-400"><i data-lucide="gift" class="inline w-3 mr-1"></i> REGALOS</div>
                 <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            </div>
+            <div class="glass flex flex-col overflow-hidden">
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-red-500"><i data-lucide="flame" class="inline w-3 mr-1"></i> TOP LIKES</div>
+                <div id="ranking-container" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
             </div>
         </div>
 
@@ -249,20 +254,21 @@
                 <h2 class="text-xs font-bold uppercase mb-4 text-zinc-500 italic">Controles Maestro</h2>
                 <div class="space-y-6">
                     <div>
-                        <div class="flex justify-between mb-1">
-                            <label class="text-[10px] text-zinc-500 uppercase">Volumen Voces (TTS)</label>
-                            <span id="vol-perc" class="text-[10px] text-cyan-400 font-bold">70%</span>
-                        </div>
-                        <input id="tts-volume" type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-500 cursor-pointer">
-                    </div>
-                    <div>
                         <div class="flex items-center gap-2 justify-between mb-2">
-                            <label class="text-[10px] text-zinc-500 uppercase">Voz de Narración</label>
+                            <label class="text-[10px] text-zinc-500 uppercase">Activar Voz Bot (TTS)</label>
                             <input type="checkbox" id="tts-enabled" checked class="accent-cyan-500 h-4 w-4">
                         </div>
                         <select id="tts-voice" class="gift-selector w-full bg-black/40 border border-zinc-800 p-3 rounded-lg text-xs text-white outline-none focus:border-cyan-500"></select>
                     </div>
-                    
+
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <label class="text-[10px] text-zinc-500 uppercase">Volumen General</label>
+                            <span id="vol-perc" class="text-[10px] text-cyan-400 font-bold">70%</span>
+                        </div>
+                        <input id="tts-volume" type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-500 cursor-pointer">
+                    </div>
+
                     <div class="pt-4 border-t border-zinc-800 space-y-3">
                         <label class="text-[10px] text-zinc-500 uppercase block font-bold"><i data-lucide="mic" class="inline w-3 mr-1"></i> Filtro de Voz (TTS)</label>
                         
@@ -280,13 +286,25 @@
                             <input type="radio" name="tts-filter" value="vip" class="accent-purple-500 w-4 h-4 cursor-pointer">
                             <span class="text-[11px] text-purple-400 font-bold uppercase">Solo Mods / Subs</span>
                         </label>
+
+                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition">
+                            <input type="radio" name="tts-filter" value="gifters" class="accent-yellow-400 w-4 h-4 cursor-pointer">
+                            <span class="text-[11px] text-yellow-400 font-bold uppercase">Solo Donadores (Regalos)</span>
+                        </label>
                     </div>
                 </div>
+            </section>
+            
+            <section class="glass flex flex-col flex-1 overflow-hidden">
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-center">
+                    <h2 class="text-xs font-bold uppercase tracking-widest italic text-zinc-500">Historial de Sesión</h2>
+                </div>
+                <div id="gift-history" class="flex-1 overflow-y-auto p-3 space-y-2 text-[11px] font-mono text-zinc-500"></div>
             </section>
         </div>
     </main>
 
-    <main id="view-game" class="max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
+    <main id="view-game" class="hidden max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
         
         <div class="col-span-12 lg:col-span-9 glass relative p-1 flex flex-col overflow-hidden group">
             <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl pointer-events-none z-10 group-hover:border-cyan-500/50 transition-colors"></div>
@@ -298,7 +316,6 @@
             <div class="flex-1 w-full h-full relative" id="canvas-wrapper">
                 
                 <div id="arena-timer">03:00</div>
-                
                 <canvas id="game-canvas"></canvas>
 
                 <div id="start-match-overlay">
@@ -311,10 +328,7 @@
 
                 <div id="end-match-overlay">
                     <h2 class="text-6xl font-black italic text-cyan-400 mb-8 uppercase tracking-widest" style="text-shadow: 0 0 30px rgba(0,255,255,0.4);">¡FIN DE LA RONDA!</h2>
-                    
-                    <div id="top-3-container" class="flex flex-col gap-4 mb-10 w-full max-w-2xl">
-                        </div>
-
+                    <div id="top-3-container" class="flex flex-col gap-4 mb-10 w-full max-w-2xl"></div>
                     <div class="flex flex-col items-center">
                         <p class="text-xl text-zinc-400 font-bold uppercase tracking-widest">Preparando nueva sala en</p>
                         <span id="restart-countdown" class="text-red-500 text-6xl font-black mt-2 drop-shadow-lg">5</span>
@@ -347,22 +361,18 @@
                     <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Poder con el que entra un nuevo jugador">Poder Inicial</span>
                     <input type="number" id="cfg-init" value="50" min="10" class="cfg-input">
                 </div>
-                
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad general de movimiento">Velocidad Base</span>
                     <input type="number" id="cfg-speed" value="4" min="1" max="20" class="cfg-input">
                 </div>
-                
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Porcentaje de puntos robados al chocar (Ej: 5%)">% Robo (Choque)</span>
                     <input type="number" id="cfg-steal" value="5" min="1" max="100" class="cfg-input">
                 </div>
-                
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] text-purple-400 uppercase font-bold" title="Poder otorgado por cada 1 unidad de regalo">Poder x Regalo</span>
                     <input type="number" id="cfg-gift" value="100" min="10" class="cfg-input border-purple-500/50 text-purple-400">
                 </div>
-
                 <div class="flex items-center justify-between">
                     <span class="text-[10px] text-purple-400 uppercase font-bold" title="Segundos que dura el modo Furia">Duración Furia (s)</span>
                     <input type="number" id="cfg-fury-time" value="10" min="1" class="cfg-input border-purple-500/50 text-purple-400">
@@ -374,6 +384,9 @@
     <script>
         const socket = io();
         lucide.createIcons();
+
+        // REGISTRO DE DONADORES EN LA SESIÓN ACTUAL
+        const giftersSet = new Set();
 
         // --- SISTEMA TTS Y VOLUMEN ---
         const synth = window.speechSynthesis;
@@ -468,12 +481,15 @@
             document.getElementById('loader').style.display = 'none';
             const sText = document.getElementById('connection-status');
             const sPulse = document.getElementById('status-pulse');
+            const hostAvatar = document.getElementById('host-avatar');
+            const hostTitle = document.getElementById('host-title');
             
             if (status === "connected") {
                 sText.innerText = "SISTEMA ONLINE"; sText.className = "text-[10px] uppercase tracking-[3px] text-cyan-400 font-bold italic";
                 sPulse.className = "w-2 h-2 rounded-full bg-cyan-400 animate-ping";
                 document.getElementById('btn-connect').classList.add('hidden');
                 document.getElementById('btn-disconnect').classList.remove('hidden');
+                hostAvatar.classList.add('border-cyan-500', 'shadow-[0_0_15px_rgba(0,255,255,0.4)]');
                 speak("Sistemas en línea. Sala de espera abierta.");
                 socket.emit("getActions", document.getElementById('username').value);
             } else {
@@ -481,12 +497,25 @@
                 sPulse.className = "w-2 h-2 rounded-full bg-red-500";
                 document.getElementById('btn-connect').classList.remove('hidden');
                 document.getElementById('btn-disconnect').classList.add('hidden');
+                
+                hostAvatar.src = "/Logo.png";
+                hostAvatar.classList.remove('border-cyan-500', 'shadow-[0_0_15px_rgba(0,255,255,0.4)]');
+                hostTitle.innerHTML = `NEXORA <span class="text-cyan-500">ULTRA</span>`;
+            }
+        });
+
+        socket.on("connectedUserData", (data) => {
+            if(data.profilePictureUrl) {
+                document.getElementById('host-avatar').src = data.profilePictureUrl;
+            }
+            if(data.username) {
+                document.getElementById('host-title').innerHTML = `${data.username} <span class="text-cyan-500 text-lg">LIVE</span>`;
             }
         });
 
 
         /* ==========================================================================
-           💥 MOTOR DE FÍSICAS, SISTEMA DE PARTIDAS Y AVATARES 💥
+           💥 MOTOR DE FÍSICAS Y SISTEMA DE PARTIDAS 💥
            ========================================================================== */
         
         const arenaCfg = {
@@ -498,7 +527,6 @@
             matchTimeMin: 3 
         };
 
-        // Escuchar cambios en los inputs UI
         document.getElementById('cfg-init').oninput = e => arenaCfg.initialPower = Number(e.target.value);
         document.getElementById('cfg-speed').oninput = e => arenaCfg.baseSpeed = Number(e.target.value);
         document.getElementById('cfg-steal').oninput = e => arenaCfg.stealPercent = Number(e.target.value) / 100;
@@ -509,8 +537,7 @@
             if(gameState === 'waiting') updateLobbyTimer();
         };
 
-        // --- SISTEMA DE ESTADO DE PARTIDA Y CRONÓMETRO ---
-        let gameState = 'waiting'; // 'waiting' (Lobby), 'playing' (Combate), 'ended' (Top 3)
+        let gameState = 'waiting'; 
         let timeRemaining = 0; 
         let matchInterval;
 
@@ -521,7 +548,6 @@
             document.getElementById('arena-timer').style.textShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
         }
 
-        // Mostrar la pantalla de Start (Lobby)
         function showStartScreen() {
             gameState = 'waiting';
             document.getElementById('end-match-overlay').style.display = 'none';
@@ -532,7 +558,6 @@
             updateUILeaderboard();
         }
 
-        // Iniciar la ronda
         function startMatch() {
             gameState = 'playing';
             timeRemaining = arenaCfg.matchTimeMin * 60;
@@ -561,7 +586,7 @@
                 timerEl.style.color = '#FF3131';
                 timerEl.style.textShadow = '0 0 30px rgba(255, 49, 49, 0.9)';
                 timerEl.classList.add('animate-pulse');
-                if (timeRemaining <= 5) speak(timeRemaining.toString()); // Cuenta regresiva voz
+                if (timeRemaining <= 5) speak(timeRemaining.toString()); 
             } else {
                 timerEl.style.color = 'var(--cyan)';
                 timerEl.style.textShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
@@ -612,7 +637,7 @@
                 document.getElementById('restart-countdown').innerText = restartTimer;
                 if (restartTimer <= 0) {
                     clearInterval(restartInterval);
-                    showStartScreen(); // Volver al Lobby
+                    showStartScreen(); 
                 }
             }, 1000);
         }
@@ -853,20 +878,25 @@
             `).join('');
         }
 
-        // --- LÓGICA DE FILTROS ---
+
+        // --- LÓGICA DEL FILTRO DE VOZ Y CHAT VISUAL ---
         function checkVoicePermission(data) {
             const filter = document.querySelector('input[name="tts-filter"]:checked').value;
             if (filter === 'all') return true;
             if (filter === 'followers' && (data.isFollower || data.isMod || data.isSub)) return true;
             if (filter === 'vip' && (data.isMod || data.isSub)) return true;
+            if (filter === 'gifters' && giftersSet.has(data.user)) return true; // NUEVO FILTRO DONADORES
             return false;
         }
 
+        // GENERAR ETIQUETAS VISUALES PARA EL CHAT
         function getBadges(data) {
             let badges = '';
             if (data.isMod) badges += '<span class="bg-red-500 text-black text-[8px] px-1 rounded font-bold mr-1">MOD</span>';
             if (data.isSub) badges += '<span class="bg-purple-500 text-white text-[8px] px-1 rounded font-bold mr-1">SUB</span>';
             if (data.isFollower && !data.isMod && !data.isSub) badges += '<span class="bg-green-500 text-black text-[8px] px-1 rounded font-bold mr-1">SIGUE</span>';
+            // NUEVA ETIQUETA DONADOR
+            if (giftersSet.has(data.user)) badges += '<span class="bg-yellow-500 text-black text-[8px] px-1 rounded font-bold mr-1">DONADOR</span>';
             return badges;
         }
 
@@ -897,7 +927,23 @@
         });
 
         socket.on("singleLike", (data) => {
+            data.isFollower = true; 
             handleUserInteraction(data.user, 2, data.avatar); 
+        });
+
+        socket.on("likeRanking", (ranking) => {
+            const container = document.getElementById('ranking-container');
+            if(container) {
+                container.innerHTML = ranking.map(user => `
+                    <div class="flex items-center justify-between bg-black/40 p-3 rounded-lg border border-red-500/20 hover:border-red-500/50 transition-colors">
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="text-red-500 font-black text-sm">#${user.rank}</span>
+                            <span class="font-bold text-zinc-300 truncate max-w-[100px]">${user.user}</span>
+                        </div>
+                        <span class="text-red-400 font-mono text-[11px] bg-red-500/10 px-2 py-1 rounded font-bold">${user.likes} ❤</span>
+                    </div>
+                `).join('');
+            }
         });
 
         socket.on("chat", (data) => {
@@ -911,17 +957,19 @@
                 <div>${badges}<span class="text-purple-400 font-bold">${data.user}:</span> <span class="text-zinc-300">${data.message}</span></div>
             `;
             document.getElementById('chat-container').prepend(div);
-            
-            // LA VOZ DEL BOT RESPETA EL FILTRO AHORA
+
+            // SOLO LEE EL MENSAJE SI PASA EL FILTRO
             if (canSpeak) {
                 speak(`${data.user} dice: ${data.message}`);
             }
             
-            // SIEMPRE ENTRAN A LA ARENA
             handleUserInteraction(data.user, 1, data.avatar);
         });
 
         socket.on("gift", (data) => {
+            // REGISTRAMOS AL USUARIO COMO DONADOR PARA EL FILTRO DE VOZ
+            giftersSet.add(data.user);
+            
             const div = document.createElement('div');
             div.className = "bg-green-900/20 p-2 rounded-lg border border-green-500/30 flex items-center gap-2 animate-bounce";
             div.innerHTML = `
@@ -929,6 +977,11 @@
                 <img src="${data.image}" class="w-8 h-8 object-contain" onerror="this.src='https://via.placeholder.com/32?text=🎁'">
                 <div class="text-[10px]"><b class="text-white">${data.user}</b> x${data.amount} <span class="text-green-400">${data.gift}</span></div>`;
             document.getElementById('gift-container').prepend(div);
+
+            const hist = document.createElement('div');
+            hist.innerText = `[${new Date().toLocaleTimeString()}] ${data.user} envió ${data.amount} ${data.gift}`;
+            const histContainer = document.getElementById('gift-history');
+            if(histContainer) histContainer.prepend(hist);
             
             const powerAdded = data.amount * arenaCfg.giftMultiplier;
             handleUserInteraction(data.user, powerAdded, data.avatar); 
@@ -941,5 +994,7 @@
         });
 
     </script>
+</body>
+</html>
 </body>
 </html>

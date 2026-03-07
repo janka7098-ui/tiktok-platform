@@ -121,7 +121,6 @@
         .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Estilo para los botones de copiar link */
         .btn-copy-link {
             background: rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.1);
@@ -142,28 +141,25 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const overlayType = urlParams.get('overlay'); // arena, chat, gifts, likes
+        const overlayType = urlParams.get('overlay'); 
         const isOverlay = !!overlayType;
 
         if(isOverlay) {
-            // Fondo transparente general para OBS
             document.documentElement.style.background = 'transparent';
             document.body.style.background = 'transparent';
             document.body.style.backgroundImage = 'none';
             document.body.className = 'm-0 p-0 w-screen h-screen overflow-hidden bg-transparent';
             
             document.addEventListener("DOMContentLoaded", () => {
-                // Ocultar toda la interfaz del Dashboard Maestro
                 document.getElementById('nav-header').style.display = 'none';
                 document.getElementById('tabs-container').style.display = 'none';
                 document.getElementById('view-dashboard').style.display = 'none';
                 document.getElementById('view-game').style.display = 'none';
                 
-                // Forzar a desactivar el Text-To-Speech en ventanas de OBS para que no haga eco
                 const ttsCheckbox = document.getElementById('tts-enabled');
                 if(ttsCheckbox) ttsCheckbox.checked = false; 
 
-                // --- 1. OVERLAY DE LA ARENA ---
+                // --- OVERLAY: ARENA ---
                 if (overlayType === 'arena') {
                     const viewGame = document.getElementById('view-game');
                     viewGame.style.display = 'block';
@@ -179,12 +175,11 @@
                     document.getElementById('game-canvas').style.boxShadow = 'none';
                     document.getElementById('sidebar-game').style.display = 'none';
                     
-                    // Ocultar botón de copiar link en el overlay
                     const copyBtnArena = document.getElementById('btn-copy-arena');
                     if(copyBtnArena) copyBtnArena.style.display = 'none';
                 } 
-                // --- 2. OVERLAYS DE WIDGETS (CHAT, REGALOS, LIKES) ---
-                else if (overlayType === 'chat' || overlayType === 'gifts' || overlayType === 'likes') {
+                // --- OVERLAY: WIDGETS ---
+                else if (['chat', 'gifts', 'likes', 'donators'].includes(overlayType)) {
                     const widgetContainer = document.createElement('div');
                     widgetContainer.className = 'w-full h-full p-4 flex flex-col justify-start overflow-hidden bg-transparent';
                     document.body.appendChild(widgetContainer);
@@ -193,6 +188,7 @@
                     if (overlayType === 'chat') targetId = 'chat-container';
                     if (overlayType === 'gifts') targetId = 'gift-container';
                     if (overlayType === 'likes') targetId = 'ranking-container';
+                    if (overlayType === 'donators') targetId = 'donators-container';
                     
                     const targetEl = document.getElementById(targetId);
                     if(targetEl) {
@@ -277,7 +273,7 @@
             </section>
         </div>
 
-        <div class="col-span-1 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="col-span-1 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full">
                 <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400 flex justify-between items-center">
@@ -295,12 +291,20 @@
                 <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
             </div>
             
-            <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full sm:col-span-2 md:col-span-1">
+            <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full">
                 <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-red-500 flex justify-between items-center">
-                    <span class="flex items-center"><i data-lucide="flame" class="inline w-3 mr-1"></i> LIKES</span> 
+                    <span class="flex items-center"><i data-lucide="flame" class="inline w-3 mr-1"></i> TOP LIKES</span> 
                     <button onclick="copyOverlayUrl('likes')" class="btn-copy-link" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
                 </div>
                 <div id="ranking-container" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+            </div>
+
+            <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full">
+                <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-yellow-500 flex justify-between items-center">
+                    <span class="flex items-center"><i data-lucide="award" class="inline w-3 mr-1"></i> TOP DONADORES</span> 
+                    <button onclick="copyOverlayUrl('donators')" class="btn-copy-link" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
+                </div>
+                <div id="donators-container" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
             </div>
 
         </div>
@@ -310,17 +314,11 @@
                 <h2 class="text-xs font-bold uppercase mb-4 text-zinc-500 italic">Controles Maestro</h2>
                 <div class="space-y-6">
                     <div>
-                        <div class="flex items-center gap-2 justify-between mb-2">
-                            <label class="text-[10px] text-zinc-500 uppercase">Activar Voz Bot (TTS)</label>
-                            <input type="checkbox" id="tts-enabled" checked class="accent-cyan-500 h-4 w-4">
-                        </div>
+                        <div class="flex items-center gap-2 justify-between mb-2"><label class="text-[10px] text-zinc-500 uppercase">Activar Voz Bot (TTS)</label><input type="checkbox" id="tts-enabled" checked class="accent-cyan-500 h-4 w-4"></div>
                         <select id="tts-voice" class="gift-selector w-full bg-black/40 border border-zinc-800 p-3 rounded-lg text-xs text-white outline-none focus:border-cyan-500"></select>
                     </div>
                     <div>
-                        <div class="flex justify-between mb-1">
-                            <label class="text-[10px] text-zinc-500 uppercase">Volumen General</label>
-                            <span id="vol-perc" class="text-[10px] text-cyan-400 font-bold">70%</span>
-                        </div>
+                        <div class="flex justify-between mb-1"><label class="text-[10px] text-zinc-500 uppercase">Volumen General</label><span id="vol-perc" class="text-[10px] text-cyan-400 font-bold">70%</span></div>
                         <input id="tts-volume" type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-500 cursor-pointer">
                     </div>
                     <div class="pt-4 border-t border-zinc-800 space-y-3">
@@ -369,6 +367,11 @@
         </div>
 
         <div id="sidebar-game" class="col-span-1 lg:col-span-3 flex flex-col gap-6">
+            
+            <button onclick="endMatchManual()" class="w-full bg-red-900/40 text-red-500 border border-red-500/50 hover:bg-red-600 hover:text-white font-black py-4 rounded-xl text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(255,0,0,0.2)]">
+                <i data-lucide="stop-circle" class="w-5 h-5"></i> Finalizar Batalla
+            </button>
+
             <div class="glass flex-1 flex flex-col overflow-hidden relative min-h-[300px] lg:min-h-0">
                 <div class="p-4 border-b border-zinc-900 bg-gradient-to-r from-black/60 to-transparent flex justify-between items-center z-10">
                     <h2 class="text-cyan-400 font-black uppercase tracking-widest italic text-sm"><i data-lucide="crown" class="inline w-4 mr-1 pb-1"></i> Top Dominantes</h2><span id="player-count" class="text-[10px] text-zinc-500 font-mono">0 Luchadores</span>
@@ -378,7 +381,7 @@
 
             <div class="glass p-5 h-auto flex flex-col gap-3">
                 <h2 class="text-xs font-bold uppercase text-zinc-500 italic tracking-widest mb-2 border-b border-zinc-800 pb-2"><i data-lucide="sliders" class="inline w-3 mr-1"></i> Ajustes de la Arena</h2>
-                <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-cyan-400 uppercase font-black" title="Minutos que dura cada ronda">Tiempo (Minutos)</span><input type="number" id="cfg-time" value="3" min="1" max="60" class="cfg-input border-cyan-500 bg-cyan-900/20 text-white text-sm"></div>
+                <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-cyan-400 uppercase font-black" title="Minutos que dura cada ronda">Tiempo (Minutos)</span><input type="number" id="cfg-time" value="3" min="1" max="60" class="cfg-input border-cyan-500 bg-cyan-900/20 text-white text-sm" onchange="updateLobbyTimer()"></div>
                 <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Poder con el que entra un nuevo jugador">Poder Inicial</span><input type="number" id="cfg-init" value="50" min="10" class="cfg-input"></div>
                 <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad general de movimiento">Velocidad Base</span><input type="number" id="cfg-speed" value="4" min="1" max="20" class="cfg-input"></div>
                 <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Porcentaje de puntos robados al chocar (Ej: 5%)">% Robo (Choque)</span><input type="number" id="cfg-steal" value="5" min="1" max="100" class="cfg-input"></div>
@@ -391,6 +394,9 @@
     <script>
         const socket = io();
         lucide.createIcons();
+        
+        // MAPA PARA GUARDAR EL PODER TOTAL APORTADO POR DONADORES
+        const donatorsMap = new Map();
         const giftersSet = new Set();
 
         // --- SISTEMA DE COPIAR URL PARA OBS ---
@@ -542,7 +548,7 @@
         });
 
         // --- SISTEMA DE ARENA Y SINCRONIZACIÓN ---
-        const arenaCfg = { initialPower: 50, baseSpeed: 4, stealPercent: 0.05, giftMultiplier: 100, furyTimeSec: 10, matchTimeMin: 3 };
+        const arenaCfg = { initialPower: 50, baseSpeed: 4, stealPercent: 0.05, giftMultiplier: 100, furyTimeSec: 10, matchTimeMin: 3, forceEnd: 0 };
 
         function broadcastConfig() {
             if(!isOverlay) socket.emit("syncConfig", arenaCfg);
@@ -561,8 +567,14 @@
 
         socket.on("syncConfig", (cfg) => {
             if(isOverlay) {
+                const prevForceEnd = arenaCfg.forceEnd;
                 Object.assign(arenaCfg, cfg);
                 if(gameState === 'waiting') updateLobbyTimer();
+                
+                // Si el host pulsó Finalizar Manualmente, ejecutamos endMatch en OBS
+                if(arenaCfg.forceEnd && arenaCfg.forceEnd !== prevForceEnd) {
+                    if(gameState === 'playing') endMatch();
+                }
             }
         });
 
@@ -606,6 +618,19 @@
                     if (timeRemaining <= 0) endMatch();
                 }
             }, 1000);
+        }
+
+        // --- BOTÓN MANUAL PARA FINALIZAR LA BATALLA ---
+        function endMatchManual() {
+            if(gameState === 'playing') {
+                if(!isOverlay) {
+                    arenaCfg.forceEnd = Date.now(); // Cambiamos esto para que OBS lo detecte
+                    broadcastConfig();
+                }
+                endMatch();
+            } else {
+                alert("La batalla no está activa ahora mismo.");
+            }
         }
 
         socket.on("syncStartMatch", () => {
@@ -815,11 +840,31 @@
             if(container) {
                 container.innerHTML = sorted.map((b, i) => `
                     <div class="flex items-center justify-between bg-black/40 p-2 rounded border border-zinc-800 ${i===0 ? 'border-cyan-500/50 bg-cyan-900/10' : ''}">
-                        <div class="flex items-center gap-2 text-xs"><span class="font-black ${i===0 ? 'text-cyan-400' : 'text-zinc-500'}">#${i+1}</span><div class="w-2 h-2 rounded-full" style="background-color: ${b.color}"></div><span class="font-bold text-white truncate max-w-[100px]">${b.username}</span></div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="font-black ${i===0 ? 'text-cyan-400 text-lg' : 'text-zinc-500'}">${i===0 ? '👑' : '#'+(i+1)}</span>
+                            <div class="w-2 h-2 rounded-full" style="background-color: ${b.color}"></div>
+                            <span class="font-bold text-white truncate max-w-[100px]">${b.username}</span>
+                        </div>
                         <span class="text-xs font-mono font-bold ${b.isFurious ? 'text-purple-400 animate-pulse' : 'text-green-400'}">${Math.floor(b.power)} pts</span>
                     </div>
                 `).join('');
             }
+        }
+
+        // --- ACTUALIZAR TABLA TOP DONADORES ---
+        function updateDonatorsRanking() {
+            const container = document.getElementById('donators-container');
+            if(!container) return;
+            const sorted = Array.from(donatorsMap.entries()).sort((a,b) => b[1] - a[1]).slice(0, 10);
+            container.innerHTML = sorted.map((d, i) => `
+                <div class="flex items-center justify-between bg-black/40 p-3 rounded-lg border border-yellow-500/20 hover:border-yellow-500/50 transition-colors">
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="text-yellow-500 font-black text-sm">${i === 0 ? '👑' : '#' + (i+1)}</span>
+                        <span class="font-bold text-zinc-300 truncate max-w-[100px]">${d[0]}</span>
+                    </div>
+                    <span class="text-yellow-400 font-mono text-[11px] bg-yellow-500/10 px-2 py-1 rounded font-bold">${Math.floor(d[1])} pts</span>
+                </div>
+            `).join('');
         }
 
         function checkVoicePermission(data) {
@@ -904,6 +949,12 @@
         socket.on("gift", (data) => {
             giftersSet.add(data.user);
             
+            const powerAdded = data.amount * arenaCfg.giftMultiplier;
+            
+            // Actualizar tabla de donadores
+            donatorsMap.set(data.user, (donatorsMap.get(data.user) || 0) + powerAdded);
+            updateDonatorsRanking();
+            
             const giftContainer = document.getElementById('gift-container');
             if(giftContainer) {
                 const div = document.createElement('div');
@@ -924,7 +975,6 @@
                 if (histContainer.children.length > 30) histContainer.removeChild(histContainer.lastElementChild);
             }
             
-            const powerAdded = data.amount * arenaCfg.giftMultiplier;
             handleUserInteraction(data.user, powerAdded, data.avatar); 
             
             const ball = balls.get(data.user);

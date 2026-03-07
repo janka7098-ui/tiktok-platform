@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexora Ultra | Battle Arena</title>
+    <title>Nexora Ultra | Modular</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -56,7 +56,6 @@
             animation: spin 1s linear infinite;
         }
 
-        /* TABS */
         .tab-btn {
             position: relative; overflow: hidden;
             transition: all 0.3s; border-bottom: 2px solid transparent;
@@ -74,88 +73,44 @@
         .gift-selector {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300FFFF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;
         }
 
-        .mode-btn {
-            background: rgba(255,255,255,0.05);
-            color: #666;
-            transition: all 0.3s;
-        }
+        .mode-btn { background: rgba(255,255,255,0.05); color: #666; transition: all 0.3s; }
         .mode-btn.active { background: var(--purple); color: white; }
         .mode-btn.active.webhook-active { background: var(--cyan); color: black; }
 
-        /* INPUTS CONFIG ARENA */
         .cfg-input {
-            width: 60px;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid #27272a;
-            border-radius: 6px;
-            text-align: center;
-            color: var(--cyan);
-            font-weight: bold;
-            font-size: 12px;
-            outline: none;
-            padding: 4px;
-            transition: border-color 0.3s;
+            width: 60px; background: rgba(0,0,0,0.6); border: 1px solid #27272a;
+            border-radius: 6px; text-align: center; color: var(--cyan);
+            font-weight: bold; font-size: 12px; outline: none; padding: 4px; transition: border-color 0.3s;
         }
         .cfg-input:focus { border-color: var(--cyan); }
 
-        /* CANVAS ARENA Y CRONÓMETRO */
         #game-canvas {
-            width: 100%; height: 100%;
-            display: block;
-            border-radius: 12px;
+            width: 100%; height: 100%; display: block; border-radius: 12px;
             box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
             background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
 
         #arena-timer {
-            position: absolute;
-            top: 20px; left: 50%;
-            transform: translateX(-50%);
-            font-weight: 900;
-            color: var(--cyan);
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            z-index: 20;
-            pointer-events: none;
-            line-height: 1;
-            transition: color 0.3s;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            font-weight: 900; color: var(--cyan); text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            z-index: 20; pointer-events: none; line-height: 1; transition: color 0.3s;
         }
 
-        /* OVERLAYS (START & END) */
         #start-match-overlay, #end-match-overlay {
-            position: absolute; inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 30;
-            display: flex; /* Oculto o visible por JS */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
+            position: absolute; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+            z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px;
         }
-
         #end-match-overlay { display: none; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
 
         .btn-start {
-            background: var(--cyan);
-            color: black;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--cyan); color: black; box-shadow: 0 0 30px rgba(0, 255, 255, 0.5); transition: transform 0.2s, box-shadow 0.2s;
         }
-        .btn-start:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
-        }
+        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(0, 255, 255, 0.8); }
 
-        .top-winner {
-            background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 100%);
-            border: 1px solid;
-            transition: transform 0.3s;
-        }
+        .top-winner { background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 100%); border: 1px solid; transition: transform 0.3s; }
         .top-1 { border-color: #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
         .top-2 { border-color: #C0C0C0; box-shadow: 0 0 15px rgba(192, 192, 192, 0.1); }
         .top-3 { border-color: #CD7F32; box-shadow: 0 0 10px rgba(205, 127, 50, 0.1); }
@@ -163,19 +118,110 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
-        
         .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Estilo para los botones de copiar link */
+        .btn-copy-link {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px;
+            border-radius: 6px;
+            color: #a1a1aa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-copy-link:hover {
+            color: var(--cyan);
+            border-color: var(--cyan);
+            background: rgba(0, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body class="p-2 md:p-4 pb-12">
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const overlayType = urlParams.get('overlay'); // arena, chat, gifts, likes
+        const isOverlay = !!overlayType;
+
+        if(isOverlay) {
+            // Fondo transparente general para OBS
+            document.documentElement.style.background = 'transparent';
+            document.body.style.background = 'transparent';
+            document.body.style.backgroundImage = 'none';
+            document.body.className = 'm-0 p-0 w-screen h-screen overflow-hidden bg-transparent';
+            
+            document.addEventListener("DOMContentLoaded", () => {
+                // Ocultar toda la interfaz del Dashboard Maestro
+                document.getElementById('nav-header').style.display = 'none';
+                document.getElementById('tabs-container').style.display = 'none';
+                document.getElementById('view-dashboard').style.display = 'none';
+                document.getElementById('view-game').style.display = 'none';
+                
+                // Forzar a desactivar el Text-To-Speech en ventanas de OBS para que no haga eco
+                const ttsCheckbox = document.getElementById('tts-enabled');
+                if(ttsCheckbox) ttsCheckbox.checked = false; 
+
+                // --- 1. OVERLAY DE LA ARENA ---
+                if (overlayType === 'arena') {
+                    const viewGame = document.getElementById('view-game');
+                    viewGame.style.display = 'block';
+                    viewGame.className = 'w-screen h-screen m-0 p-0 block'; 
+                    
+                    const canvasContainer = document.getElementById('main-arena-container');
+                    canvasContainer.className = 'w-full h-full relative overflow-hidden bg-transparent border-none';
+                    
+                    const glow = canvasContainer.querySelector('.absolute.inset-0');
+                    if(glow) glow.style.display = 'none';
+                    
+                    document.getElementById('game-canvas').style.background = 'transparent';
+                    document.getElementById('game-canvas').style.boxShadow = 'none';
+                    document.getElementById('sidebar-game').style.display = 'none';
+                    
+                    // Ocultar botón de copiar link en el overlay
+                    const copyBtnArena = document.getElementById('btn-copy-arena');
+                    if(copyBtnArena) copyBtnArena.style.display = 'none';
+                } 
+                // --- 2. OVERLAYS DE WIDGETS (CHAT, REGALOS, LIKES) ---
+                else if (overlayType === 'chat' || overlayType === 'gifts' || overlayType === 'likes') {
+                    const widgetContainer = document.createElement('div');
+                    widgetContainer.className = 'w-full h-full p-4 flex flex-col justify-start overflow-hidden bg-transparent';
+                    document.body.appendChild(widgetContainer);
+
+                    let targetId = '';
+                    if (overlayType === 'chat') targetId = 'chat-container';
+                    if (overlayType === 'gifts') targetId = 'gift-container';
+                    if (overlayType === 'likes') targetId = 'ranking-container';
+                    
+                    const targetEl = document.getElementById(targetId);
+                    if(targetEl) {
+                        targetEl.className = 'w-full h-full overflow-hidden space-y-3 p-2';
+                        widgetContainer.appendChild(targetEl);
+                    }
+                    
+                    const style = document.createElement('style');
+                    style.innerHTML = `
+                        .bg-zinc-900\\/50, .bg-green-900\\/20, .bg-black\\/40 {
+                            background: rgba(10, 10, 15, 0.85) !important;
+                            border: 1px solid rgba(0, 255, 255, 0.2) !important;
+                            backdrop-filter: blur(8px) !important;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            });
+        }
+    </script>
 
     <div id="loader">
         <div class="spinner"></div>
         <p class="mt-4 text-cyan-500 font-bold tracking-widest animate-pulse uppercase">Procesando Datos...</p>
     </div>
 
-    <nav class="max-w-[1800px] mx-auto mb-4 flex flex-col lg:flex-row items-center justify-between glass p-4 gap-4">
+    <nav id="nav-header" class="max-w-[1800px] mx-auto mb-4 flex flex-col lg:flex-row items-center justify-between glass p-4 gap-4">
         <div class="flex items-center gap-4 w-full lg:w-auto justify-center lg:justify-start">
             <img id="host-avatar" src="/Logo.png" alt="Logo" class="h-[50px] w-[50px] md:h-[60px] md:w-[60px] object-cover rounded-full border-2 border-transparent transition-all duration-500" onerror="this.src='/Logo.png'">
             <div class="flex flex-col">
@@ -195,7 +241,7 @@
         </div>
     </nav>
 
-    <div class="max-w-[1800px] mx-auto mb-6 flex flex-col sm:flex-row gap-2 glass p-1">
+    <div id="tabs-container" class="max-w-[1800px] mx-auto mb-6 flex flex-col sm:flex-row gap-2 glass p-1">
         <button onclick="showTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
             <i data-lucide="layout-dashboard" class="w-4 h-4 text-purple-500"></i> Dashboard Maestro
         </button>
@@ -214,15 +260,10 @@
                     <button onclick="setMode('link')" id="mode-link" class="mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md">Webhook Juego</button>
                 </div>
                 <div class="space-y-4">
-                    <select id="gift-select" class="gift-selector w-full bg-black/60 border border-zinc-700 p-3 rounded-xl text-xs outline-none focus:border-cyan-500 text-zinc-300 font-bold">
-                        <option value="" disabled selected>Seleccionar Regalo...</option>
-                    </select>
+                    <select id="gift-select" class="gift-selector w-full bg-black/60 border border-zinc-700 p-3 rounded-xl text-xs outline-none focus:border-cyan-500 text-zinc-300 font-bold"><option value="" disabled selected>Seleccionar Regalo...</option></select>
                     <div id="container-mp3">
                         <input type="file" id="file-input" accept="audio/mpeg" class="hidden">
-                        <button onclick="document.getElementById('file-input').click()" class="w-full bg-zinc-900 border border-dashed border-zinc-700 p-3 rounded-lg text-xs text-zinc-400 hover:border-cyan-500 transition-all flex flex-col items-center gap-2">
-                            <i data-lucide="music" class="w-4 h-4 text-purple-500"></i>
-                            <span id="file-name">Seleccionar MP3...</span>
-                        </button>
+                        <button onclick="document.getElementById('file-input').click()" class="w-full bg-zinc-900 border border-dashed border-zinc-700 p-3 rounded-lg text-xs text-zinc-400 hover:border-cyan-500 transition-all flex flex-col items-center gap-2"><i data-lucide="music" class="w-4 h-4 text-purple-500"></i><span id="file-name">Seleccionar MP3...</span></button>
                     </div>
                     <div id="container-link" class="hidden">
                         <input id="link-input" type="text" placeholder="http://localhost:8080/comando" class="w-full bg-black/60 border border-zinc-800 p-3 rounded-lg text-xs text-cyan-400 outline-none focus:border-cyan-500 font-mono">
@@ -237,18 +278,31 @@
         </div>
 
         <div class="col-span-1 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            
             <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full">
-                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400"><i data-lucide="message-square" class="inline w-3 mr-1"></i> CHAT (ÚLTIMOS 10)</div>
+                <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400 flex justify-between items-center">
+                    <span class="flex items-center"><i data-lucide="message-square" class="inline w-3 mr-1"></i> CHAT</span> 
+                    <button onclick="copyOverlayUrl('chat')" class="btn-copy-link" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
+                </div>
                 <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
             </div>
+            
             <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full">
-                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-green-400"><i data-lucide="gift" class="inline w-3 mr-1"></i> REGALOS (ÚLTIMOS 10)</div>
+                <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-green-400 flex justify-between items-center">
+                    <span class="flex items-center"><i data-lucide="gift" class="inline w-3 mr-1"></i> REGALOS</span> 
+                    <button onclick="copyOverlayUrl('gifts')" class="btn-copy-link" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
+                </div>
                 <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
             </div>
+            
             <div class="glass flex flex-col overflow-hidden h-[300px] lg:h-full sm:col-span-2 md:col-span-1">
-                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-red-500"><i data-lucide="flame" class="inline w-3 mr-1"></i> TOP LIKES</div>
+                <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-red-500 flex justify-between items-center">
+                    <span class="flex items-center"><i data-lucide="flame" class="inline w-3 mr-1"></i> LIKES</span> 
+                    <button onclick="copyOverlayUrl('likes')" class="btn-copy-link" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
+                </div>
                 <div id="ranking-container" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
             </div>
+
         </div>
 
         <div class="col-span-1 lg:col-span-3 flex flex-col gap-6">
@@ -262,7 +316,6 @@
                         </div>
                         <select id="tts-voice" class="gift-selector w-full bg-black/40 border border-zinc-800 p-3 rounded-lg text-xs text-white outline-none focus:border-cyan-500"></select>
                     </div>
-
                     <div>
                         <div class="flex justify-between mb-1">
                             <label class="text-[10px] text-zinc-500 uppercase">Volumen General</label>
@@ -270,115 +323,67 @@
                         </div>
                         <input id="tts-volume" type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-500 cursor-pointer">
                     </div>
-
                     <div class="pt-4 border-t border-zinc-800 space-y-3">
                         <label class="text-[10px] text-zinc-500 uppercase block font-bold"><i data-lucide="shield" class="inline w-3 mr-1"></i> Filtro de Voz (TTS)</label>
-                        
-                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition">
-                            <input type="radio" name="tts-filter" value="all" checked class="accent-cyan-500 w-4 h-4 cursor-pointer">
-                            <span class="text-[11px] text-zinc-300 font-bold uppercase">Todos (Público)</span>
-                        </label>
-                        
-                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition">
-                            <input type="radio" name="tts-filter" value="followers" class="accent-green-500 w-4 h-4 cursor-pointer">
-                            <span class="text-[11px] text-green-400 font-bold uppercase">Solo Seguidores</span>
-                        </label>
-                        
-                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition">
-                            <input type="radio" name="tts-filter" value="vip" class="accent-purple-500 w-4 h-4 cursor-pointer">
-                            <span class="text-[11px] text-purple-400 font-bold uppercase">Solo Mods / Subs</span>
-                        </label>
-
-                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition">
-                            <input type="radio" name="tts-filter" value="gifters" class="accent-yellow-400 w-4 h-4 cursor-pointer">
-                            <span class="text-[11px] text-yellow-400 font-bold uppercase">Solo Donadores (Regalos)</span>
-                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition"><input type="radio" name="tts-filter" value="all" checked class="accent-cyan-500 w-4 h-4 cursor-pointer"><span class="text-[11px] text-zinc-300 font-bold uppercase">Todos (Público)</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition"><input type="radio" name="tts-filter" value="followers" class="accent-green-500 w-4 h-4 cursor-pointer"><span class="text-[11px] text-green-400 font-bold uppercase">Solo Seguidores</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition"><input type="radio" name="tts-filter" value="vip" class="accent-purple-500 w-4 h-4 cursor-pointer"><span class="text-[11px] text-purple-400 font-bold uppercase">Solo Mods / Subs</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer bg-black/30 p-2 rounded-lg hover:bg-black/50 transition"><input type="radio" name="tts-filter" value="gifters" class="accent-yellow-400 w-4 h-4 cursor-pointer"><span class="text-[11px] text-yellow-400 font-bold uppercase">Solo Donadores (Regalos)</span></label>
                     </div>
                 </div>
             </section>
-            
             <section class="glass flex flex-col flex-1 overflow-hidden min-h-[200px] lg:min-h-0">
-                <div class="p-4 border-b border-zinc-900 bg-black/20 text-center">
-                    <h2 class="text-xs font-bold uppercase tracking-widest italic text-zinc-500">Historial de Sesión</h2>
-                </div>
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-center"><h2 class="text-xs font-bold uppercase tracking-widest italic text-zinc-500">Historial de Sesión</h2></div>
                 <div id="gift-history" class="flex-1 overflow-y-auto p-3 space-y-2 text-[11px] font-mono text-zinc-500"></div>
             </section>
         </div>
     </main>
 
     <main id="view-game" class="hidden max-w-[1800px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[750px]">
-        
-        <div class="col-span-1 lg:col-span-9 glass relative p-1 flex flex-col overflow-hidden group h-[500px] lg:h-auto">
+        <div id="main-arena-container" class="col-span-1 lg:col-span-9 glass relative p-1 flex flex-col overflow-hidden group h-[500px] lg:h-auto">
             <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl pointer-events-none z-10 group-hover:border-cyan-500/50 transition-colors"></div>
             
             <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
-                <span class="bg-black/80 text-cyan-400 text-[10px] font-black px-3 py-1 rounded-full border border-cyan-500/30 tracking-widest uppercase shadow-[0_0_10px_rgba(0,255,255,0.2)]">Arena Activa</span>
+                <span class="bg-black/80 text-cyan-400 text-[10px] font-black px-3 py-1.5 rounded-full border border-cyan-500/30 tracking-widest uppercase shadow-[0_0_10px_rgba(0,255,255,0.2)]">Arena Activa</span>
+                <button id="btn-copy-arena" onclick="copyOverlayUrl('arena')" class="btn-copy-link flex items-center justify-center bg-black/80" title="Copiar URL para OBS">
+                    <i data-lucide="link" class="w-3 h-3"></i>
+                </button>
             </div>
-
+            
             <div class="flex-1 w-full h-full relative" id="canvas-wrapper">
-                
                 <div id="arena-timer" class="text-4xl md:text-5xl lg:text-6xl">03:00</div>
                 <canvas id="game-canvas"></canvas>
-
+                
                 <div id="start-match-overlay" class="p-4 text-center">
                     <h2 class="text-2xl md:text-4xl font-black italic text-white mb-2 uppercase tracking-widest">Sala de Espera</h2>
                     <p class="text-cyan-400 mb-8 uppercase text-[10px] md:text-xs tracking-[2px] md:tracking-[5px] font-bold">Las bolas no se hacen daño aún</p>
-                    <button id="btn-start-match" onclick="startMatch()" class="btn-start px-8 md:px-12 py-4 md:py-5 rounded-2xl font-black text-xl md:text-3xl uppercase tracking-widest cursor-pointer">
-                        Iniciar Batalla
-                    </button>
+                    <button id="btn-start-match" onclick="startMatch()" class="btn-start px-8 md:px-12 py-4 md:py-5 rounded-2xl font-black text-xl md:text-3xl uppercase tracking-widest cursor-pointer">Iniciar Batalla</button>
                 </div>
-
+                
                 <div id="end-match-overlay" class="p-4 text-center">
                     <h2 class="text-3xl md:text-6xl font-black italic text-cyan-400 mb-4 md:mb-8 uppercase tracking-widest" style="text-shadow: 0 0 30px rgba(0,255,255,0.4);">¡FIN DE LA RONDA!</h2>
                     <div id="top-3-container" class="flex flex-col gap-2 md:gap-4 mb-6 md:mb-10 w-full max-w-2xl"></div>
-                    <div class="flex flex-col items-center">
-                        <p class="text-sm md:text-xl text-zinc-400 font-bold uppercase tracking-widest">Preparando nueva sala en</p>
-                        <span id="restart-countdown" class="text-red-500 text-4xl md:text-6xl font-black mt-2 drop-shadow-lg">5</span>
-                    </div>
+                    <div class="flex flex-col items-center"><p class="text-sm md:text-xl text-zinc-400 font-bold uppercase tracking-widest">Preparando nueva sala en</p><span id="restart-countdown" class="text-red-500 text-4xl md:text-6xl font-black mt-2 drop-shadow-lg">5</span></div>
                 </div>
             </div>
         </div>
 
-        <div class="col-span-1 lg:col-span-3 flex flex-col gap-6">
-            
+        <div id="sidebar-game" class="col-span-1 lg:col-span-3 flex flex-col gap-6">
             <div class="glass flex-1 flex flex-col overflow-hidden relative min-h-[300px] lg:min-h-0">
                 <div class="p-4 border-b border-zinc-900 bg-gradient-to-r from-black/60 to-transparent flex justify-between items-center z-10">
-                    <h2 class="text-cyan-400 font-black uppercase tracking-widest italic text-sm"><i data-lucide="crown" class="inline w-4 mr-1 pb-1"></i> Top Dominantes</h2>
-                    <span id="player-count" class="text-[10px] text-zinc-500 font-mono">0 Luchadores</span>
+                    <h2 class="text-cyan-400 font-black uppercase tracking-widest italic text-sm"><i data-lucide="crown" class="inline w-4 mr-1 pb-1"></i> Top Dominantes</h2><span id="player-count" class="text-[10px] text-zinc-500 font-mono">0 Luchadores</span>
                 </div>
                 <div id="arena-ranking" class="flex-1 overflow-y-auto p-2 space-y-1 relative z-10"></div>
             </div>
 
             <div class="glass p-5 h-auto flex flex-col gap-3">
-                <h2 class="text-xs font-bold uppercase text-zinc-500 italic tracking-widest mb-2 border-b border-zinc-800 pb-2">
-                    <i data-lucide="sliders" class="inline w-3 mr-1"></i> Ajustes de la Arena
-                </h2>
-                
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] text-cyan-400 uppercase font-black" title="Minutos que dura cada ronda">Tiempo (Minutos)</span>
-                    <input type="number" id="cfg-time" value="3" min="1" max="60" class="cfg-input border-cyan-500 bg-cyan-900/20 text-white text-sm" onchange="updateLobbyTimer()">
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Poder con el que entra un nuevo jugador">Poder Inicial</span>
-                    <input type="number" id="cfg-init" value="50" min="10" class="cfg-input">
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad general de movimiento">Velocidad Base</span>
-                    <input type="number" id="cfg-speed" value="4" min="1" max="20" class="cfg-input">
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Porcentaje de puntos robados al chocar (Ej: 5%)">% Robo (Choque)</span>
-                    <input type="number" id="cfg-steal" value="5" min="1" max="100" class="cfg-input">
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] text-purple-400 uppercase font-bold" title="Poder otorgado por cada 1 unidad de regalo">Poder x Regalo</span>
-                    <input type="number" id="cfg-gift" value="100" min="10" class="cfg-input border-purple-500/50 text-purple-400">
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-[10px] text-purple-400 uppercase font-bold" title="Segundos que dura el modo Furia">Duración Furia (s)</span>
-                    <input type="number" id="cfg-fury-time" value="10" min="1" class="cfg-input border-purple-500/50 text-purple-400">
-                </div>
+                <h2 class="text-xs font-bold uppercase text-zinc-500 italic tracking-widest mb-2 border-b border-zinc-800 pb-2"><i data-lucide="sliders" class="inline w-3 mr-1"></i> Ajustes de la Arena</h2>
+                <div class="flex items-center justify-between mb-2"><span class="text-[11px] text-cyan-400 uppercase font-black" title="Minutos que dura cada ronda">Tiempo (Minutos)</span><input type="number" id="cfg-time" value="3" min="1" max="60" class="cfg-input border-cyan-500 bg-cyan-900/20 text-white text-sm"></div>
+                <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Poder con el que entra un nuevo jugador">Poder Inicial</span><input type="number" id="cfg-init" value="50" min="10" class="cfg-input"></div>
+                <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad general de movimiento">Velocidad Base</span><input type="number" id="cfg-speed" value="4" min="1" max="20" class="cfg-input"></div>
+                <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Porcentaje de puntos robados al chocar (Ej: 5%)">% Robo (Choque)</span><input type="number" id="cfg-steal" value="5" min="1" max="100" class="cfg-input"></div>
+                <div class="flex items-center justify-between"><span class="text-[10px] text-purple-400 uppercase font-bold" title="Poder otorgado por cada 1 unidad de regalo">Poder x Regalo</span><input type="number" id="cfg-gift" value="100" min="10" class="cfg-input border-purple-500/50 text-purple-400"></div>
+                <div class="flex items-center justify-between"><span class="text-[10px] text-purple-400 uppercase font-bold" title="Segundos que dura el modo Furia">Duración Furia (s)</span><input type="number" id="cfg-fury-time" value="10" min="1" class="cfg-input border-purple-500/50 text-purple-400"></div>
             </div>
         </div>
     </main>
@@ -386,9 +391,17 @@
     <script>
         const socket = io();
         lucide.createIcons();
-
-        // REGISTRO DE DONADORES EN LA SESIÓN ACTUAL
         const giftersSet = new Set();
+
+        // --- SISTEMA DE COPIAR URL PARA OBS ---
+        function copyOverlayUrl(type) {
+            const url = window.location.origin + '/?overlay=' + type;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('¡Enlace copiado con éxito!\n\nPega esta URL en una fuente de Navegador en OBS:\n' + url);
+            }).catch(err => {
+                alert('Hubo un error al copiar. Copia manualmente esta URL:\n' + url);
+            });
+        }
 
         // --- SISTEMA TTS Y VOLUMEN ---
         const synth = window.speechSynthesis;
@@ -396,24 +409,30 @@
         function loadVoices() {
             voices = synth.getVoices();
             const voiceSelect = document.getElementById('tts-voice');
-            voiceSelect.innerHTML = voices.map((v, i) => `<option value="${i}" ${v.lang.includes('es') ? 'selected' : ''}>${v.name}</option>`).join('');
+            if(voiceSelect) {
+                voiceSelect.innerHTML = voices.map((v, i) => `<option value="${i}" ${v.lang.includes('es') ? 'selected' : ''}>${v.name}</option>`).join('');
+            }
         }
         speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
 
         function speak(text) {
-            if (!document.getElementById('tts-enabled').checked) return;
+            const ttsCheckbox = document.getElementById('tts-enabled');
+            if (!ttsCheckbox || !ttsCheckbox.checked || isOverlay) return;
             const utter = new SpeechSynthesisUtterance(text);
             utter.voice = voices[document.getElementById('tts-voice').value] || voices[0];
             utter.volume = document.getElementById('tts-volume').value;
             synth.speak(utter);
         }
 
-        document.getElementById('tts-volume').oninput = (e) => {
-            document.getElementById('vol-perc').innerText = Math.round(e.target.value * 100) + "%";
-        };
+        const volInput = document.getElementById('tts-volume');
+        if(volInput) {
+            volInput.oninput = (e) => {
+                document.getElementById('vol-perc').innerText = Math.round(e.target.value * 100) + "%";
+            };
+        }
 
-        // --- TABS ---
         function showTab(tab) {
+            if(isOverlay) return;
             document.getElementById('view-dashboard').classList.toggle('hidden', tab !== 'dashboard');
             document.getElementById('view-game').classList.toggle('hidden', tab !== 'game');
             document.getElementById('tab-btn-dashboard').classList.toggle('active', tab === 'dashboard');
@@ -421,7 +440,6 @@
             if(tab === 'game') resizeCanvas();
         }
 
-        // --- LÓGICA DE MODOS ALERTAS ---
         let currentMode = 'mp3';
         function setMode(mode) {
             currentMode = mode;
@@ -431,55 +449,67 @@
             document.getElementById('container-link').classList.toggle('hidden', mode !== 'link');
         }
 
-        // --- GUARDAR EVENTOS ---
-        document.getElementById('btn-save-action').onclick = () => {
-            const username = document.getElementById('username').value;
-            const gift = document.getElementById('gift-select').value;
-            if(!username || !gift) return alert("Faltan datos (Usuario o Regalo)");
+        const btnSave = document.getElementById('btn-save-action');
+        if(btnSave) {
+            btnSave.onclick = () => {
+                const username = document.getElementById('username').value;
+                const gift = document.getElementById('gift-select').value;
+                if(!username || !gift) return alert("Faltan datos");
+                if(currentMode === 'mp3') {
+                    const fileInput = document.getElementById('file-input');
+                    const file = fileInput.files[0];
+                    if(!file) return alert("Selecciona un MP3");
+                    document.getElementById('loader').style.display = 'flex';
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        socket.emit("uploadAndSave", { username, gift, fileName: file.name, fileData: e.target.result });
+                        fileInput.value = ""; document.getElementById('file-name').innerText = "Seleccionar MP3...";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    const link = document.getElementById('link-input').value;
+                    if(!link) return alert("Ingresa el Link");
+                    socket.emit("saveAction", { username, action: { gift, file: link, type: 'link' } });
+                    document.getElementById('link-input').value = "";
+                }
+            };
+        }
 
-            if(currentMode === 'mp3') {
-                const fileInput = document.getElementById('file-input');
-                const file = fileInput.files[0];
-                if(!file) return alert("Selecciona un MP3");
-                document.getElementById('loader').style.display = 'flex';
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    socket.emit("uploadAndSave", { username, gift, fileName: file.name, fileData: e.target.result });
-                    fileInput.value = ""; document.getElementById('file-name').innerText = "Seleccionar MP3...";
-                };
-                reader.readAsDataURL(file);
-            } else {
-                const link = document.getElementById('link-input').value;
-                if(!link) return alert("Ingresa el Link");
-                socket.emit("saveAction", { username, action: { gift, file: link, type: 'link' } });
-                document.getElementById('link-input').value = "";
-            }
-        };
-
-        document.getElementById('file-input').onchange = (e) => {
-            document.getElementById('file-name').innerText = e.target.files[0]?.name || "Seleccionar MP3...";
-        };
+        const fileInput = document.getElementById('file-input');
+        if(fileInput) {
+            fileInput.onchange = (e) => {
+                document.getElementById('file-name').innerText = e.target.files[0]?.name || "Seleccionar MP3...";
+            };
+        }
 
         function deleteAction(index) {
             socket.emit("deleteAction", { username: document.getElementById('username').value, index });
         }
 
         fetch('/gift-list').then(r => r.json()).then(d => {
-            document.getElementById('gift-select').innerHTML += d.map(g => `<option value="${g.name}">${g.name.toUpperCase()}</option>`).join('');
+            const giftSelect = document.getElementById('gift-select');
+            if(giftSelect) giftSelect.innerHTML += d.map(g => `<option value="${g.name}">${g.name.toUpperCase()}</option>`).join('');
         });
 
-        // --- CONEXIÓN Y ESTADOS ---
-        document.getElementById('btn-connect').onclick = () => {
-            const username = document.getElementById('username').value;
-            const key = document.getElementById('key').value;
-            if(!username || !key) return alert("Faltan datos");
-            document.getElementById('loader').style.display = 'flex';
-            socket.emit("startConnection", { username, key });
-        };
+        const btnConnect = document.getElementById('btn-connect');
+        if(btnConnect) {
+            btnConnect.onclick = () => {
+                const username = document.getElementById('username').value;
+                const key = document.getElementById('key').value;
+                if(!username || !key) return alert("Faltan datos");
+                document.getElementById('loader').style.display = 'flex';
+                socket.emit("startConnection", { username, key });
+            };
+        }
 
-        document.getElementById('btn-disconnect').onclick = () => { socket.emit("stopConnection"); };
+        const btnDisconnect = document.getElementById('btn-disconnect');
+        if(btnDisconnect) {
+            btnDisconnect.onclick = () => { socket.emit("stopConnection"); };
+        }
 
         socket.on("status", (status) => {
+            if(isOverlay) return; 
+            
             document.getElementById('loader').style.display = 'none';
             const sText = document.getElementById('connection-status');
             const sPulse = document.getElementById('status-pulse');
@@ -499,7 +529,6 @@
                 sPulse.className = "w-2 h-2 rounded-full bg-red-500";
                 document.getElementById('btn-connect').classList.remove('hidden');
                 document.getElementById('btn-disconnect').classList.add('hidden');
-                
                 hostAvatar.src = "/Logo.png";
                 hostAvatar.classList.remove('border-cyan-500', 'shadow-[0_0_15px_rgba(0,255,255,0.4)]');
                 hostTitle.innerHTML = `NEXORA <span class="text-cyan-500">ULTRA</span>`;
@@ -507,37 +536,35 @@
         });
 
         socket.on("connectedUserData", (data) => {
-            if(data.profilePictureUrl) {
-                document.getElementById('host-avatar').src = data.profilePictureUrl;
-            }
-            if(data.username) {
-                document.getElementById('host-title').innerHTML = `${data.username} <span class="text-cyan-500 text-sm md:text-lg">LIVE</span>`;
-            }
+            if(isOverlay) return;
+            if(data.profilePictureUrl) document.getElementById('host-avatar').src = data.profilePictureUrl;
+            if(data.username) document.getElementById('host-title').innerHTML = `${data.username} <span class="text-cyan-500 text-sm md:text-lg">LIVE</span>`;
         });
 
+        // --- SISTEMA DE ARENA Y SINCRONIZACIÓN ---
+        const arenaCfg = { initialPower: 50, baseSpeed: 4, stealPercent: 0.05, giftMultiplier: 100, furyTimeSec: 10, matchTimeMin: 3 };
 
-        /* ==========================================================================
-           💥 MOTOR DE FÍSICAS Y SISTEMA DE PARTIDAS 💥
-           ========================================================================== */
-        
-        const arenaCfg = {
-            initialPower: 50,
-            baseSpeed: 4,
-            stealPercent: 0.05,
-            giftMultiplier: 100,
-            furyTimeSec: 10,
-            matchTimeMin: 3 
-        };
+        function broadcastConfig() {
+            if(!isOverlay) socket.emit("syncConfig", arenaCfg);
+        }
 
-        document.getElementById('cfg-init').oninput = e => arenaCfg.initialPower = Number(e.target.value);
-        document.getElementById('cfg-speed').oninput = e => arenaCfg.baseSpeed = Number(e.target.value);
-        document.getElementById('cfg-steal').oninput = e => arenaCfg.stealPercent = Number(e.target.value) / 100;
-        document.getElementById('cfg-gift').oninput = e => arenaCfg.giftMultiplier = Number(e.target.value);
-        document.getElementById('cfg-fury-time').oninput = e => arenaCfg.furyTimeSec = Number(e.target.value);
-        document.getElementById('cfg-time').oninput = e => {
+        const iInit = document.getElementById('cfg-init'); if(iInit) iInit.oninput = e => { arenaCfg.initialPower = Number(e.target.value); broadcastConfig(); };
+        const iSpd = document.getElementById('cfg-speed'); if(iSpd) iSpd.oninput = e => { arenaCfg.baseSpeed = Number(e.target.value); broadcastConfig(); };
+        const iStl = document.getElementById('cfg-steal'); if(iStl) iStl.oninput = e => { arenaCfg.stealPercent = Number(e.target.value) / 100; broadcastConfig(); };
+        const iGft = document.getElementById('cfg-gift'); if(iGft) iGft.oninput = e => { arenaCfg.giftMultiplier = Number(e.target.value); broadcastConfig(); };
+        const iFrt = document.getElementById('cfg-fury-time'); if(iFrt) iFrt.oninput = e => { arenaCfg.furyTimeSec = Number(e.target.value); broadcastConfig(); };
+        const iTme = document.getElementById('cfg-time'); if(iTme) iTme.oninput = e => {
             arenaCfg.matchTimeMin = Number(e.target.value);
             if(gameState === 'waiting') updateLobbyTimer();
+            broadcastConfig();
         };
+
+        socket.on("syncConfig", (cfg) => {
+            if(isOverlay) {
+                Object.assign(arenaCfg, cfg);
+                if(gameState === 'waiting') updateLobbyTimer();
+            }
+        });
 
         let gameState = 'waiting'; 
         let timeRemaining = 0; 
@@ -545,43 +572,52 @@
 
         function updateLobbyTimer() {
             const m = Math.floor(arenaCfg.matchTimeMin).toString().padStart(2, '0');
-            document.getElementById('arena-timer').innerText = `${m}:00`;
-            document.getElementById('arena-timer').style.color = 'var(--cyan)';
-            document.getElementById('arena-timer').style.textShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+            const timerEl = document.getElementById('arena-timer');
+            if(timerEl) {
+                timerEl.innerText = `${m}:00`;
+                timerEl.style.color = 'var(--cyan)';
+                timerEl.style.textShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+            }
         }
 
         function showStartScreen() {
             gameState = 'waiting';
-            document.getElementById('end-match-overlay').style.display = 'none';
-            document.getElementById('start-match-overlay').style.display = 'flex';
+            const ovEnd = document.getElementById('end-match-overlay'); if(ovEnd) ovEnd.style.display = 'none';
+            const ovStart = document.getElementById('start-match-overlay'); if(ovStart) ovStart.style.display = 'flex';
             updateLobbyTimer();
             balls.clear(); 
             floatingTexts.length = 0;
-            updateUILeaderboard();
+            if(!isOverlay) updateUILeaderboard();
         }
 
-        function startMatch() {
+        function startMatch(emitEvent = true) {
+            if(emitEvent && !isOverlay) socket.emit("syncStartMatch");
+            
             gameState = 'playing';
             timeRemaining = arenaCfg.matchTimeMin * 60;
-            document.getElementById('start-match-overlay').style.display = 'none';
-            speak("¡Batalla iniciada! Que comience el combate.");
+            const ovStart = document.getElementById('start-match-overlay'); if(ovStart) ovStart.style.display = 'none';
+            speak("¡Batalla iniciada!");
             
             clearInterval(matchInterval);
             matchInterval = setInterval(() => {
                 if (gameState === 'playing') {
                     timeRemaining--;
                     updateTimerDisplay();
-                    if (timeRemaining <= 0) {
-                        endMatch();
-                    }
+                    if (timeRemaining <= 0) endMatch();
                 }
             }, 1000);
         }
+
+        socket.on("syncStartMatch", () => {
+            if(isOverlay && gameState === 'waiting') startMatch(false);
+        });
 
         function updateTimerDisplay() {
             const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
             const s = (timeRemaining % 60).toString().padStart(2, '0');
             const timerEl = document.getElementById('arena-timer');
+            if(!timerEl) return;
+            
             timerEl.innerText = `${m}:${s}`;
 
             if (timeRemaining <= 10 && timeRemaining > 0) {
@@ -599,44 +635,49 @@
         function endMatch() {
             gameState = 'ended';
             clearInterval(matchInterval);
-            speak("Partida terminada. Mostrando ganadores.");
+            speak("Mostrando ganadores.");
             
             const sorted = Array.from(balls.values()).sort((a, b) => b.power - a.power).slice(0, 3);
             const container = document.getElementById('top-3-container');
-            container.innerHTML = '';
-            
-            const medals = ['top-1', 'top-2', 'top-3'];
-            const colors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-            const labels = ['ORO', 'PLATA', 'BRONCE'];
-            
-            if (sorted.length === 0) {
-                container.innerHTML = '<p class="text-center text-zinc-400 italic text-xl md:text-2xl">Nadie participó en esta ronda...</p>';
-            } else {
-                sorted.forEach((b, i) => {
-                    const avatarSrc = b.avatarLoaded ? b.avatar.src : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(b.username)}`;
-                    container.innerHTML += `
-                        <div class="top-winner ${medals[i]} flex items-center justify-between p-2 md:p-4 rounded-xl">
-                            <div class="flex items-center gap-3 md:gap-6">
-                                <div class="flex flex-col items-center justify-center w-8 md:w-12">
-                                    <span class="text-2xl md:text-4xl font-black leading-none" style="color: ${colors[i]}">#${i+1}</span>
-                                    <span class="text-[8px] md:text-[10px] font-bold uppercase tracking-widest mt-1" style="color: ${colors[i]}">${labels[i]}</span>
+            if(container) {
+                container.innerHTML = '';
+                
+                const medals = ['top-1', 'top-2', 'top-3'];
+                const colors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+                const labels = ['ORO', 'PLATA', 'BRONCE'];
+                
+                if (sorted.length === 0) {
+                    container.innerHTML = '<p class="text-center text-zinc-400 italic text-xl md:text-2xl">Nadie participó en esta ronda...</p>';
+                } else {
+                    sorted.forEach((b, i) => {
+                        const avatarSrc = b.avatarLoaded ? b.avatar.src : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(b.username)}`;
+                        container.innerHTML += `
+                            <div class="top-winner ${medals[i]} flex items-center justify-between p-2 md:p-4 rounded-xl">
+                                <div class="flex items-center gap-3 md:gap-6">
+                                    <div class="flex flex-col items-center justify-center w-8 md:w-12">
+                                        <span class="text-2xl md:text-4xl font-black leading-none" style="color: ${colors[i]}">#${i+1}</span>
+                                        <span class="text-[8px] md:text-[10px] font-bold uppercase tracking-widest mt-1" style="color: ${colors[i]}">${labels[i]}</span>
+                                    </div>
+                                    <img src="${avatarSrc}" class="w-10 h-10 md:w-16 md:h-16 rounded-full border-2 md:border-4" style="border-color: ${colors[i]}">
+                                    <span class="text-xl md:text-3xl font-bold text-white truncate max-w-[120px] md:max-w-[200px]">${b.username}</span>
                                 </div>
-                                <img src="${avatarSrc}" class="w-10 h-10 md:w-16 md:h-16 rounded-full border-2 md:border-4" style="border-color: ${colors[i]}">
-                                <span class="text-xl md:text-3xl font-bold text-white truncate max-w-[120px] md:max-w-[200px]">${b.username}</span>
+                                <span class="text-2xl md:text-4xl font-black text-green-400 drop-shadow-md">${Math.floor(b.power)} <span class="text-sm md:text-xl">pts</span></span>
                             </div>
-                            <span class="text-2xl md:text-4xl font-black text-green-400 drop-shadow-md">${Math.floor(b.power)} <span class="text-sm md:text-xl">pts</span></span>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
             }
 
-            document.getElementById('end-match-overlay').style.display = 'flex';
+            const endOverlay = document.getElementById('end-match-overlay');
+            if(endOverlay) endOverlay.style.display = 'flex';
             
             let restartTimer = 5;
-            document.getElementById('restart-countdown').innerText = restartTimer;
+            const rc = document.getElementById('restart-countdown');
+            if(rc) rc.innerText = restartTimer;
+            
             const restartInterval = setInterval(() => {
                 restartTimer--;
-                document.getElementById('restart-countdown').innerText = restartTimer;
+                if(rc) rc.innerText = restartTimer;
                 if (restartTimer <= 0) {
                     clearInterval(restartInterval);
                     showStartScreen(); 
@@ -645,19 +686,16 @@
         }
 
         const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas ? canvas.getContext('2d') : null;
         const wrapper = document.getElementById('canvas-wrapper');
-        
         let width, height;
         const balls = new Map();
         const floatingTexts = [];
-
         const COLORS = ['#00FFFF', '#FF00FF', '#39FF14', '#FF3131', '#FFD700', '#FF8C00', '#8A2BE2'];
-        const MIN_POWER = 10;
-        const BASE_RADIUS = 20;
-        const MAX_RADIUS = 150;
+        const MIN_POWER = 10; const BASE_RADIUS = 20; const MAX_RADIUS = 150;
 
         function resizeCanvas() {
+            if(!wrapper || !canvas) return;
             width = wrapper.clientWidth; height = wrapper.clientHeight;
             canvas.width = width; canvas.height = height;
         }
@@ -666,121 +704,48 @@
 
         class Ball {
             constructor(username, avatarUrl) {
-                this.username = username;
-                this.power = arenaCfg.initialPower; 
+                this.username = username; this.power = arenaCfg.initialPower; 
                 this.radius = this.calculateRadius();
                 this.x = Math.random() * (width - this.radius * 2) + this.radius;
                 this.y = Math.random() * (height - this.radius * 2) + this.radius;
-                
                 this.vx = (Math.random() - 0.5) * arenaCfg.baseSpeed;
                 this.vy = (Math.random() - 0.5) * arenaCfg.baseSpeed;
-                
                 this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                this.isFurious = false;
-                this.furyTimer = 0;
-
-                this.avatar = new Image();
-                this.avatar.crossOrigin = "Anonymous";
-                this.avatarLoaded = false;
-                
-                if (avatarUrl) {
-                    this.avatar.src = `/avatar-proxy?url=${encodeURIComponent(avatarUrl)}`;
-                } else {
-                    this.avatar.src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(username)}`;
-                }
-                
+                this.isFurious = false; this.furyTimer = 0;
+                this.avatar = new Image(); this.avatar.crossOrigin = "Anonymous"; this.avatarLoaded = false;
+                if (avatarUrl) this.avatar.src = `/avatar-proxy?url=${encodeURIComponent(avatarUrl)}`;
+                else this.avatar.src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(username)}`;
                 this.avatar.onload = () => { this.avatarLoaded = true; };
             }
-
-            calculateRadius() {
-                let r = BASE_RADIUS + Math.sqrt(Math.max(0, this.power)) * 2;
-                if(this.isFurious) r += 20;
-                return Math.min(r, MAX_RADIUS);
-            }
-
-            addPower(amount) {
-                this.power += amount;
-                this.radius = this.calculateRadius();
-            }
-
-            triggerFury(durationMs) {
-                this.isFurious = true;
-                this.furyTimer = durationMs;
-                this.vx *= 2.0; this.vy *= 2.0; 
-                this.radius = this.calculateRadius();
-            }
-
+            calculateRadius() { let r = BASE_RADIUS + Math.sqrt(Math.max(0, this.power)) * 2; if(this.isFurious) r += 20; return Math.min(r, MAX_RADIUS); }
+            addPower(amount) { this.power += amount; this.radius = this.calculateRadius(); }
+            triggerFury(durationMs) { this.isFurious = true; this.furyTimer = durationMs; this.vx *= 2.0; this.vy *= 2.0; this.radius = this.calculateRadius(); }
             update(deltaTime) {
                 if (this.isFurious) {
                     this.furyTimer -= deltaTime;
-                    if (this.furyTimer <= 0) {
-                        this.isFurious = false;
-                        this.radius = this.calculateRadius();
-                        this.vx *= 0.5; this.vy *= 0.5;
-                    }
+                    if (this.furyTimer <= 0) { this.isFurious = false; this.radius = this.calculateRadius(); this.vx *= 0.5; this.vy *= 0.5; }
                 }
-
                 this.vx *= 0.995; this.vy *= 0.995;
                 const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
-                if (speed < (arenaCfg.baseSpeed * 0.2)) { 
-                    this.vx += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); 
-                    this.vy += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); 
-                }
-
+                if (speed < (arenaCfg.baseSpeed * 0.2)) { this.vx += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); this.vy += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); }
                 this.x += this.vx; this.y += this.vy;
-
                 if (this.x - this.radius <= 0) { this.x = this.radius; this.vx *= -1; }
                 if (this.x + this.radius >= width) { this.x = width - this.radius; this.vx *= -1; }
                 if (this.y - this.radius <= 0) { this.y = this.radius; this.vy *= -1; }
                 if (this.y + this.radius >= height) { this.y = height - this.radius; this.vy *= -1; }
             }
-
             draw(ctx) {
-                ctx.save();
-                ctx.shadowBlur = this.isFurious ? 30 : 15;
-                ctx.shadowColor = this.isFurious ? '#FFFFFF' : this.color;
-                
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-
-                if (this.avatarLoaded) {
-                    ctx.save();
-                    ctx.clip();
-                    ctx.drawImage(this.avatar, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
-                    ctx.restore();
-                }
-                
-                ctx.shadowBlur = 0; 
-                ctx.lineWidth = 4; 
-                ctx.strokeStyle = 'rgba(0,0,0,0.5)'; 
-                ctx.stroke();
-                
-                ctx.lineWidth = 3; 
-                ctx.strokeStyle = this.isFurious ? '#FFF' : this.color; 
-                ctx.stroke();
-
+                ctx.save(); ctx.shadowBlur = this.isFurious ? 30 : 15; ctx.shadowColor = this.isFurious ? '#FFFFFF' : this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill();
+                if (this.avatarLoaded) { ctx.save(); ctx.clip(); ctx.drawImage(this.avatar, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2); ctx.restore(); }
+                ctx.shadowBlur = 0; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.stroke();
+                ctx.lineWidth = 3; ctx.strokeStyle = this.isFurious ? '#FFF' : this.color; ctx.stroke();
                 const displayUser = this.username.length > 10 ? this.username.substring(0,10) + '..' : this.username;
-                
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-                ctx.beginPath();
-                if(ctx.roundRect) {
-                    ctx.roundRect(this.x - 45, this.y + this.radius + 4, 90, 32, 6);
-                } else {
-                    ctx.rect(this.x - 45, this.y + this.radius + 4, 90, 32);
-                }
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)'; ctx.beginPath();
+                if(ctx.roundRect) ctx.roundRect(this.x - 45, this.y + this.radius + 4, 90, 32, 6); else ctx.rect(this.x - 45, this.y + this.radius + 4, 90, 32);
                 ctx.fill();
-
-                ctx.fillStyle = '#FFF'; 
-                ctx.font = 'bold 11px Rajdhani'; 
-                ctx.textAlign = 'center';
-                ctx.fillText(displayUser, this.x, this.y + this.radius + 16);
-                
-                ctx.font = '900 14px Rajdhani';
-                ctx.fillStyle = this.isFurious ? '#FFD700' : '#39FF14';
-                ctx.fillText(Math.floor(this.power) + " pts", this.x, this.y + this.radius + 30);
-                
+                ctx.fillStyle = '#FFF'; ctx.font = 'bold 11px Rajdhani'; ctx.textAlign = 'center'; ctx.fillText(displayUser, this.x, this.y + this.radius + 16);
+                ctx.font = '900 14px Rajdhani'; ctx.fillStyle = this.isFurious ? '#FFD700' : '#39FF14'; ctx.fillText(Math.floor(this.power) + " pts", this.x, this.y + this.radius + 30);
                 ctx.restore();
             }
         }
@@ -793,24 +758,17 @@
                     const dx = b2.x - b1.x, dy = b2.y - b1.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const minDistance = b1.radius + b2.radius;
-
                     if (distance < minDistance) {
-                        const overlap = minDistance - distance;
-                        const nx = dx / distance, ny = dy / distance;
-                        b1.x -= nx * (overlap / 2); b1.y -= ny * (overlap / 2);
-                        b2.x += nx * (overlap / 2); b2.y += ny * (overlap / 2);
-
+                        const overlap = minDistance - distance; const nx = dx / distance, ny = dy / distance;
+                        b1.x -= nx * (overlap / 2); b1.y -= ny * (overlap / 2); b2.x += nx * (overlap / 2); b2.y += ny * (overlap / 2);
                         const p = 2 * (b1.vx * nx + b1.vy * ny - b2.vx * nx - b2.vy * ny) / (b1.radius + b2.radius);
                         b1.vx -= p * b2.radius * nx; b1.vy -= p * b2.radius * ny;
                         b2.vx += p * b1.radius * nx; b2.vy += p * b1.radius * ny;
-
                         if (gameState === 'playing' && Math.abs(b1.power - b2.power) > 5) {
                             let winner, loser;
                             if (b1.power > b2.power) { winner = b1; loser = b2; } else { winner = b2; loser = b1; }
-
                             const currentSteal = winner.isFurious ? (arenaCfg.stealPercent * 2) : arenaCfg.stealPercent;
                             const dmg = Math.max(1, Math.floor(loser.power * currentSteal));
-                            
                             winner.addPower(dmg); loser.addPower(-dmg);
                             spawnFloatingText(winner.x, winner.y - winner.radius, `+${dmg}`, winner.color);
                             spawnFloatingText(loser.x, loser.y + loser.radius, `-${dmg}`, '#FF3131');
@@ -820,69 +778,54 @@
             }
         }
 
-        function spawnFloatingText(x, y, text, color) {
-            floatingTexts.push({ x, y, text, color, life: 1.0, vy: -1.5 });
-        }
+        function spawnFloatingText(x, y, text, color) { floatingTexts.push({ x, y, text, color, life: 1.0, vy: -1.5 }); }
 
         function drawFloatingTexts(ctx) {
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
-                const ft = floatingTexts[i];
-                ft.y += ft.vy; ft.life -= 0.02;
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, ft.life); ctx.fillStyle = ft.color;
-                ctx.font = 'bold 20px Rajdhani'; ctx.shadowColor = '#000'; ctx.shadowBlur = 4;
-                ctx.fillText(ft.text, ft.x, ft.y);
-                ctx.restore();
+                const ft = floatingTexts[i]; ft.y += ft.vy; ft.life -= 0.02;
+                ctx.save(); ctx.globalAlpha = Math.max(0, ft.life); ctx.fillStyle = ft.color; ctx.font = 'bold 20px Rajdhani';
+                ctx.shadowColor = '#000'; ctx.shadowBlur = 4; ctx.fillText(ft.text, ft.x, ft.y); ctx.restore();
                 if (ft.life <= 0) floatingTexts.splice(i, 1);
             }
         }
 
         let lastTime = 0;
         function gameLoop(timestamp) {
-            const deltaTime = timestamp - lastTime; lastTime = timestamp;
-            ctx.clearRect(0, 0, width, height);
-
+            if(!ctx) return;
+            const deltaTime = timestamp - lastTime; lastTime = timestamp; ctx.clearRect(0, 0, width, height);
             const deadBalls = [];
             for (const [username, ball] of balls.entries()) {
                 ball.update(deltaTime); ball.draw(ctx);
-                if (ball.power < MIN_POWER && gameState === 'playing') { 
-                    deadBalls.push(username); 
-                    spawnFloatingText(ball.x, ball.y, "¡ELIMINADO!", "#FF0000"); 
-                }
+                if (ball.power < MIN_POWER && gameState === 'playing') { deadBalls.push(username); spawnFloatingText(ball.x, ball.y, "¡ELIMINADO!", "#FF0000"); }
             }
-            
-            if (gameState === 'playing') {
-                deadBalls.forEach(user => balls.delete(user));
-            }
-            
+            if (gameState === 'playing') deadBalls.forEach(user => balls.delete(user));
             resolveCollisions(); 
-            updateUILeaderboard();
-            drawFloatingTexts(ctx); 
-            
-            requestAnimationFrame(gameLoop);
+            if(!isOverlay) updateUILeaderboard();
+            drawFloatingTexts(ctx); requestAnimationFrame(gameLoop);
         }
         
         requestAnimationFrame(gameLoop);
         showStartScreen();
 
         function updateUILeaderboard() {
-            document.getElementById('player-count').innerText = `${balls.size} Luchadores`;
+            const pc = document.getElementById('player-count');
+            if(pc) pc.innerText = `${balls.size} Luchadores`;
             const sorted = Array.from(balls.values()).sort((a, b) => b.power - a.power).slice(0, 10);
-            document.getElementById('arena-ranking').innerHTML = sorted.map((b, i) => `
-                <div class="flex items-center justify-between bg-black/40 p-2 rounded border border-zinc-800 ${i===0 ? 'border-cyan-500/50 bg-cyan-900/10' : ''}">
-                    <div class="flex items-center gap-2 text-xs">
-                        <span class="font-black ${i===0 ? 'text-cyan-400' : 'text-zinc-500'}">#${i+1}</span>
-                        <div class="w-2 h-2 rounded-full" style="background-color: ${b.color}"></div>
-                        <span class="font-bold text-white truncate max-w-[100px]">${b.username}</span>
+            const container = document.getElementById('arena-ranking');
+            if(container) {
+                container.innerHTML = sorted.map((b, i) => `
+                    <div class="flex items-center justify-between bg-black/40 p-2 rounded border border-zinc-800 ${i===0 ? 'border-cyan-500/50 bg-cyan-900/10' : ''}">
+                        <div class="flex items-center gap-2 text-xs"><span class="font-black ${i===0 ? 'text-cyan-400' : 'text-zinc-500'}">#${i+1}</span><div class="w-2 h-2 rounded-full" style="background-color: ${b.color}"></div><span class="font-bold text-white truncate max-w-[100px]">${b.username}</span></div>
+                        <span class="text-xs font-mono font-bold ${b.isFurious ? 'text-purple-400 animate-pulse' : 'text-green-400'}">${Math.floor(b.power)} pts</span>
                     </div>
-                    <span class="text-xs font-mono font-bold ${b.isFurious ? 'text-purple-400 animate-pulse' : 'text-green-400'}">${Math.floor(b.power)} pts</span>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
 
-        // --- LÓGICA DE FILTROS ---
         function checkVoicePermission(data) {
-            const filter = document.querySelector('input[name="tts-filter"]:checked').value;
+            const radio = document.querySelector('input[name="tts-filter"]:checked');
+            if (!radio) return true;
+            const filter = radio.value;
             if (filter === 'all') return true;
             if (filter === 'followers' && (data.isFollower || data.isMod || data.isSub)) return true;
             if (filter === 'vip' && (data.isMod || data.isSub)) return true;
@@ -905,40 +848,34 @@
             balls.get(username).addPower(powerToAdd);
         }
 
-        // --- EVENTOS SOCKET ---
-        
         socket.on("actionsUpdated", (actions) => {
-            document.getElementById('actions-list').innerHTML = actions.map((a, i) => `
-                <div class="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-zinc-800">
-                    <div class="text-[10px]">
-                        <b class="${a.type === 'link' ? 'text-cyan-400' : 'text-purple-400'} uppercase">${a.type}</b><br>
-                        <b class="text-white">${a.gift}</b>
-                    </div>
-                    <button onclick="deleteAction(${i})" class="text-red-500 hover:text-white transition-colors"><i data-lucide="trash-2" class="w-4"></i></button>
-                </div>`).join('');
-            lucide.createIcons();
+            const list = document.getElementById('actions-list');
+            if(list) {
+                list.innerHTML = actions.map((a, i) => `
+                    <div class="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-zinc-800">
+                        <div class="text-[10px]"><b class="${a.type === 'link' ? 'text-cyan-400' : 'text-purple-400'} uppercase">${a.type}</b><br><b class="text-white">${a.gift}</b></div>
+                        <button onclick="deleteAction(${i})" class="text-red-500 hover:text-white transition-colors"><i data-lucide="trash-2" class="w-4"></i></button>
+                    </div>`).join('');
+                lucide.createIcons();
+            }
         });
 
         socket.on("triggerSound", (fileUrl) => {
+            if(isOverlay) return; 
             const audio = new Audio(fileUrl);
-            audio.volume = document.getElementById('tts-volume').value;
+            const volInput = document.getElementById('tts-volume');
+            if(volInput) audio.volume = volInput.value;
             audio.play();
         });
 
-        socket.on("singleLike", (data) => {
-            data.isFollower = true; 
-            handleUserInteraction(data.user, 2, data.avatar); 
-        });
+        socket.on("singleLike", (data) => { data.isFollower = true; handleUserInteraction(data.user, 2, data.avatar); });
 
         socket.on("likeRanking", (ranking) => {
             const container = document.getElementById('ranking-container');
             if(container) {
                 container.innerHTML = ranking.map(user => `
                     <div class="flex items-center justify-between bg-black/40 p-3 rounded-lg border border-red-500/20 hover:border-red-500/50 transition-colors">
-                        <div class="flex items-center gap-3 text-xs">
-                            <span class="text-red-500 font-black text-sm">#${user.rank}</span>
-                            <span class="font-bold text-zinc-300 truncate max-w-[100px]">${user.user}</span>
-                        </div>
+                        <div class="flex items-center gap-3 text-xs"><span class="text-red-500 font-black text-sm">#${user.rank}</span><span class="font-bold text-zinc-300 truncate max-w-[100px]">${user.user}</span></div>
                         <span class="text-red-400 font-mono text-[11px] bg-red-500/10 px-2 py-1 rounded font-bold">${user.likes} ❤</span>
                     </div>
                 `).join('');
@@ -947,56 +884,44 @@
 
         socket.on("chat", (data) => {
             const badges = getBadges(data);
-            const canSpeak = checkVoicePermission(data);
-
-            const div = document.createElement('div');
-            div.className = "bg-zinc-900/50 p-2 rounded-lg border-l-2 border-purple-500 text-xs flex items-center gap-2 fade-in";
-            div.innerHTML = `
-                <img src="/avatar-proxy?url=${encodeURIComponent(data.avatar)}" class="w-6 h-6 rounded-full bg-zinc-800" onerror="this.style.display='none'">
-                <div>${badges}<span class="text-purple-400 font-bold">${data.user}:</span> <span class="text-zinc-300">${data.message}</span></div>
-            `;
+            const canSpeak = !isOverlay ? checkVoicePermission(data) : false; 
             
             const chatContainer = document.getElementById('chat-container');
-            chatContainer.prepend(div);
-            
-            // LÍMITE DE 10 MENSAJES EN CHAT
-            if (chatContainer.children.length > 10) {
-                chatContainer.removeChild(chatContainer.lastElementChild);
+            if(chatContainer) {
+                const div = document.createElement('div');
+                div.className = "bg-zinc-900/50 p-2 rounded-lg border-l-2 border-purple-500 text-xs flex items-center gap-2 fade-in";
+                div.innerHTML = `<img src="/avatar-proxy?url=${encodeURIComponent(data.avatar)}" class="w-6 h-6 rounded-full bg-zinc-800" onerror="this.style.display='none'">
+                    <div>${badges}<span class="text-purple-400 font-bold">${data.user}:</span> <span class="text-zinc-300">${data.message}</span></div>`;
+                
+                chatContainer.prepend(div);
+                if (chatContainer.children.length > 10) chatContainer.removeChild(chatContainer.lastElementChild);
             }
 
-            if (canSpeak) {
-                speak(`${data.user} dice: ${data.message}`);
-            }
-            
+            if (canSpeak) speak(`${data.user} dice: ${data.message}`);
             handleUserInteraction(data.user, 1, data.avatar);
         });
 
         socket.on("gift", (data) => {
             giftersSet.add(data.user);
             
-            const div = document.createElement('div');
-            div.className = "bg-green-900/20 p-2 rounded-lg border border-green-500/30 flex items-center gap-2 fade-in";
-            div.innerHTML = `
-                <img src="/avatar-proxy?url=${encodeURIComponent(data.avatar)}" class="w-8 h-8 rounded-full border border-green-500">
-                <img src="${data.image}" class="w-8 h-8 object-contain" onerror="this.src='https://via.placeholder.com/32?text=🎁'">
-                <div class="text-[10px]"><b class="text-white">${data.user}</b> x${data.amount} <span class="text-green-400">${data.gift}</span></div>`;
-            
             const giftContainer = document.getElementById('gift-container');
-            giftContainer.prepend(div);
-            
-            // LÍMITE DE 10 MENSAJES EN REGALOS
-            if (giftContainer.children.length > 10) {
-                giftContainer.removeChild(giftContainer.lastElementChild);
+            if(giftContainer) {
+                const div = document.createElement('div');
+                div.className = "bg-green-900/20 p-2 rounded-lg border border-green-500/30 flex items-center gap-2 fade-in";
+                div.innerHTML = `<img src="/avatar-proxy?url=${encodeURIComponent(data.avatar)}" class="w-8 h-8 rounded-full border border-green-500">
+                    <img src="${data.image}" class="w-8 h-8 object-contain" onerror="this.src='https://via.placeholder.com/32?text=🎁'">
+                    <div class="text-[10px]"><b class="text-white">${data.user}</b> x${data.amount} <span class="text-green-400">${data.gift}</span></div>`;
+                
+                giftContainer.prepend(div);
+                if (giftContainer.children.length > 10) giftContainer.removeChild(giftContainer.lastElementChild);
             }
 
-            const hist = document.createElement('div');
-            hist.innerText = `[${new Date().toLocaleTimeString()}] ${data.user} envió ${data.amount} ${data.gift}`;
             const histContainer = document.getElementById('gift-history');
-            if(histContainer) {
+            if(histContainer && !isOverlay) {
+                const hist = document.createElement('div');
+                hist.innerText = `[${new Date().toLocaleTimeString()}] ${data.user} envió ${data.amount} ${data.gift}`;
                 histContainer.prepend(hist);
-                if (histContainer.children.length > 30) {
-                    histContainer.removeChild(histContainer.lastElementChild);
-                }
+                if (histContainer.children.length > 30) histContainer.removeChild(histContainer.lastElementChild);
             }
             
             const powerAdded = data.amount * arenaCfg.giftMultiplier;
@@ -1011,5 +936,4 @@
 
     </script>
 </body>
-</html>
 </html>

@@ -154,7 +154,8 @@
             </section>
         </div>
 
-        <div class="col-span-12 lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-8 h-[650px]">
+        <div class="col-span-12 lg:col-span-6 grid grid-cols-1 md:grid-cols-3 gap-4 h-[650px]">
+            
             <div class="glass flex flex-col overflow-hidden">
                 <div class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black/20">
                     <span class="text-xs font-bold tracking-widest italic"><i data-lucide="message-square" class="inline w-3 mr-1 text-purple-500"></i> CHAT</span>
@@ -172,6 +173,14 @@
                 </div>
                 <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
             </div>
+
+            <div class="glass flex flex-col overflow-hidden">
+                <div class="p-4 border-b border-zinc-900 bg-black/20">
+                    <span class="text-xs font-bold tracking-widest text-red-500 italic"><i data-lucide="flame" class="inline w-3 mr-1"></i> TOP LIKES</span>
+                </div>
+                <div id="ranking-container" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+            </div>
+
         </div>
 
         <div class="col-span-12 lg:col-span-3 space-y-8">
@@ -294,7 +303,7 @@
             socket.emit("startConnection", { username, key });
         };
 
-        // BOTÓN SALIR (CORREGIDO Y COMPLETO)
+        // BOTÓN SALIR
         btnDisconnect.onclick = () => {
             const username = document.getElementById('username').value;
             loader.style.display = 'flex';
@@ -363,6 +372,20 @@
             const audio = new Audio(fileUrl);
             audio.volume = document.getElementById('tts-volume').value;
             audio.play();
+        });
+
+        // NUEVO: LÓGICA DEL RANKING DE TAP TAP (LIKES)
+        socket.on("likeRanking", (ranking) => {
+            const container = document.getElementById('ranking-container');
+            container.innerHTML = ranking.map(user => `
+                <div class="flex items-center justify-between bg-black/40 p-3 rounded-lg border border-red-500/20 hover:border-red-500/50 transition-colors">
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="text-red-500 font-black text-sm">#${user.rank}</span>
+                        <span class="font-bold text-zinc-300 truncate max-w-[100px]">${user.user}</span>
+                    </div>
+                    <span class="text-red-400 font-mono text-[11px] bg-red-500/10 px-2 py-1 rounded font-bold">${user.likes} ❤</span>
+                </div>
+            `).join('');
         });
 
         function deleteAction(index) {

@@ -389,7 +389,7 @@
 
 
         /* ==========================================================================
-           💥 MOTOR DE FÍSICAS, JUEGO Y CONFIGURACIONES EN VIVO 💥
+           💥 MOTOR DE FÍSICAS Y FOTOS DE PERFIL (AVATARES) 💥
            ========================================================================== */
         
         // Objeto de Configuración Dinámica
@@ -418,8 +418,8 @@
 
         const COLORS = ['#00FFFF', '#FF00FF', '#39FF14', '#FF3131', '#FFD700', '#FF8C00', '#8A2BE2'];
         const MIN_POWER = 10;
-        const MAX_RADIUS = 80;
         const BASE_RADIUS = 20;
+        const MAX_RADIUS = 150; // Aumentado para que crezcan más
 
         function resizeCanvas() {
             width = wrapper.clientWidth; height = wrapper.clientHeight;
@@ -431,24 +431,31 @@
         class Ball {
             constructor(username) {
                 this.username = username;
-                this.power = arenaCfg.initialPower; // Usa la config
+                this.power = arenaCfg.initialPower; 
                 this.radius = this.calculateRadius();
                 this.x = Math.random() * (width - this.radius * 2) + this.radius;
                 this.y = Math.random() * (height - this.radius * 2) + this.radius;
                 
-                // Velocidad usa la config
                 this.vx = (Math.random() - 0.5) * arenaCfg.baseSpeed;
                 this.vy = (Math.random() - 0.5) * arenaCfg.baseSpeed;
                 
                 this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
                 this.isFurious = false;
                 this.furyTimer = 0;
+
+                // Cargar Imagen de Perfil (Avatar Pixel Art autogenerado)
+                this.avatar = new Image();
+                this.avatar.crossOrigin = "Anonymous";
+                this.avatarLoaded = false;
+                this.avatar.src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(username)}`;
+                this.avatar.onload = () => { this.avatarLoaded = true; };
             }
 
             calculateRadius() {
-                let r = BASE_RADIUS + Math.log10(Math.max(1, this.power)) * 10;
-                if(this.isFurious) r += 15;
-                return Math.min(r, MAX_RADIUS + 20);
+                // Ahora usamos Raíz Cuadrada, el crecimiento es MUCHO más notable con los puntos altos
+                let r = BASE_RADIUS + Math.sqrt(Math.max(0, this.power)) * 2;
+                if(this.isFurious) r += 20;
+                return Math.min(r, MAX_RADIUS);
             }
 
             addPower(amount) {
@@ -459,7 +466,7 @@
             triggerFury(durationMs) {
                 this.isFurious = true;
                 this.furyTimer = durationMs;
-                this.vx *= 2.0; this.vy *= 2.0; // Boost temporal
+                this.vx *= 2.0; this.vy *= 2.0; 
                 this.radius = this.calculateRadius();
             }
 
@@ -475,7 +482,6 @@
 
                 this.vx *= 0.995; this.vy *= 0.995;
                 const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
-                // Si va muy lento, darle un pequeño empujón basado en la velocidad base configurada
                 if (speed < (arenaCfg.baseSpeed * 0.2)) { 
                     this.vx += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); 
                     this.vy += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); 
@@ -495,22 +501,53 @@
                 ctx.shadowBlur = this.isFurious ? 30 : 15;
                 ctx.shadowColor = this.isFurious ? '#FFFFFF' : this.color;
                 
+                // Fondo de la bola
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
                 ctx.fill();
-                
-                ctx.shadowBlur = 0; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.stroke();
-                ctx.lineWidth = 2; ctx.strokeStyle = this.isFurious ? '#FFF' : this.color; ctx.stroke();
 
-                ctx.fillStyle = '#FFF'; ctx.font = 'bold 12px Rajdhani'; ctx.textAlign = 'center';
-                let displayUser = this.username.length > 8 ? this.username.substring(0,8) + '..' : this.username;
-                ctx.shadowColor = '#000'; ctx.shadowBlur = 4;
-                ctx.fillText(displayUser, this.x, this.y - 4);
+                // Dibujar Imagen (Recortada en círculo)
+                if (this.avatarLoaded) {
+                    ctx.save();
+                    ctx.clip(); // Restringe lo siguiente al círculo
+                    ctx.drawImage(this.avatar, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                    ctx.restore();
+                }
                 
-                ctx.font = '900 16px Rajdhani';
-                ctx.fillStyle = this.isFurious ? '#FFD700' : '#FFF';
-                ctx.fillText(Math.floor(this.power), this.x, this.y + 12);
+                // Bordes para que no se pierda la forma
+                ctx.shadowBlur = 0; 
+                ctx.lineWidth = 4; 
+                ctx.strokeStyle = 'rgba(0,0,0,0.5)'; 
+                ctx.stroke();
+                
+                ctx.lineWidth = 3; 
+                ctx.strokeStyle = this.isFurious ? '#FFF' : this.color; 
+                ctx.stroke();
+
+                // Cartelito oscuro para que el texto sea siempre legible
+                const displayUser = this.username.length > 10 ? this.username.substring(0,10) + '..' : this.username;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.beginPath();
+                // Dibujar rectángulo redondeado bajo la bola
+                if(ctx.roundRect) {
+                    ctx.roundRect(this.x - 45, this.y + this.radius + 4, 90, 32, 6);
+                } else {
+                    ctx.rect(this.x - 45, this.y + this.radius + 4, 90, 32);
+                }
+                ctx.fill();
+
+                // Textos de Nombre y Poder
+                ctx.fillStyle = '#FFF'; 
+                ctx.font = 'bold 11px Rajdhani'; 
+                ctx.textAlign = 'center';
+                ctx.fillText(displayUser, this.x, this.y + this.radius + 16);
+                
+                ctx.font = '900 14px Rajdhani';
+                ctx.fillStyle = this.isFurious ? '#FFD700' : '#39FF14';
+                ctx.fillText(Math.floor(this.power) + " pts", this.x, this.y + this.radius + 30);
+                
                 ctx.restore();
             }
         }
@@ -539,7 +576,6 @@
                             let winner, loser;
                             if (b1.power > b2.power) { winner = b1; loser = b2; } else { winner = b2; loser = b1; }
 
-                            // Si está en furia, roba el doble del % configurado
                             const currentSteal = winner.isFurious ? (arenaCfg.stealPercent * 2) : arenaCfg.stealPercent;
                             const dmg = Math.max(1, Math.floor(loser.power * currentSteal));
                             
@@ -646,7 +682,6 @@
                              <div class="text-[10px]"><b class="text-white">${data.user}</b> x${data.amount} <span class="text-green-400">${data.gift}</span></div>`;
             document.getElementById('gift-container').prepend(div);
             
-            // Usar variables de configuración en lugar de números fijos
             const powerAdded = data.amount * arenaCfg.giftMultiplier;
             handleUserInteraction(data.user, powerAdded); 
             

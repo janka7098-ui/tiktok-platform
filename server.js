@@ -130,17 +130,20 @@ io.on("connection",(socket)=>{
         }
       });
 
-      /* =========================
+/* =========================
          CHAT
       ========================= */
       tiktok.on("chat",(data)=>{
         socket.emit("chat",{
           user:data.nickname,
           message:data.comment,
-          avatar: data.profilePictureUrl // <-- FOTO DE PERFIL AÑADIDA
+          avatar: data.profilePictureUrl,
+          // Añadimos los roles para el filtro:
+          isMod: data.isModerator,
+          isSub: data.isSubscriber,
+          isFollower: data.followRole === 1 || data.followRole === 2
         });
       });
-
       /* =========================
          TAP TAP (LIKES)
       ========================= */

@@ -841,6 +841,868 @@
         function handleUserInteraction(username, powerToAdd, avatarUrl) {
             // Ignorar interacciones si la partida ya acabó (pantalla de victoria)
             if (gameState === 'ended') return;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexora Ultra | Battle Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700;900&display=swap');
+        
+        :root {
+            --purple: #8A2BE2;
+            --green: #39FF14;
+            --red: #FF3131;
+            --bg: #050507;
+            --cyan: #00FFFF;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg);
+            color: #efefef;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1a0b2e 0%, var(--bg) 80%);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .glass {
+            background: rgba(15, 15, 22, 0.85);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            border: 1px solid rgba(138, 43, 226, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+        }
+
+        #loader {
+            position: fixed; inset: 0;
+            background: rgba(5, 5, 7, 0.98);
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
+        }
+
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(138, 43, 226, 0.1);
+            border-left-color: var(--cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* TABS */
+        .tab-btn {
+            position: relative; overflow: hidden;
+            transition: all 0.3s; border-bottom: 2px solid transparent;
+        }
+        .tab-btn.active {
+            border-color: var(--cyan); color: white;
+            background: rgba(0, 255, 255, 0.05);
+        }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%); width: 40px; height: 10px;
+            background: var(--cyan); filter: blur(8px); border-radius: 50%;
+        }
+
+        .gift-selector {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300FFFF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        .mode-btn {
+            background: rgba(255,255,255,0.05);
+            color: #666;
+            transition: all 0.3s;
+        }
+        .mode-btn.active { background: var(--purple); color: white; }
+        .mode-btn.active.webhook-active { background: var(--cyan); color: black; }
+
+        /* INPUTS CONFIG ARENA */
+        .cfg-input {
+            width: 60px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #27272a;
+            border-radius: 6px;
+            text-align: center;
+            color: var(--cyan);
+            font-weight: bold;
+            font-size: 12px;
+            outline: none;
+            padding: 4px;
+            transition: border-color 0.3s;
+        }
+        .cfg-input:focus { border-color: var(--cyan); }
+
+        /* CANVAS ARENA Y CRONÓMETRO */
+        #game-canvas {
+            width: 100%; height: 100%;
+            display: block;
+            border-radius: 12px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        #arena-timer {
+            position: absolute;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--cyan);
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            z-index: 20;
+            pointer-events: none;
+            line-height: 1;
+            transition: color 0.3s;
+        }
+
+        /* OVERLAYS (START & END) */
+        #start-match-overlay, #end-match-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 30;
+            display: flex; /* Oculto o visible por JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        #end-match-overlay { display: none; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
+
+        .btn-start {
+            background: var(--cyan);
+            color: black;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+        }
+
+        .top-winner {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.1) 100%);
+            border: 1px solid;
+            transition: transform 0.3s;
+        }
+        .top-1 { border-color: #FFD700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
+        .top-2 { border-color: #C0C0C0; box-shadow: 0 0 15px rgba(192, 192, 192, 0.1); }
+        .top-3 { border-color: #CD7F32; box-shadow: 0 0 10px rgba(205, 127, 50, 0.1); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4 pb-12">
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p class="mt-4 text-cyan-500 font-bold tracking-widest animate-pulse uppercase">Iniciando Core...</p>
+    </div>
+
+    <nav class="max-w-[1800px] mx-auto mb-4 flex items-center justify-between glass p-4">
+        <div class="flex items-center gap-4">
+            <img id="host-avatar" src="/Logo.png" alt="Logo" class="h-[60px] w-[60px] object-cover rounded-full border-2 border-transparent transition-all duration-500" onerror="this.src='/Logo.png'">
+            <div class="flex flex-col">
+                <h1 id="host-title" class="text-3xl font-black italic tracking-tighter leading-none uppercase">NEXORA <span class="text-cyan-500">ARENA</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <div id="status-pulse" class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span id="connection-status" class="text-[10px] uppercase tracking-[3px] text-red-500 font-bold italic">Offline</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4 items-center">
+            <input id="username" type="text" placeholder="@usuario" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-40 font-medium">
+            <input id="key" type="password" placeholder="Key" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-32 font-medium">
+            <button id="btn-connect" class="bg-cyan-600 hover:bg-cyan-400 text-black px-6 py-2 rounded-lg font-black text-xs transition-all uppercase tracking-widest">Conectar</button>
+            <button id="btn-disconnect" class="hidden bg-zinc-900 border border-red-600 text-red-500 px-6 py-2 rounded-lg font-black text-xs transition-all uppercase tracking-widest">Salir</button>
+        </div>
+    </nav>
+
+    <div class="max-w-[1800px] mx-auto mb-6 flex gap-2 glass p-1">
+        <button onclick="showTab('dashboard')" id="tab-btn-dashboard" class="tab-btn flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
+            <i data-lucide="settings" class="w-4 h-4 text-purple-500"></i> Dashboard Maestro
+        </button>
+        <button onclick="showTab('game')" id="tab-btn-game" class="tab-btn active flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
+            <i data-lucide="swords" class="w-4 h-4 text-cyan-500 animate-pulse"></i> Arena de Batalla
+        </button>
+    </div>
+
+    <main id="view-dashboard" class="hidden max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <section class="glass p-6">
+                <h2 class="text-cyan-400 font-bold uppercase text-xs mb-4 flex items-center gap-2 italic tracking-widest"><i data-lucide="upload-cloud" class="w-4"></i> Configurar Alerta</h2>
+                <div class="flex bg-black/40 p-1 rounded-lg border border-zinc-800 mb-4">
+                    <button onclick="setMode('mp3')" id="mode-mp3" class="mode-btn active flex-1 py-2 text-[10px] font-bold uppercase rounded-md">Modo MP3</button>
+                    <button onclick="setMode('link')" id="mode-link" class="mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md">Webhook Juego</button>
+                </div>
+                <div class="space-y-4">
+                    <select id="gift-select" class="gift-selector w-full bg-black/60 border border-zinc-700 p-3 rounded-xl text-xs outline-none focus:border-cyan-500 text-zinc-300 font-bold">
+                        <option value="" disabled selected>Seleccionar Regalo...</option>
+                    </select>
+                    <div id="container-mp3">
+                        <input type="file" id="file-input" accept="audio/mpeg" class="hidden">
+                        <button onclick="document.getElementById('file-input').click()" class="w-full bg-zinc-900 border border-dashed border-zinc-700 p-3 rounded-lg text-xs text-zinc-400 hover:border-cyan-500 transition-all flex flex-col items-center gap-2">
+                            <i data-lucide="music" class="w-4 h-4 text-purple-500"></i>
+                            <span id="file-name">Seleccionar MP3...</span>
+                        </button>
+                    </div>
+                    <div id="container-link" class="hidden">
+                        <input id="link-input" type="text" placeholder="http://localhost:8080/comando" class="w-full bg-black/60 border border-zinc-800 p-3 rounded-lg text-xs text-cyan-400 outline-none focus:border-cyan-500 font-mono">
+                    </div>
+                    <button id="btn-save-action" class="w-full bg-white text-black font-black py-3 rounded-xl text-xs uppercase hover:bg-cyan-500 transition-all shadow-lg">Guardar y Vincular</button>
+                </div>
+            </section>
+            <section class="glass flex-1 p-6 flex flex-col overflow-hidden">
+                <h2 class="text-purple-400 font-bold uppercase text-xs mb-4 italic tracking-widest">Eventos Activos</h2>
+                <div id="actions-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
+            </section>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6 grid grid-cols-2 gap-6">
+            <div class="glass flex flex-col overflow-hidden">
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400"><i data-lucide="message-square" class="inline w-3 mr-1"></i> CHAT EN VIVO</div>
+                <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            </div>
+            <div class="glass flex flex-col overflow-hidden">
+                <div class="p-4 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-green-400"><i data-lucide="gift" class="inline w-3 mr-1"></i> REGALOS RECIENTES</div>
+                <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <section class="glass p-6">
+                <h2 class="text-xs font-bold uppercase mb-4 text-zinc-500 italic">Controles Maestro</h2>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <label class="text-[10px] text-zinc-500 uppercase">Volumen Voces (TTS)</label>
+                            <span id="vol-perc" class="text-[10px] text-cyan-400 font-bold">70%</span>
+                        </div>
+                        <input id="tts-volume" type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-cyan-500 cursor-pointer">
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 justify-between mb-2">
+                            <label class="text-[10px] text-zinc-500 uppercase">Voz de Narración</label>
+                            <input type="checkbox" id="tts-enabled" checked class="accent-cyan-500 h-4 w-4">
+                        </div>
+                        <select id="tts-voice" class="gift-selector w-full bg-black/40 border border-zinc-800 p-3 rounded-lg text-xs text-white outline-none focus:border-cyan-500"></select>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <main id="view-game" class="max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
+        
+        <div class="col-span-12 lg:col-span-9 glass relative p-1 flex flex-col overflow-hidden group">
+            <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl pointer-events-none z-10 group-hover:border-cyan-500/50 transition-colors"></div>
+            
+            <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
+                <span class="bg-black/80 text-cyan-400 text-[10px] font-black px-3 py-1 rounded-full border border-cyan-500/30 tracking-widest uppercase shadow-[0_0_10px_rgba(0,255,255,0.2)]">Arena Activa</span>
+            </div>
+
+            <div class="flex-1 w-full h-full relative" id="canvas-wrapper">
+                
+                <div id="arena-timer">03:00</div>
+                
+                <canvas id="game-canvas"></canvas>
+
+                <div id="start-match-overlay">
+                    <h2 class="text-4xl font-black italic text-white mb-2 uppercase tracking-widest">Sala de Espera</h2>
+                    <p class="text-cyan-400 mb-8 uppercase text-xs tracking-[5px] font-bold">Las bolas no se hacen daño aún</p>
+                    <button id="btn-start-match" onclick="startMatch()" class="btn-start px-12 py-5 rounded-2xl font-black text-3xl uppercase tracking-widest cursor-pointer">
+                        Iniciar Batalla
+                    </button>
+                </div>
+
+                <div id="end-match-overlay">
+                    <h2 class="text-6xl font-black italic text-cyan-400 mb-8 uppercase tracking-widest" style="text-shadow: 0 0 30px rgba(0,255,255,0.4);">¡FIN DE LA RONDA!</h2>
+                    
+                    <div id="top-3-container" class="flex flex-col gap-4 mb-10 w-full max-w-2xl">
+                        </div>
+
+                    <div class="flex flex-col items-center">
+                        <p class="text-xl text-zinc-400 font-bold uppercase tracking-widest">Preparando nueva sala en</p>
+                        <span id="restart-countdown" class="text-red-500 text-6xl font-black mt-2 drop-shadow-lg">5</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            
+            <div class="glass flex-1 flex flex-col overflow-hidden relative">
+                <div class="p-4 border-b border-zinc-900 bg-gradient-to-r from-black/60 to-transparent flex justify-between items-center z-10">
+                    <h2 class="text-cyan-400 font-black uppercase tracking-widest italic text-sm"><i data-lucide="crown" class="inline w-4 mr-1 pb-1"></i> Top Dominantes</h2>
+                    <span id="player-count" class="text-[10px] text-zinc-500 font-mono">0 Luchadores</span>
+                </div>
+                <div id="arena-ranking" class="flex-1 overflow-y-auto p-2 space-y-1 relative z-10"></div>
+            </div>
+
+            <div class="glass p-5 h-auto flex flex-col gap-3">
+                <h2 class="text-xs font-bold uppercase text-zinc-500 italic tracking-widest mb-2 border-b border-zinc-800 pb-2">
+                    <i data-lucide="sliders" class="inline w-3 mr-1"></i> Ajustes de la Arena
+                </h2>
+                
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] text-cyan-400 uppercase font-black" title="Minutos que dura cada ronda">Tiempo (Minutos)</span>
+                    <input type="number" id="cfg-time" value="3" min="1" max="60" class="cfg-input border-cyan-500 bg-cyan-900/20 text-white text-sm" onchange="updateLobbyTimer()">
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Poder con el que entra un nuevo jugador">Poder Inicial</span>
+                    <input type="number" id="cfg-init" value="50" min="10" class="cfg-input">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad general de movimiento">Velocidad Base</span>
+                    <input type="number" id="cfg-speed" value="4" min="1" max="20" class="cfg-input">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-zinc-400 uppercase font-bold" title="Porcentaje de puntos robados al chocar (Ej: 5%)">% Robo (Choque)</span>
+                    <input type="number" id="cfg-steal" value="5" min="1" max="100" class="cfg-input">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-purple-400 uppercase font-bold" title="Poder otorgado por cada 1 unidad de regalo">Poder x Regalo</span>
+                    <input type="number" id="cfg-gift" value="100" min="10" class="cfg-input border-purple-500/50 text-purple-400">
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] text-purple-400 uppercase font-bold" title="Segundos que dura el modo Furia">Duración Furia (s)</span>
+                    <input type="number" id="cfg-fury-time" value="10" min="1" class="cfg-input border-purple-500/50 text-purple-400">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const socket = io();
+        lucide.createIcons();
+
+        // --- SISTEMA TTS Y VOLUMEN ---
+        const synth = window.speechSynthesis;
+        let voices = [];
+        function loadVoices() {
+            voices = synth.getVoices();
+            const voiceSelect = document.getElementById('tts-voice');
+            voiceSelect.innerHTML = voices.map((v, i) => `<option value="${i}" ${v.lang.includes('es') ? 'selected' : ''}>${v.name}</option>`).join('');
+        }
+        speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+
+        function speak(text) {
+            if (!document.getElementById('tts-enabled').checked) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.voice = voices[document.getElementById('tts-voice').value] || voices[0];
+            utter.volume = document.getElementById('tts-volume').value;
+            synth.speak(utter);
+        }
+
+        document.getElementById('tts-volume').oninput = (e) => {
+            document.getElementById('vol-perc').innerText = Math.round(e.target.value * 100) + "%";
+        };
+
+        // --- TABS ---
+        function showTab(tab) {
+            document.getElementById('view-dashboard').classList.toggle('hidden', tab !== 'dashboard');
+            document.getElementById('view-game').classList.toggle('hidden', tab !== 'game');
+            document.getElementById('tab-btn-dashboard').classList.toggle('active', tab === 'dashboard');
+            document.getElementById('tab-btn-game').classList.toggle('active', tab === 'game');
+            if(tab === 'game') resizeCanvas();
+        }
+
+        // --- LÓGICA DE MODOS ALERTAS ---
+        let currentMode = 'mp3';
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-mp3').className = mode === 'mp3' ? "mode-btn active flex-1 py-2 text-[10px] font-bold uppercase rounded-md" : "mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md";
+            document.getElementById('mode-link').className = mode === 'link' ? "mode-btn active webhook-active flex-1 py-2 text-[10px] font-bold uppercase rounded-md" : "mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md";
+            document.getElementById('container-mp3').classList.toggle('hidden', mode !== 'mp3');
+            document.getElementById('container-link').classList.toggle('hidden', mode !== 'link');
+        }
+
+        // --- GUARDAR EVENTOS ---
+        document.getElementById('btn-save-action').onclick = () => {
+            const username = document.getElementById('username').value;
+            const gift = document.getElementById('gift-select').value;
+            if(!username || !gift) return alert("Faltan datos (Usuario o Regalo)");
+
+            if(currentMode === 'mp3') {
+                const fileInput = document.getElementById('file-input');
+                const file = fileInput.files[0];
+                if(!file) return alert("Selecciona un MP3");
+                document.getElementById('loader').style.display = 'flex';
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    socket.emit("uploadAndSave", { username, gift, fileName: file.name, fileData: e.target.result });
+                    fileInput.value = ""; document.getElementById('file-name').innerText = "Seleccionar MP3...";
+                };
+                reader.readAsDataURL(file);
+            } else {
+                const link = document.getElementById('link-input').value;
+                if(!link) return alert("Ingresa el Link");
+                socket.emit("saveAction", { username, action: { gift, file: link, type: 'link' } });
+                document.getElementById('link-input').value = "";
+            }
+        };
+
+        document.getElementById('file-input').onchange = (e) => {
+            document.getElementById('file-name').innerText = e.target.files[0]?.name || "Seleccionar MP3...";
+        };
+
+        function deleteAction(index) {
+            socket.emit("deleteAction", { username: document.getElementById('username').value, index });
+        }
+
+        fetch('/gift-list').then(r => r.json()).then(d => {
+            document.getElementById('gift-select').innerHTML += d.map(g => `<option value="${g.name}">${g.name.toUpperCase()}</option>`).join('');
+        });
+
+        // --- CONEXIÓN Y ESTADOS ---
+        document.getElementById('btn-connect').onclick = () => {
+            const username = document.getElementById('username').value;
+            const key = document.getElementById('key').value;
+            if(!username || !key) return alert("Faltan datos");
+            document.getElementById('loader').style.display = 'flex';
+            socket.emit("startConnection", { username, key });
+        };
+
+        document.getElementById('btn-disconnect').onclick = () => { socket.emit("stopConnection"); };
+
+        socket.on("status", (status) => {
+            document.getElementById('loader').style.display = 'none';
+            const sText = document.getElementById('connection-status');
+            const sPulse = document.getElementById('status-pulse');
+            const hostAvatar = document.getElementById('host-avatar');
+            const hostTitle = document.getElementById('host-title');
+            
+            if (status === "connected") {
+                sText.innerText = "SISTEMA ONLINE"; sText.className = "text-[10px] uppercase tracking-[3px] text-cyan-400 font-bold italic";
+                sPulse.className = "w-2 h-2 rounded-full bg-cyan-400 animate-ping";
+                document.getElementById('btn-connect').classList.add('hidden');
+                document.getElementById('btn-disconnect').classList.remove('hidden');
+                hostAvatar.classList.add('border-cyan-500', 'shadow-[0_0_15px_rgba(0,255,255,0.4)]');
+                speak("Sistemas en línea. Sala de espera abierta.");
+                socket.emit("getActions", document.getElementById('username').value);
+            } else {
+                sText.innerText = "OFFLINE"; sText.className = "text-[10px] uppercase tracking-[3px] text-red-500 font-bold italic";
+                sPulse.className = "w-2 h-2 rounded-full bg-red-500";
+                document.getElementById('btn-connect').classList.remove('hidden');
+                document.getElementById('btn-disconnect').classList.add('hidden');
+                
+                // Reiniciar Logo e Info
+                hostAvatar.src = "/Logo.png";
+                hostAvatar.classList.remove('border-cyan-500', 'shadow-[0_0_15px_rgba(0,255,255,0.4)]');
+                hostTitle.innerHTML = `NEXORA <span class="text-cyan-500">ARENA</span>`;
+            }
+        });
+
+        // RECIBIR INFORMACIÓN DEL CREADOR (FOTO DE PERFIL DE LA CUENTA PRINCIPAL)
+        socket.on("connectedUserData", (data) => {
+            if(data.profilePictureUrl) {
+                document.getElementById('host-avatar').src = data.profilePictureUrl;
+            }
+            if(data.username) {
+                document.getElementById('host-title').innerHTML = `${data.username} <span class="text-cyan-500 text-lg">LIVE</span>`;
+            }
+        });
+
+
+        /* ==========================================================================
+           💥 MOTOR DE FÍSICAS, SISTEMA DE PARTIDAS Y AVATARES 💥
+           ========================================================================== */
+        
+        const arenaCfg = {
+            initialPower: 50,
+            baseSpeed: 4,
+            stealPercent: 0.05,
+            giftMultiplier: 100,
+            furyTimeSec: 10,
+            matchTimeMin: 3 
+        };
+
+        // Escuchar cambios en los inputs UI
+        document.getElementById('cfg-init').oninput = e => arenaCfg.initialPower = Number(e.target.value);
+        document.getElementById('cfg-speed').oninput = e => arenaCfg.baseSpeed = Number(e.target.value);
+        document.getElementById('cfg-steal').oninput = e => arenaCfg.stealPercent = Number(e.target.value) / 100;
+        document.getElementById('cfg-gift').oninput = e => arenaCfg.giftMultiplier = Number(e.target.value);
+        document.getElementById('cfg-fury-time').oninput = e => arenaCfg.furyTimeSec = Number(e.target.value);
+        document.getElementById('cfg-time').oninput = e => {
+            arenaCfg.matchTimeMin = Number(e.target.value);
+            if(gameState === 'waiting') updateLobbyTimer();
+        };
+
+        // --- SISTEMA DE ESTADO DE PARTIDA Y CRONÓMETRO ---
+        let gameState = 'waiting'; // 'waiting' (Lobby), 'playing' (Combate), 'ended' (Top 3)
+        let timeRemaining = 0; 
+        let matchInterval;
+
+        function updateLobbyTimer() {
+            const m = Math.floor(arenaCfg.matchTimeMin).toString().padStart(2, '0');
+            document.getElementById('arena-timer').innerText = `${m}:00`;
+            document.getElementById('arena-timer').style.color = 'var(--cyan)';
+            document.getElementById('arena-timer').style.textShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+        }
+
+        // Mostrar la pantalla de Start (Lobby)
+        function showStartScreen() {
+            gameState = 'waiting';
+            document.getElementById('end-match-overlay').style.display = 'none';
+            document.getElementById('start-match-overlay').style.display = 'flex';
+            updateLobbyTimer();
+            balls.clear(); 
+            floatingTexts.length = 0;
+            updateUILeaderboard();
+        }
+
+        // Iniciar la ronda
+        function startMatch() {
+            gameState = 'playing';
+            timeRemaining = arenaCfg.matchTimeMin * 60;
+            document.getElementById('start-match-overlay').style.display = 'none';
+            speak("¡Batalla iniciada! Que comience el combate.");
+            
+            clearInterval(matchInterval);
+            matchInterval = setInterval(() => {
+                if (gameState === 'playing') {
+                    timeRemaining--;
+                    updateTimerDisplay();
+                    if (timeRemaining <= 0) {
+                        endMatch();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            const s = (timeRemaining % 60).toString().padStart(2, '0');
+            const timerEl = document.getElementById('arena-timer');
+            timerEl.innerText = `${m}:${s}`;
+
+            if (timeRemaining <= 10 && timeRemaining > 0) {
+                timerEl.style.color = '#FF3131';
+                timerEl.style.textShadow = '0 0 30px rgba(255, 49, 49, 0.9)';
+                timerEl.classList.add('animate-pulse');
+                if (timeRemaining <= 5) speak(timeRemaining.toString()); // Cuenta regresiva voz
+            } else {
+                timerEl.style.color = 'var(--cyan)';
+                timerEl.style.textShadow = '0 0 20px rgba(0, 255, 255, 0.5)';
+                timerEl.classList.remove('animate-pulse');
+            }
+        }
+
+        function endMatch() {
+            gameState = 'ended';
+            clearInterval(matchInterval);
+            speak("Partida terminada. Mostrando ganadores.");
+            
+            const sorted = Array.from(balls.values()).sort((a, b) => b.power - a.power).slice(0, 3);
+            const container = document.getElementById('top-3-container');
+            container.innerHTML = '';
+            
+            const medals = ['top-1', 'top-2', 'top-3'];
+            const colors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+            const labels = ['ORO', 'PLATA', 'BRONCE'];
+            
+            if (sorted.length === 0) {
+                container.innerHTML = '<p class="text-center text-zinc-400 italic text-2xl">Nadie participó en esta ronda...</p>';
+            } else {
+                sorted.forEach((b, i) => {
+                    const avatarSrc = b.avatarLoaded ? b.avatar.src : `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(b.username)}`;
+                    container.innerHTML += `
+                        <div class="top-winner ${medals[i]} flex items-center justify-between p-4 rounded-xl">
+                            <div class="flex items-center gap-6">
+                                <div class="flex flex-col items-center justify-center w-12">
+                                    <span class="text-4xl font-black leading-none" style="color: ${colors[i]}">#${i+1}</span>
+                                    <span class="text-[10px] font-bold uppercase tracking-widest mt-1" style="color: ${colors[i]}">${labels[i]}</span>
+                                </div>
+                                <img src="${avatarSrc}" class="w-16 h-16 rounded-full border-4" style="border-color: ${colors[i]}">
+                                <span class="text-3xl font-bold text-white truncate max-w-[200px]">${b.username}</span>
+                            </div>
+                            <span class="text-4xl font-black text-green-400 drop-shadow-md">${Math.floor(b.power)} <span class="text-xl">pts</span></span>
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('end-match-overlay').style.display = 'flex';
+            
+            let restartTimer = 5;
+            document.getElementById('restart-countdown').innerText = restartTimer;
+            const restartInterval = setInterval(() => {
+                restartTimer--;
+                document.getElementById('restart-countdown').innerText = restartTimer;
+                if (restartTimer <= 0) {
+                    clearInterval(restartInterval);
+                    showStartScreen(); // Volver al Lobby
+                }
+            }, 1000);
+        }
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvas-wrapper');
+        
+        let width, height;
+        const balls = new Map();
+        const floatingTexts = [];
+
+        const COLORS = ['#00FFFF', '#FF00FF', '#39FF14', '#FF3131', '#FFD700', '#FF8C00', '#8A2BE2'];
+        const MIN_POWER = 10;
+        const BASE_RADIUS = 20;
+        const MAX_RADIUS = 150;
+
+        function resizeCanvas() {
+            width = wrapper.clientWidth; height = wrapper.clientHeight;
+            canvas.width = width; canvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Ball {
+            constructor(username, avatarUrl) {
+                this.username = username;
+                this.power = arenaCfg.initialPower; 
+                this.radius = this.calculateRadius();
+                this.x = Math.random() * (width - this.radius * 2) + this.radius;
+                this.y = Math.random() * (height - this.radius * 2) + this.radius;
+                
+                this.vx = (Math.random() - 0.5) * arenaCfg.baseSpeed;
+                this.vy = (Math.random() - 0.5) * arenaCfg.baseSpeed;
+                
+                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                this.isFurious = false;
+                this.furyTimer = 0;
+
+                this.avatar = new Image();
+                this.avatar.crossOrigin = "Anonymous";
+                this.avatarLoaded = false;
+                
+                if (avatarUrl) {
+                    this.avatar.src = `/avatar-proxy?url=${encodeURIComponent(avatarUrl)}`;
+                } else {
+                    this.avatar.src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(username)}`;
+                }
+                
+                this.avatar.onload = () => { this.avatarLoaded = true; };
+            }
+
+            calculateRadius() {
+                let r = BASE_RADIUS + Math.sqrt(Math.max(0, this.power)) * 2;
+                if(this.isFurious) r += 20;
+                return Math.min(r, MAX_RADIUS);
+            }
+
+            addPower(amount) {
+                this.power += amount;
+                this.radius = this.calculateRadius();
+            }
+
+            triggerFury(durationMs) {
+                this.isFurious = true;
+                this.furyTimer = durationMs;
+                this.vx *= 2.0; this.vy *= 2.0; 
+                this.radius = this.calculateRadius();
+            }
+
+            update(deltaTime) {
+                if (this.isFurious) {
+                    this.furyTimer -= deltaTime;
+                    if (this.furyTimer <= 0) {
+                        this.isFurious = false;
+                        this.radius = this.calculateRadius();
+                        this.vx *= 0.5; this.vy *= 0.5;
+                    }
+                }
+
+                this.vx *= 0.995; this.vy *= 0.995;
+                const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                if (speed < (arenaCfg.baseSpeed * 0.2)) { 
+                    this.vx += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); 
+                    this.vy += (Math.random() - 0.5) * (arenaCfg.baseSpeed * 0.1); 
+                }
+
+                this.x += this.vx; this.y += this.vy;
+
+                // Rebotes
+                if (this.x - this.radius <= 0) { this.x = this.radius; this.vx *= -1; }
+                if (this.x + this.radius >= width) { this.x = width - this.radius; this.vx *= -1; }
+                if (this.y - this.radius <= 0) { this.y = this.radius; this.vy *= -1; }
+                if (this.y + this.radius >= height) { this.y = height - this.radius; this.vy *= -1; }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.shadowBlur = this.isFurious ? 30 : 15;
+                ctx.shadowColor = this.isFurious ? '#FFFFFF' : this.color;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+
+                if (this.avatarLoaded) {
+                    ctx.save();
+                    ctx.clip();
+                    ctx.drawImage(this.avatar, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+                    ctx.restore();
+                }
+                
+                ctx.shadowBlur = 0; 
+                ctx.lineWidth = 4; 
+                ctx.strokeStyle = 'rgba(0,0,0,0.5)'; 
+                ctx.stroke();
+                
+                ctx.lineWidth = 3; 
+                ctx.strokeStyle = this.isFurious ? '#FFF' : this.color; 
+                ctx.stroke();
+
+                const displayUser = this.username.length > 10 ? this.username.substring(0,10) + '..' : this.username;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.beginPath();
+                if(ctx.roundRect) {
+                    ctx.roundRect(this.x - 45, this.y + this.radius + 4, 90, 32, 6);
+                } else {
+                    ctx.rect(this.x - 45, this.y + this.radius + 4, 90, 32);
+                }
+                ctx.fill();
+
+                ctx.fillStyle = '#FFF'; 
+                ctx.font = 'bold 11px Rajdhani'; 
+                ctx.textAlign = 'center';
+                ctx.fillText(displayUser, this.x, this.y + this.radius + 16);
+                
+                ctx.font = '900 14px Rajdhani';
+                ctx.fillStyle = this.isFurious ? '#FFD700' : '#39FF14';
+                ctx.fillText(Math.floor(this.power) + " pts", this.x, this.y + this.radius + 30);
+                
+                ctx.restore();
+            }
+        }
+
+        function resolveCollisions() {
+            const ballArray = Array.from(balls.values());
+            for (let i = 0; i < ballArray.length; i++) {
+                for (let j = i + 1; j < ballArray.length; j++) {
+                    const b1 = ballArray[i], b2 = ballArray[j];
+                    const dx = b2.x - b1.x, dy = b2.y - b1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minDistance = b1.radius + b2.radius;
+
+                    if (distance < minDistance) {
+                        const overlap = minDistance - distance;
+                        const nx = dx / distance, ny = dy / distance;
+                        b1.x -= nx * (overlap / 2); b1.y -= ny * (overlap / 2);
+                        b2.x += nx * (overlap / 2); b2.y += ny * (overlap / 2);
+
+                        const p = 2 * (b1.vx * nx + b1.vy * ny - b2.vx * nx - b2.vy * ny) / (b1.radius + b2.radius);
+                        b1.vx -= p * b2.radius * nx; b1.vy -= p * b2.radius * ny;
+                        b2.vx += p * b1.radius * nx; b2.vy += p * b1.radius * ny;
+
+                        // Solo hay robo de puntos si la partida ESTÁ ACTIVA (No en el Lobby)
+                        if (gameState === 'playing' && Math.abs(b1.power - b2.power) > 5) {
+                            let winner, loser;
+                            if (b1.power > b2.power) { winner = b1; loser = b2; } else { winner = b2; loser = b1; }
+
+                            const currentSteal = winner.isFurious ? (arenaCfg.stealPercent * 2) : arenaCfg.stealPercent;
+                            const dmg = Math.max(1, Math.floor(loser.power * currentSteal));
+                            
+                            winner.addPower(dmg); loser.addPower(-dmg);
+                            spawnFloatingText(winner.x, winner.y - winner.radius, `+${dmg}`, winner.color);
+                            spawnFloatingText(loser.x, loser.y + loser.radius, `-${dmg}`, '#FF3131');
+                        }
+                    }
+                }
+            }
+        }
+
+        function spawnFloatingText(x, y, text, color) {
+            floatingTexts.push({ x, y, text, color, life: 1.0, vy: -1.5 });
+        }
+
+        function drawFloatingTexts(ctx) {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy; ft.life -= 0.02;
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ft.life); ctx.fillStyle = ft.color;
+                ctx.font = 'bold 20px Rajdhani'; ctx.shadowColor = '#000'; ctx.shadowBlur = 4;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+        }
+
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime; lastTime = timestamp;
+            ctx.clearRect(0, 0, width, height);
+
+            const deadBalls = [];
+            for (const [username, ball] of balls.entries()) {
+                ball.update(deltaTime); ball.draw(ctx);
+                // Solo mueren si estamos en combate
+                if (ball.power < MIN_POWER && gameState === 'playing') { 
+                    deadBalls.push(username); 
+                    spawnFloatingText(ball.x, ball.y, "¡ELIMINADO!", "#FF0000"); 
+                }
+            }
+            
+            if (gameState === 'playing') {
+                deadBalls.forEach(user => balls.delete(user));
+            }
+            
+            resolveCollisions(); 
+            updateUILeaderboard();
+            drawFloatingTexts(ctx); 
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Iniciar rendering y mostrar el Lobby
+        requestAnimationFrame(gameLoop);
+        showStartScreen();
+
+        function updateUILeaderboard() {
+            document.getElementById('player-count').innerText = `${balls.size} Luchadores`;
+            const sorted = Array.from(balls.values()).sort((a, b) => b.power - a.power).slice(0, 10);
+            document.getElementById('arena-ranking').innerHTML = sorted.map((b, i) => `
+                <div class="flex items-center justify-between bg-black/40 p-2 rounded border border-zinc-800 ${i===0 ? 'border-cyan-500/50 bg-cyan-900/10' : ''}">
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="font-black ${i===0 ? 'text-cyan-400' : 'text-zinc-500'}">#${i+1}</span>
+                        <div class="w-2 h-2 rounded-full" style="background-color: ${b.color}"></div>
+                        <span class="font-bold text-white truncate max-w-[100px]">${b.username}</span>
+                    </div>
+                    <span class="text-xs font-mono font-bold ${b.isFurious ? 'text-purple-400 animate-pulse' : 'text-green-400'}">${Math.floor(b.power)} pts</span>
+                </div>
+            `).join('');
+        }
+
+        // --- MANEJO DE ENTRADAS ---
+        function handleUserInteraction(username, powerToAdd, avatarUrl) {
+            // Ignorar interacciones si la partida ya acabó (pantalla de victoria)
+            if (gameState === 'ended') return;
 
             if (!balls.has(username)) balls.set(username, new Ball(username, avatarUrl));
             balls.get(username).addPower(powerToAdd);

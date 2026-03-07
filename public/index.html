@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexora Ultra | Dashboard & Game</title>
+    <title>Nexora Ultra | Battle Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700;900&display=swap');
         
         :root {
             --purple: #8A2BE2;
             --green: #39FF14;
             --red: #FF3131;
             --bg: #050507;
+            --cyan: #00FFFF;
         }
 
         body {
@@ -24,663 +25,556 @@
             overflow-x: hidden;
             background-image: radial-gradient(circle at 50% -20%, #1a0b2e 0%, var(--bg) 80%);
             min-height: 100vh;
+            margin: 0;
         }
 
         .glass {
-            background: rgba(15, 15, 22, 0.9);
-            backdrop-filter: blur(12px);
+            background: rgba(15, 15, 22, 0.85);
+            backdrop-filter: blur(16px);
             border-radius: 16px;
-            border: 1px solid rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.15);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .glass:hover {
-            border-color: var(--green);
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.1);
-        }
-
-        .gift-selector {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%238A2BE2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
         }
 
         #loader {
-            position: fixed;
-            inset: 0;
+            position: fixed; inset: 0;
             background: rgba(5, 5, 7, 0.98);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 100;
         }
 
         .spinner {
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             border: 4px solid rgba(138, 43, 226, 0.1);
-            border-left-color: var(--purple);
+            border-left-color: var(--cyan);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        .mode-btn {
-            background: rgba(255,255,255,0.05);
-            color: #666;
-            transition: all 0.3s;
-        }
-        .mode-btn.active {
-            background: var(--purple);
-            color: white;
-        }
-        .mode-btn.active.webhook-active {
-            background: var(--green);
-            color: black;
-        }
-
-        /* --- ESTILOS DE PESTAÑAS (TABS) --- */
+        /* TABS */
         .tab-btn {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
-            border-bottom: 2px solid transparent;
+            position: relative; overflow: hidden;
+            transition: all 0.3s; border-bottom: 2px solid transparent;
         }
         .tab-btn.active {
-            border-color: var(--purple);
-            color: white;
-            background: rgba(138, 43, 226, 0.05);
+            border-color: var(--cyan); color: white;
+            background: rgba(0, 255, 255, 0.05);
         }
         .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 40px; height: 10px;
-            background: var(--purple);
-            filter: blur(8px);
-            border-radius: 50%;
+            content: ''; position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%); width: 40px; height: 10px;
+            background: var(--cyan); filter: blur(8px); border-radius: 50%;
         }
 
-        /* --- ESTILOS DEL JUEGO --- */
-        .hp-bar-fill {
-            transition: width 0.3s ease-out, background-color 0.3s;
-        }
-        .ability-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            filter: grayscale(1);
-        }
-        .game-glow-red {
-            box-shadow: 0 0 20px rgba(255, 49, 49, 0.15);
-        }
-        .game-glow-green {
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.15);
+        /* CANVAS ARENA */
+        #game-canvas {
+            width: 100%; height: 100%;
+            display: block;
+            border-radius: 12px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 10px; }
-        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .animate-pulse-red { animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
     </style>
 </head>
-<body class="p-6 pb-12">
+<body class="p-4 pb-12">
 
     <div id="loader">
         <div class="spinner"></div>
-        <p class="mt-4 text-purple-500 font-bold tracking-widest animate-pulse uppercase">Procesando Datos...</p>
+        <p class="mt-4 text-cyan-500 font-bold tracking-widest animate-pulse uppercase">Iniciando Core...</p>
     </div>
 
-    <nav class="max-w-[1700px] mx-auto mb-6 flex items-center justify-between glass p-6">
-        <div class="flex items-center gap-6">
-            <div class="relative group">
-                <div class="absolute -inset-2 bg-purple-600 rounded-full blur opacity-10 group-hover:opacity-30 transition duration-1000"></div>
-                <img src="/Logo.png" alt="Nexora Logo" class="relative h-[90px] w-[90px] object-contain rounded-full bg-black/40 p-1 border border-white/10 shadow-2xl transition-all duration-500 group-hover:scale-105" onerror="this.src='https://via.placeholder.com/90?text=LOGO'">
-            </div>
-            
+    <nav class="max-w-[1800px] mx-auto mb-4 flex items-center justify-between glass p-4">
+        <div class="flex items-center gap-4">
+            <img src="/Logo.png" alt="Logo" class="h-[60px] w-[60px] object-contain rounded-full border border-white/10 shadow-lg" onerror="this.src='https://via.placeholder.com/60?text=NX'">
             <div class="flex flex-col">
-                <h1 class="text-4xl font-black italic tracking-tighter leading-none uppercase">NEXORA <span class="text-purple-500">ULTRA</span></h1>
-                <div class="flex items-center gap-2 mt-2">
-                    <div id="status-pulse" class="w-2.5 h-2.5 rounded-full bg-red-500 transition-all duration-500"></div>
-                    <span id="connection-status" class="text-[11px] uppercase tracking-[4px] text-red-500 font-bold italic">Desconectado</span>
+                <h1 class="text-3xl font-black italic tracking-tighter leading-none uppercase">NEXORA <span class="text-cyan-500">ARENA</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <div id="status-pulse" class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span id="connection-status" class="text-[10px] uppercase tracking-[3px] text-red-500 font-bold italic">Offline</span>
                 </div>
             </div>
         </div>
 
         <div class="flex gap-4 items-center">
-            <div class="flex flex-col gap-1">
-                <input id="username" type="text" placeholder="@usuario_tiktok" class="bg-black/60 border border-zinc-800 px-4 py-2 rounded-lg text-sm focus:border-purple-500 outline-none w-56 transition-all font-medium">
-                <input id="key" type="password" placeholder="Access Key" class="bg-black/60 border border-zinc-800 px-4 py-2 rounded-lg text-sm focus:border-purple-500 outline-none w-56 transition-all font-medium">
-            </div>
-            <button id="btn-connect" class="bg-purple-600 hover:bg-green-500 text-white hover:text-black px-10 py-5 rounded-xl font-black text-sm transition-all duration-300 shadow-lg shadow-purple-500/20 uppercase tracking-widest active:scale-95">Conectar</button>
-            <button id="btn-disconnect" class="hidden bg-zinc-900 border border-red-600 text-red-500 hover:bg-red-600 hover:text-white px-10 py-5 rounded-xl font-black text-sm transition-all duration-300 uppercase tracking-widest active:scale-95">Salir</button>
+            <input id="username" type="text" placeholder="@usuario" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-40 font-medium">
+            <input id="key" type="password" placeholder="Key" class="bg-black/60 border border-zinc-800 px-3 py-2 rounded-lg text-xs focus:border-cyan-500 outline-none w-32 font-medium">
+            <button id="btn-connect" class="bg-cyan-600 hover:bg-cyan-400 text-black px-6 py-2 rounded-lg font-black text-xs transition-all uppercase tracking-widest">Conectar</button>
+            <button id="btn-disconnect" class="hidden bg-zinc-900 border border-red-600 text-red-500 px-6 py-2 rounded-lg font-black text-xs transition-all uppercase tracking-widest">Salir</button>
         </div>
     </nav>
 
-    <div class="max-w-[1700px] mx-auto mb-8 flex gap-2 glass p-2 bg-black/20 border-zinc-900">
-        <button onclick="showTab('dashboard')" id="tab-btn-dashboard" class="tab-btn active flex-1 py-4 rounded-xl flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-white">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 text-purple-500"></i>
-            Dashboard
+    <div class="max-w-[1800px] mx-auto mb-6 flex gap-2 glass p-1">
+        <button onclick="showTab('dashboard')" id="tab-btn-dashboard" class="tab-btn flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
+            <i data-lucide="settings" class="w-4 h-4 text-purple-500"></i> Configuración
         </button>
-        <button onclick="showTab('game')" id="tab-btn-game" class="tab-btn flex-1 py-4 rounded-xl flex items-center justify-center gap-3 text-sm font-bold uppercase tracking-widest text-zinc-400 hover:text-white">
-            <i data-lucide="gamepad-2" class="w-5 h-5 text-green-500 animate-pulse"></i>
-            Juego Nexora
+        <button onclick="showTab('game')" id="tab-btn-game" class="tab-btn active flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-white">
+            <i data-lucide="swords" class="w-4 h-4 text-cyan-500 animate-pulse"></i> Arena de Batalla
         </button>
     </div>
 
-    <div class="max-w-[1700px] mx-auto">
+    <main id="view-dashboard" class="hidden max-w-[1800px] mx-auto grid grid-cols-12 gap-6">
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+            <section class="glass p-6">
+                <h2 class="text-purple-400 font-bold uppercase text-xs mb-4 italic tracking-widest">TTS y Sistema</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 justify-between">
+                        <span class="text-xs text-zinc-400 font-bold uppercase">Activar TTS</span>
+                        <input type="checkbox" id="tts-enabled" checked class="accent-cyan-500 h-4 w-4">
+                    </div>
+                    <select id="tts-voice" class="w-full bg-black/40 border border-zinc-800 p-3 rounded-lg text-xs text-white outline-none focus:border-cyan-500"></select>
+                </div>
+            </section>
+        </div>
+        <div class="col-span-12 lg:col-span-8 grid grid-cols-2 gap-6">
+            <div class="glass flex flex-col h-[500px]">
+                <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-purple-400"><i data-lucide="message-square" class="inline w-3 mr-1"></i> CHAT EN VIVO</div>
+                <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            </div>
+            <div class="glass flex flex-col h-[500px]">
+                <div class="p-3 border-b border-zinc-900 bg-black/20 text-xs font-bold tracking-widest italic text-green-400"><i data-lucide="gift" class="inline w-3 mr-1"></i> REGALOS</div>
+                <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-game" class="max-w-[1800px] mx-auto grid grid-cols-12 gap-6 h-[750px]">
         
-        <main id="view-dashboard" class="grid grid-cols-12 gap-8">
-            <div class="col-span-12 lg:col-span-3 space-y-8">
-                <section class="glass p-6">
-                    <h2 class="text-green-400 font-bold uppercase text-xs mb-4 flex items-center gap-2 italic tracking-widest"><i data-lucide="upload-cloud" class="w-4"></i> Configurar Alerta</h2>
-                    
-                    <div class="flex bg-black/40 p-1 rounded-lg border border-zinc-800 mb-4">
-                        <button onclick="setMode('mp3')" id="mode-mp3" class="mode-btn active flex-1 py-2 text-[10px] font-bold uppercase rounded-md">Modo MP3</button>
-                        <button onclick="setMode('link')" id="mode-link" class="mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md">Webhook Juego</button>
+        <div class="col-span-12 lg:col-span-9 glass relative p-1 flex flex-col overflow-hidden group">
+            <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl pointer-events-none z-10 group-hover:border-cyan-500/50 transition-colors"></div>
+            <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
+                <span class="bg-black/80 text-cyan-400 text-[10px] font-black px-3 py-1 rounded-full border border-cyan-500/30 tracking-widest uppercase shadow-[0_0_10px_rgba(0,255,255,0.2)]">Arena Activa</span>
+            </div>
+            <div class="flex-1 w-full h-full relative" id="canvas-wrapper">
+                <canvas id="game-canvas"></canvas>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+            <div class="glass flex-1 flex flex-col overflow-hidden relative">
+                <div class="p-4 border-b border-zinc-900 bg-gradient-to-r from-black/60 to-transparent flex justify-between items-center z-10">
+                    <h2 class="text-cyan-400 font-black uppercase tracking-widest italic text-sm"><i data-lucide="crown" class="inline w-4 mr-1 pb-1"></i> Top Dominantes</h2>
+                    <span id="player-count" class="text-[10px] text-zinc-500 font-mono">0 Luchadores</span>
+                </div>
+                <div id="arena-ranking" class="flex-1 overflow-y-auto p-2 space-y-1 relative z-10">
                     </div>
-
-                    <div class="space-y-4">
-                        <select id="gift-select" class="gift-selector w-full bg-black/60 border border-zinc-700 p-4 rounded-xl text-sm outline-none focus:border-purple-500 text-zinc-300 font-bold">
-                            <option value="" disabled selected>Seleccionar Regalo...</option>
-                        </select>
-                        
-                        <div id="container-mp3">
-                            <input type="file" id="file-input" accept="audio/mpeg" class="hidden">
-                            <button onclick="document.getElementById('file-input').click()" class="w-full bg-zinc-900 border border-dashed border-zinc-700 p-4 rounded-lg text-xs text-zinc-400 hover:border-purple-500 transition-all flex flex-col items-center gap-2">
-                                <i data-lucide="music" class="w-5 h-5 text-purple-500"></i>
-                                <span id="file-name">Seleccionar MP3...</span>
-                            </button>
-                        </div>
-
-                        <div id="container-link" class="hidden">
-                            <input id="link-input" type="text" placeholder="http://localhost:8080/comando" class="w-full bg-black/60 border border-zinc-800 p-4 rounded-lg text-xs text-green-400 outline-none focus:border-green-500 font-mono">
-                        </div>
-
-                        <button id="btn-save-action" class="w-full bg-white text-black font-black py-4 rounded-xl text-xs uppercase hover:bg-green-500 transition-all shadow-lg">Guardar y Vincular</button>
-                    </div>
-                </section>
-
-                <section class="glass p-6 h-[350px] flex flex-col">
-                    <h2 class="text-purple-400 font-bold uppercase text-xs mb-4 italic tracking-widest">Eventos Activos</h2>
-                    <div id="actions-list" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
-                </section>
             </div>
 
-            <div class="col-span-12 lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-8 h-[650px]">
-                <div class="glass flex flex-col overflow-hidden">
-                    <div class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black/20">
-                        <span class="text-xs font-bold tracking-widest italic"><i data-lucide="message-square" class="inline w-3 mr-1 text-purple-500"></i> CHAT</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-[9px] text-zinc-500 uppercase">TTS</span>
-                            <input type="checkbox" id="tts-enabled" checked class="accent-green-500 h-4 w-4 cursor-pointer">
-                        </div>
-                    </div>
-                    <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-                </div>
-
-                <div class="glass flex flex-col overflow-hidden">
-                    <div class="p-4 border-b border-zinc-900 bg-black/20">
-                        <span class="text-xs font-bold tracking-widest text-green-400 italic"><i data-lucide="star" class="inline w-3 mr-1"></i> REGALOS RECIENTES</span>
-                    </div>
-                    <div id="gift-container" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
-                </div>
+            <div class="glass p-4 h-[200px] flex flex-col">
+                <h2 class="text-xs font-bold uppercase text-zinc-500 italic tracking-widest mb-2"><i data-lucide="info" class="inline w-3 mr-1"></i> Reglas</h2>
+                <ul class="text-[11px] text-zinc-400 space-y-2 font-medium">
+                    <li><b class="text-green-400">Likes (Tap Tap):</b> Unes tu bola a la arena y sumas poder poco a poco.</li>
+                    <li><b class="text-purple-400">Regalos:</b> Otorgan <span class="text-white font-bold">Poder Masivo</span>, te hacen gigante y entras en modo "Furia" (veloz e imparable).</li>
+                    <li><b class="text-red-400">Combate:</b> Chocar con una bola menor le roba puntos de poder. ¡Si llegas a 0, mueres!</li>
+                </ul>
             </div>
+        </div>
 
-            <div class="col-span-12 lg:col-span-3 space-y-8">
-                <section class="glass p-6">
-                    <h2 class="text-xs font-bold uppercase mb-4 text-zinc-500 italic">Controles Maestro</h2>
-                    <div class="space-y-6">
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <label class="text-[10px] text-zinc-500 uppercase">Volumen Voces</label>
-                                <span id="vol-perc" class="text-[10px] text-purple-500 font-bold">70%</span>
-                            </div>
-                            <input id="tts-volume" type="range" min="0" max="1" step="0.1" value="0.7" class="w-full accent-purple-600 cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-zinc-500 block mb-2 uppercase">Voz de Narración</label>
-                            <select id="tts-voice" class="gift-selector w-full bg-black/40 border border-zinc-800 p-3 rounded-lg text-[11px] text-white outline-none focus:border-purple-500"></select>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="glass flex flex-col h-[435px]">
-                    <div class="p-4 border-b border-zinc-900 bg-black/20 text-center">
-                        <h2 class="text-xs font-bold uppercase tracking-widest italic">Historial Sesión</h2>
-                    </div>
-                    <div id="gift-history" class="flex-1 overflow-y-auto p-3 space-y-2 text-[11px] font-mono text-zinc-600"></div>
-                </section>
-            </div>
-        </main>
-
-        <main id="view-game" class="hidden space-y-8">
-            
-            <section class="glass p-8 border-red-900 game-glow-red relative overflow-hidden">
-                <div class="absolute inset-0 bg-black/60 z-0"></div>
-                <div class="relative z-10 grid grid-cols-12 gap-6 items-center">
-                    <div class="col-span-12 md:col-span-3 flex flex-col items-center justify-center border-r border-zinc-800 pr-6">
-                        <i data-lucide="skull" class="w-20 h-20 text-red-600 animate-pulse-red"></i>
-                        <p class="text-[10px] uppercase text-zinc-500 tracking-[5px] mt-2">Enemigo Comunitario</p>
-                    </div>
-                    <div class="col-span-12 md:col-span-9 space-y-4">
-                        <div class="flex justify-between items-end">
-                            <h3 class="text-4xl font-black text-white italic tracking-tighter uppercase">CYBER DRAGON <span class="text-red-500">v1.0</span></h3>
-                            <span class="text-2xl font-mono text-red-400 font-bold" id="boss-hp-text">1000 / 1000 HP</span>
-                        </div>
-                        <div class="w-full h-6 bg-black/60 rounded-full border border-zinc-800 overflow-hidden relative">
-                            <div class="absolute inset-0 bg-red-600/10 blur-sm rounded-full hp-bar-fill" style="width: 100%" id="boss-hp-bar-glow"></div>
-                            <div class="relative h-full bg-red-600 hp-bar-fill" style="width: 100%" id="boss-hp-bar"></div>
-                        </div>
-                        <p class="text-xs text-zinc-400 font-medium italic">El Chat hace daño con <span class="text-green-400 font-bold">Likes</span> y <span class="text-purple-400 font-bold">Regalos</span>. ¡Derrótenlo!</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                
-                <div class="glass p-6 game-glow-green border-green-900 flex items-center gap-6">
-                    <i data-lucide="shield-check" class="w-16 h-16 text-green-500"></i>
-                    <div class="flex-1 space-y-2">
-                        <h4 class="text-sm font-bold uppercase text-zinc-400 tracking-widest">Estado Nexora Master</h4>
-                        <p class="text-3xl font-black text-white italic">OPERATIVO</p>
-                        <div class="w-full h-3 bg-black/60 rounded-full border border-zinc-800 overflow-hidden">
-                            <div class="h-full bg-green-500 hp-bar-fill" style="width: 100%" id="player-hp-bar"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass p-6 space-y-4">
-                    <h4 class="text-xs font-bold uppercase text-zinc-500 italic tracking-widest mb-2"><i data-lucide="zap" class="inline w-3 mr-1 text-yellow-400"></i> Habilidades Nexora Ultra (Usa para ayudar al chat)</h4>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="useAbility('attack')" id="ability-attack" class="ability-btn bg-white text-black font-black py-4 rounded-xl text-xs uppercase hover:bg-red-500 hover:text-white transition-all shadow-lg flex items-center justify-center gap-2">
-                            <i data-lucide="sword" class="w-4 h-4"></i>
-                            Mega Ataque
-                        </button>
-                        <button onclick="useAbility('heal')" id="ability-heal" class="ability-btn bg-black border border-green-600 text-green-400 font-black py-4 rounded-xl text-xs uppercase hover:bg-green-600 hover:text-white transition-all shadow-lg flex items-center justify-center gap-2">
-                            <i data-lucide="heart-pulse" class="w-4 h-4"></i>
-                            Auto Curación
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="glass p-6 h-[250px] flex flex-col">
-                <h2 class="text-green-400 font-bold uppercase text-xs mb-4 italic tracking-widest"><i data-lucide="swords" class="w-4 inline mr-1"></i> Registro de Combate</h2>
-                <div id="game-log" class="flex-1 overflow-y-auto space-y-1.5 text-xs font-mono text-zinc-500 pr-2">
-                    <p class="text-zinc-400">[SISTEMA] Esperando conexión de TikTok Live para iniciar combate...</p>
-                </div>
-            </section>
-
-        </main>
-    </div>
+    </main>
 
     <script>
         const socket = io();
         lucide.createIcons();
+
+        // --- SISTEMA TTS ---
         const synth = window.speechSynthesis;
         let voices = [];
-
-        // CARGAR VOCES TTS
         function loadVoices() {
             voices = synth.getVoices();
             const voiceSelect = document.getElementById('tts-voice');
-            voiceSelect.innerHTML = voices
-                .map((v, i) => `<option value="${i}" ${v.lang.includes('es') ? 'selected' : ''}>${v.name} (${v.lang})</option>`)
-                .join('');
+            voiceSelect.innerHTML = voices.map((v, i) => `<option value="${i}" ${v.lang.includes('es') ? 'selected' : ''}>${v.name}</option>`).join('');
         }
-        speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
+        speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
 
         function speak(text) {
             if (!document.getElementById('tts-enabled').checked) return;
             const utter = new SpeechSynthesisUtterance(text);
-            utter.voice = voices[document.getElementById('tts-voice').value];
-            utter.volume = document.getElementById('tts-volume').value;
+            utter.voice = voices[document.getElementById('tts-voice').value] || voices[0];
+            utter.volume = 0.8;
             synth.speak(utter);
         }
 
-        // Volumen UI
-        document.getElementById('tts-volume').oninput = (e) => {
-            document.getElementById('vol-perc').innerText = Math.round(e.target.value * 100) + "%";
-        };
-
-        // --- LÓGICA DE PESTAÑAS (NEW) ---
-        function showTab(tabName) {
-            const viewDashboard = document.getElementById('view-dashboard');
-            const viewGame = document.getElementById('view-game');
-            const btnDashboard = document.getElementById('tab-btn-dashboard');
-            const btnGame = document.getElementById('tab-btn-game');
-
-            if (tabName === 'dashboard') {
-                viewDashboard.classList.remove('hidden');
-                viewGame.classList.add('hidden');
-                btnDashboard.classList.add('active');
-                btnGame.classList.remove('active');
-            } else {
-                viewDashboard.classList.add('hidden');
-                viewGame.classList.remove('hidden');
-                btnDashboard.classList.remove('active');
-                btnGame.classList.add('active');
-            }
-            // Refrescar iconos lucide en la nueva vista
-            lucide.createIcons();
+        // --- TABS ---
+        function showTab(tab) {
+            document.getElementById('view-dashboard').classList.toggle('hidden', tab !== 'dashboard');
+            document.getElementById('view-game').classList.toggle('hidden', tab !== 'game');
+            document.getElementById('tab-btn-dashboard').classList.toggle('active', tab === 'dashboard');
+            document.getElementById('tab-btn-game').classList.toggle('active', tab === 'game');
+            if(tab === 'game') resizeCanvas(); // Asegurar tamaño correcto al mostrar
         }
 
-        // --- LÓGICA DE MODOS ---
-        let currentMode = 'mp3';
-        function setMode(mode) {
-            currentMode = mode;
-            const btnMp3 = document.getElementById('mode-mp3');
-            const btnLink = document.getElementById('mode-link');
-            const contMp3 = document.getElementById('container-mp3');
-            const contLink = document.getElementById('container-link');
-
-            if(mode === 'mp3') {
-                btnMp3.className = "mode-btn active flex-1 py-2 text-[10px] font-bold uppercase rounded-md";
-                btnLink.className = "mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md";
-                contMp3.classList.remove('hidden');
-                contLink.classList.add('hidden');
-            } else {
-                btnMp3.className = "mode-btn flex-1 py-2 text-[10px] font-bold uppercase rounded-md";
-                btnLink.className = "mode-btn active webhook-active flex-1 py-2 text-[10px] font-bold uppercase rounded-md";
-                contMp3.classList.add('hidden');
-                contLink.classList.remove('hidden');
-            }
-        }
-
-        const loader = document.getElementById('loader');
-        const btnConnect = document.getElementById('btn-connect');
-        const btnDisconnect = document.getElementById('btn-disconnect');
-        const statusText = document.getElementById('connection-status');
-        const statusPulse = document.getElementById('status-pulse');
-
-        // BOTÓN GUARDAR
-        document.getElementById('btn-save-action').onclick = () => {
-            const username = document.getElementById('username').value;
-            const gift = document.getElementById('gift-select').value;
-            if(!username || !gift) return alert("Faltan datos (Usuario o Regalo)");
-
-            if(currentMode === 'mp3') {
-                const fileInput = document.getElementById('file-input');
-                const file = fileInput.files[0];
-                if(!file) return alert("Selecciona un MP3");
-                loader.style.display = 'flex';
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    socket.emit("uploadAndSave", { username, gift, fileName: file.name, fileData: e.target.result });
-                    fileInput.value = "";
-                    document.getElementById('file-name').innerText = "Seleccionar MP3...";
-                };
-                reader.readAsDataURL(file);
-            } else {
-                const link = document.getElementById('link-input').value;
-                if(!link) return alert("Ingresa el Link");
-                socket.emit("saveAction", { username, action: { gift, file: link, type: 'link' } });
-                document.getElementById('link-input').value = "";
-            }
-        };
-
-        // BOTÓN CONECTAR
-        btnConnect.onclick = () => {
+        // --- CONEXIÓN ---
+        document.getElementById('btn-connect').onclick = () => {
             const username = document.getElementById('username').value;
             const key = document.getElementById('key').value;
             if(!username || !key) return alert("Faltan datos");
-            loader.style.display = 'flex';
+            document.getElementById('loader').style.display = 'flex';
             socket.emit("startConnection", { username, key });
         };
 
-        // BOTÓN SALIR
-        btnDisconnect.onclick = () => {
-            loader.style.display = 'flex';
+        document.getElementById('btn-disconnect').onclick = () => {
             socket.emit("stopConnection");
         };
 
-        // MANEJO DE ESTADOS
         socket.on("status", (status) => {
-            loader.style.display = 'none';
+            document.getElementById('loader').style.display = 'none';
+            const sText = document.getElementById('connection-status');
+            const sPulse = document.getElementById('status-pulse');
+            
             if (status === "connected") {
-                statusText.innerText = "CONECTADO";
-                statusText.className = "text-[11px] uppercase tracking-[4px] text-green-500 font-bold italic";
-                statusPulse.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-ping";
-                btnConnect.classList.add('hidden');
-                btnDisconnect.classList.remove('hidden');
-                speak("Sistema Nexora Ultra activado.");
-                socket.emit("getActions", document.getElementById('username').value);
-                // Iniciar lógica de juego al conectar
-                resetGame();
+                sText.innerText = "SISTEMA ONLINE"; sText.className = "text-[10px] uppercase tracking-[3px] text-cyan-400 font-bold italic";
+                sPulse.className = "w-2 h-2 rounded-full bg-cyan-400 animate-ping";
+                document.getElementById('btn-connect').classList.add('hidden');
+                document.getElementById('btn-disconnect').classList.remove('hidden');
+                speak("Arena de batalla Nexora conectada.");
             } else {
-                statusText.innerText = "DESCONECTADO";
-                statusText.className = "text-[11px] uppercase tracking-[4px] text-red-500 font-bold italic";
-                statusPulse.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                btnConnect.classList.remove('hidden');
-                btnDisconnect.classList.add('hidden');
-                if(status === "disconnected") {
-                    speak("Conexión finalizada.");
-                    logCombat("[SISTEMA] Conexión perdida. Combate pausado.");
+                sText.innerText = "OFFLINE"; sText.className = "text-[10px] uppercase tracking-[3px] text-red-500 font-bold italic";
+                sPulse.className = "w-2 h-2 rounded-full bg-red-500";
+                document.getElementById('btn-connect').classList.remove('hidden');
+                document.getElementById('btn-disconnect').classList.add('hidden');
+            }
+        });
+
+
+        /* ==========================================================================
+           💥 MOTOR DE FÍSICAS Y JUEGO (VANILLA CANVAS) 💥
+           ========================================================================== */
+        
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvas-wrapper');
+        
+        let width, height;
+        const balls = new Map(); // Mapa de username -> Objeto Ball
+        const floatingTexts = []; // Números de daño flotantes
+
+        const COLORS = ['#00FFFF', '#FF00FF', '#39FF14', '#FF3131', '#FFD700', '#FF8C00', '#8A2BE2'];
+
+        // Configuración de Arena
+        const MIN_POWER = 10;
+        const MAX_RADIUS = 80;
+        const BASE_RADIUS = 20;
+
+        function resizeCanvas() {
+            width = wrapper.clientWidth;
+            height = wrapper.clientHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Ball {
+            constructor(username) {
+                this.username = username;
+                this.power = 50; // Poder inicial
+                this.radius = this.calculateRadius();
+                
+                // Spawn aleatorio dentro de la arena (evitando bordes)
+                this.x = Math.random() * (width - this.radius * 2) + this.radius;
+                this.y = Math.random() * (height - this.radius * 2) + this.radius;
+                
+                // Velocidad inicial aleatoria
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                
+                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                
+                // Habilidades temporales (Buffs de regalos)
+                this.isFurious = false;
+                this.furyTimer = 0;
+            }
+
+            calculateRadius() {
+                // El radio crece logarítmicamente con el poder para que no ocupen toda la pantalla
+                let r = BASE_RADIUS + Math.log10(Math.max(1, this.power)) * 10;
+                if(this.isFurious) r += 15; // Más grande si está furioso
+                return Math.min(r, MAX_RADIUS + 20);
+            }
+
+            addPower(amount) {
+                this.power += amount;
+                this.radius = this.calculateRadius();
+            }
+
+            triggerFury(durationMs) {
+                this.isFurious = true;
+                this.furyTimer = durationMs;
+                this.vx *= 2.5; // Impulso de velocidad
+                this.vy *= 2.5;
+                this.radius = this.calculateRadius();
+            }
+
+            update(deltaTime) {
+                // Manejar timer de furia
+                if (this.isFurious) {
+                    this.furyTimer -= deltaTime;
+                    if (this.furyTimer <= 0) {
+                        this.isFurious = false;
+                        this.radius = this.calculateRadius();
+                        // Normalizar velocidad
+                        this.vx *= 0.5; this.vy *= 0.5;
+                    }
+                }
+
+                // Aplicar fricción súper ligera
+                this.vx *= 0.995;
+                this.vy *= 0.995;
+
+                // Mantener una velocidad mínima para que no se queden quietos
+                const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+                if (speed < 1) {
+                    this.vx += (Math.random() - 0.5) * 0.5;
+                    this.vy += (Math.random() - 0.5) * 0.5;
+                }
+
+                // Mover
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Rebotar en paredes
+                if (this.x - this.radius <= 0) { this.x = this.radius; this.vx *= -1; }
+                if (this.x + this.radius >= width) { this.x = width - this.radius; this.vx *= -1; }
+                if (this.y - this.radius <= 0) { this.y = this.radius; this.vy *= -1; }
+                if (this.y + this.radius >= height) { this.y = height - this.radius; this.vy *= -1; }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                
+                // Efecto de brillo (Glow)
+                ctx.shadowBlur = this.isFurious ? 30 : 15;
+                ctx.shadowColor = this.isFurious ? '#FFFFFF' : this.color;
+                
+                // Dibujar círculo principal
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Borde interior oscuro para dar profundidad
+                ctx.shadowBlur = 0;
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+
+                // Borde exterior neon
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = this.isFurious ? '#FFF' : this.color;
+                ctx.stroke();
+
+                // Dibujar nombre y poder
+                ctx.fillStyle = '#FFF';
+                ctx.font = 'bold 12px Rajdhani';
+                ctx.textAlign = 'center';
+                
+                // Acortar nombre si es muy largo
+                let displayUser = this.username.length > 8 ? this.username.substring(0,8) + '..' : this.username;
+                
+                // Texto negro con borde blanco para contraste dentro de la bola
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 4;
+                ctx.fillText(displayUser, this.x, this.y - 4);
+                
+                ctx.font = '900 16px Rajdhani';
+                ctx.fillStyle = this.isFurious ? '#FFD700' : '#FFF';
+                ctx.fillText(Math.floor(this.power), this.x, this.y + 12);
+
+                ctx.restore();
+            }
+        }
+
+        // --- SISTEMA DE COMBATE (Colisiones) ---
+        function resolveCollisions() {
+            const ballArray = Array.from(balls.values());
+            
+            for (let i = 0; i < ballArray.length; i++) {
+                for (let j = i + 1; j < ballArray.length; j++) {
+                    const b1 = ballArray[i];
+                    const b2 = ballArray[j];
+
+                    const dx = b2.x - b1.x;
+                    const dy = b2.y - b1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minDistance = b1.radius + b2.radius;
+
+                    if (distance < minDistance) {
+                        // 1. Separar las bolas (evitar que se peguen)
+                        const overlap = minDistance - distance;
+                        const nx = dx / distance;
+                        const ny = dy / distance;
+                        
+                        b1.x -= nx * (overlap / 2);
+                        b1.y -= ny * (overlap / 2);
+                        b2.x += nx * (overlap / 2);
+                        b2.y += ny * (overlap / 2);
+
+                        // 2. Rebote elástico simple
+                        const p = 2 * (b1.vx * nx + b1.vy * ny - b2.vx * nx - b2.vy * ny) / (b1.radius + b2.radius);
+                        b1.vx -= p * b2.radius * nx;
+                        b1.vy -= p * b2.radius * ny;
+                        b2.vx += p * b1.radius * nx;
+                        b2.vy += p * b1.radius * ny;
+
+                        // 3. TRANSFERENCIA DE PODER (Combate)
+                        // Para que no se maten al instante, el daño es un porcentaje pequeño de la diferencia
+                        if (Math.abs(b1.power - b2.power) > 5) {
+                            let winner, loser;
+                            if (b1.power > b2.power) { winner = b1; loser = b2; } 
+                            else { winner = b2; loser = b1; }
+
+                            // Si el ganador está furioso (regalo), roba más puntos. Si no, roba 5% del poder del perdedor
+                            const stealPercent = winner.isFurious ? 0.15 : 0.05;
+                            const dmg = Math.max(1, Math.floor(loser.power * stealPercent));
+                            
+                            winner.addPower(dmg);
+                            loser.addPower(-dmg);
+
+                            // Mostrar textos flotantes
+                            spawnFloatingText(winner.x, winner.y - winner.radius, `+${dmg}`, winner.color);
+                            spawnFloatingText(loser.x, loser.y + loser.radius, `-${dmg}`, '#FF3131');
+                        }
+                    }
                 }
             }
-        });
+        }
 
-        // --- LÓGICA DEL JUEGO INTERACTIVO (NEW) ---
-        const gameState = {
-            isConnected: false,
-            bossMaxHp: 10000,
-            bossHp: 10000,
-            playerMaxHp: 100,
-            playerHp: 100,
-            cooldowns: {
-                attack: 15, // segundos
-                heal: 30
+        // --- TEXTOS FLOTANTES ---
+        function spawnFloatingText(x, y, text, color) {
+            floatingTexts.push({ x, y, text, color, life: 1.0, vy: -1.5 });
+        }
+
+        function drawFloatingTexts(ctx) {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy;
+                ft.life -= 0.02;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ft.life);
+                ctx.fillStyle = ft.color;
+                ctx.font = 'bold 20px Rajdhani';
+                ctx.shadowColor = '#000';
+                ctx.shadowBlur = 4;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
             }
-        };
-
-        const bossHpBar = document.getElementById('boss-hp-bar');
-        const bossHpBarGlow = document.getElementById('boss-hp-bar-glow');
-        const bossHpText = document.getElementById('boss-hp-text');
-        const playerHpBar = document.getElementById('player-hp-bar');
-        const gameLog = document.getElementById('game-log');
-
-        function resetGame() {
-            gameState.isConnected = true;
-            gameState.bossHp = gameState.bossMaxHp;
-            gameState.playerHp = gameState.playerMaxHp;
-            updateGameUI();
-            logCombat("<span class='text-white font-bold'>[COMBATE] ¡El CYBER DRAGON ha aparecido! ¡Chat, ataquen!</span>");
-            
-            // Ciclo de ataque del boss (daño periódico al streamer)
-            if(window.bossAttackInterval) clearInterval(window.bossAttackInterval);
-            window.bossAttackInterval = setInterval(bossAttackStreamer, 10000); // Ataca cada 10s
         }
 
-        function updateGameUI() {
-            // Actualizar Boss
-            const bossHpPercent = (gameState.bossHp / gameState.bossMaxHp) * 100;
-            bossHpBar.style.width = `${bossHpPercent}%`;
-            bossHpBarGlow.style.width = `${bossHpPercent}%`;
-            bossHpText.innerText = `${Math.round(gameState.bossHp)} / ${gameState.bossMaxHp} HP`;
+        // --- BUCLE PRINCIPAL (GAME LOOP) ---
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
 
-            // Cambiar color barra boss si tiene poca vida
-            if(bossHpPercent < 25) {
-                bossHpBar.classList.add('bg-yellow-400');
-                bossHpBar.classList.remove('bg-red-600');
-            } else {
-                bossHpBar.classList.add('bg-red-600');
-                bossHpBar.classList.remove('bg-yellow-400');
-            }
+            // Limpiar Canvas
+            ctx.clearRect(0, 0, width, height);
 
-            // Actualizar Streamer
-            const playerHpPercent = (gameState.playerHp / gameState.playerMaxHp) * 100;
-            playerHpBar.style.width = `${playerHpPercent}%`;
-        }
-
-        function logCombat(message) {
-            const p = document.createElement('p');
-            p.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
-            gameLog.prepend(p);
-            if(gameLog.children.length > 50) gameLog.lastChild.remove(); // Limitar logs
-        }
-
-        // Ataques de la AUDIENCIA (vía Socket)
-        function damageBoss(amount, source, isRegalo = false) {
-            if(!gameState.isConnected || gameState.bossHp <= 0) return;
-
-            gameState.bossHp -= amount;
-            if(gameState.bossHp <= 0) {
-                gameState.bossHp = 0;
-                logCombat("<span class='text-green-400 font-black text-lg'>¡VICTORIA! ¡El Chat ha derrotado al Cyber Dragon!</span>");
-                speak("¡Increíble! El chat ha ganado la batalla.");
-                clearInterval(window.bossAttackInterval);
-            } else {
-                if(isRegalo) {
-                    logCombat(`<i data-lucide="star" class="inline w-3 text-purple-400"></i> <b class="text-purple-400">${source}</b> envió un regalo e hizo <b class="text-white">${amount}</b> de daño masivo.`);
-                } else {
-                    logCombat(`<i data-lucide="thumbs-up" class="inline w-3 text-green-400"></i> Daño por Likes: <b class="text-green-400">${amount}</b>.`);
+            // Actualizar y dibujar bolas
+            const deadBalls = [];
+            for (const [username, ball] of balls.entries()) {
+                ball.update(deltaTime);
+                ball.draw(ctx);
+                
+                // Comprobar muerte
+                if (ball.power < MIN_POWER) {
+                    deadBalls.push(username);
+                    spawnFloatingText(ball.x, ball.y, "¡ELIMINADO!", "#FF0000");
                 }
             }
-            updateGameUI();
-            lucide.createIcons();
+
+            // Eliminar bolas muertas
+            deadBalls.forEach(user => balls.delete(user));
+
+            resolveCollisions();
+            drawFloatingTexts(ctx);
+            updateUILeaderboard();
+
+            requestAnimationFrame(gameLoop);
         }
+        requestAnimationFrame(gameLoop);
 
-        // Ataque del Boss al Streamer
-        function bossAttackStreamer() {
-            if(!gameState.isConnected || gameState.bossHp <= 0 || gameState.playerHp <= 0) return;
+
+        // --- ACTUALIZAR INTERFAZ ---
+        function updateUILeaderboard() {
+            document.getElementById('player-count').innerText = `${balls.size} Luchadores`;
             
-            const damage = 10;
-            gameState.playerHp -= damage;
-            if(gameState.playerHp <= 0) {
-                gameState.playerHp = 0;
-                logCombat("<span class='text-red-500 font-black'>[DERROTA] El Nexora Master ha caído. El Boss gana esta ronda.</span>");
-                speak("Atención. Sistema operativo comprometido. He caído.");
-                clearInterval(window.bossAttackInterval);
-            } else {
-                logCombat(`<i data-lucide="zap" class="inline w-3 text-red-500"></i> El Dragon te atacó. <b class="text-red-400">-${damage} HP</b>.`);
-            }
-            updateGameUI();
-            lucide.createIcons();
-        }
-
-        // Habilidades del STREAMER
-        function useAbility(type) {
-            const btn = document.getElementById(`ability-${type}`);
-            if(!gameState.isConnected || gameState.bossHp <= 0 || gameState.playerHp <= 0 || btn.disabled) return;
-
-            if(type === 'attack') {
-                const dmg = 1000;
-                logCombat(`[HABILIDAD] Usaste <b class="text-white">MEGA ATAQUE</b>. Hiciste <b class="text-red-500">${dmg}</b> de daño.`);
-                damageBoss(dmg, "Streamer");
-                speak("Lanzando ataque especial.");
-            } else if(type === 'heal') {
-                const heal = 30;
-                gameState.playerHp += heal;
-                if(gameState.playerHp > gameState.playerMaxHp) gameState.playerHp = gameState.playerMaxHp;
-                logCombat(`[HABILIDAD] Usaste <b class="text-green-400">CURACIÓN</b>. Recuperaste <b class="text-green-400">${heal} HP</b>.`);
-                speak("Reparando sistemas.");
-                updateGameUI();
-            }
-
-            // Manejo de Cooldown
-            btn.disabled = true;
-            const originalText = btn.innerHTML;
-            let currentCd = gameState.cooldowns[type];
-            btn.innerText = `CD: ${currentCd}s`;
-
-            const cdInterval = setInterval(() => {
-                currentCd--;
-                if(currentCd <= 0) {
-                    clearInterval(cdInterval);
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                    lucide.createIcons(); // Restaurar icono
-                } else {
-                    btn.innerText = `CD: ${currentCd}s`;
-                }
-            }, 1000);
-        }
-
-        // --- CONEXIÓN DE EVENTOS DE SOCKET CON DASHBOARD Y JUEGO ---
-
-        // 1. REGALOS
-        socket.on("gift", (data) => {
-            // Dashboard UI
-            const alertDiv = document.createElement('div');
-            alertDiv.className = "bg-green-500/10 border border-green-500/40 p-4 rounded-xl flex justify-between items-center animate-bounce";
-            alertDiv.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <img src="${data.image}" class="w-10 h-10 object-contain" onerror="this.src='https://via.placeholder.com/40?text=🎁'">
-                    <div><b class="text-white">${data.user}</b><p class="text-[10px] text-green-500 uppercase">Envió ${data.gift}</p></div>
-                </div>
-                <span class="text-2xl font-black text-green-400">x${data.amount}</span>`;
-            document.getElementById('gift-container').prepend(alertDiv);
+            const sorted = Array.from(balls.values()).sort((a, b) => b.power - a.power).slice(0, 10);
+            const container = document.getElementById('arena-ranking');
             
-            // Historial UI
-            const hist = document.createElement('div');
-            hist.innerText = `[${new Date().toLocaleTimeString()}] ${data.user} envió ${data.gift}`;
-            document.getElementById('gift-history').prepend(hist);
-            
-            // TTS
-            speak(`¡Gracias ${data.user} por enviar ${data.amount} ${data.gift}!`);
-
-            // --- Lógica del JUEGO ---
-            // Daño basado en la cantidad de regalos (por ejemplo, 50 daño por regalo)
-            const gameDamage = data.amount * 50;
-            damageBoss(gameDamage, data.user, true);
-        });
-
-        // 2. LIKES (TAP TAP)
-        socket.on("likeRanking", (ranking) => {
-            // No hay panel de likes en dashboard, pero usamos el evento para el juego.
-            // Calculamos daño basado en la sumatoria total de likes de los top 10 (daño ligero)
-            // Esto es una simplificación, lo ideal es captar el evento de like individual si el server lo manda.
-            if(ranking && ranking.length > 0) {
-                // Hacemos un daño simbólico por cada actualización de ranking para simular "daño constante" por likes
-                const damageFromLikes = 15; 
-                damageBoss(damageFromLikes, "Likes del Chat");
-            }
-        });
-
-        // 3. CHAT
-        socket.on("chat", (data) => {
-            const div = document.createElement('div');
-            div.className = "bg-zinc-900/50 p-3 rounded-lg border-l-2 border-purple-500 animate-fade-in";
-            div.innerHTML = `<span class="text-purple-400 font-bold text-xs uppercase">${data.user}:</span> <p class="text-sm text-zinc-300">${data.message}</p>`;
-            document.getElementById('chat-container').prepend(div);
-            speak(`${data.user} dice: ${data.message}`);
-        });
-
-        // Eventos estándar restantes
-        socket.on("actionsUpdated", (actions) => {
-            document.getElementById('actions-list').innerHTML = actions.map((a, i) => `
-                <div class="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-zinc-800">
-                    <div class="text-[10px]">
-                        <b class="${a.type === 'link' ? 'text-green-400' : 'text-purple-400'} uppercase">${a.type}</b><br>
-                        <b class="text-white">${a.gift}</b>
+            container.innerHTML = sorted.map((b, i) => `
+                <div class="flex items-center justify-between bg-black/40 p-2 rounded border border-zinc-800 ${i===0 ? 'border-cyan-500/50 bg-cyan-900/10' : ''}">
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="font-black ${i===0 ? 'text-cyan-400' : 'text-zinc-500'}">#${i+1}</span>
+                        <div class="w-2 h-2 rounded-full" style="background-color: ${b.color}"></div>
+                        <span class="font-bold text-white truncate max-w-[100px]">${b.username}</span>
                     </div>
-                    <button onclick="deleteAction(${i})" class="text-red-500 hover:text-white transition-colors"><i data-lucide="trash-2" class="w-4"></i></button>
-                </div>`).join('');
-            lucide.createIcons();
-        });
-
-        socket.on("triggerSound", (fileUrl) => {
-            const audio = new Audio(fileUrl);
-            audio.volume = document.getElementById('tts-volume').value;
-            audio.play();
-        });
-
-        function deleteAction(index) {
-            socket.emit("deleteAction", { username: document.getElementById('username').value, index });
+                    <span class="text-xs font-mono font-bold ${b.isFurious ? 'text-purple-400 animate-pulse' : 'text-green-400'}">${Math.floor(b.power)} pts</span>
+                </div>
+            `).join('');
         }
 
-        fetch('/gift-list').then(r => r.json()).then(d => {
-            document.getElementById('gift-select').innerHTML += d.map(g => `<option value="${g.name}">${g.name.toUpperCase()}</option>`).join('');
+        // --- MANEJO DE EVENTOS DEL SERVIDOR (INPUTS AL JUEGO) ---
+        
+        // Función helper para meter a alguien a la arena o darle poder
+        function handleUserInteraction(username, powerToAdd) {
+            if (!balls.has(username)) {
+                // Nuevo jugador entra a la arena
+                balls.set(username, new Ball(username));
+            }
+            balls.get(username).addPower(powerToAdd);
+        }
+
+        // 1. TAP TAP (LIKES) -> Ingresa jugadores y les da poder constante
+        socket.on("likeRanking", (ranking) => {
+            ranking.forEach(user => {
+                // Dar 2 puntos de poder por cada actualización de top likers
+                handleUserInteraction(user.user, 2); 
+            });
         });
 
-        document.getElementById('file-input').onchange = (e) => {
-            document.getElementById('file-name').innerText = e.target.files[0]?.name || "Seleccionar MP3...";
-        };
+        // 2. CHAT -> Da un poquito de poder para incentivar participación
+        socket.on("chat", (data) => {
+            // UI Dashboard
+            const div = document.createElement('div');
+            div.className = "bg-zinc-900/50 p-2 rounded-lg border-l-2 border-purple-500 text-xs";
+            div.innerHTML = `<span class="text-purple-400 font-bold">${data.user}:</span> <span class="text-zinc-300">${data.message}</span>`;
+            document.getElementById('chat-container').prepend(div);
+            
+            // JUEGO: Dar 1 punto de poder por hablar
+            handleUserInteraction(data.user, 1);
+        });
+
+        // 3. REGALOS -> ¡HABILIDADES MASIVAS!
+        socket.on("gift", (data) => {
+            // UI Dashboard
+            const div = document.createElement('div');
+            div.className = "bg-green-900/20 p-2 rounded-lg border border-green-500/30 flex items-center gap-2";
+            div.innerHTML = `<img src="${data.image}" class="w-6 h-6"><div class="text-[10px]"><b class="text-white">${data.user}</b> x${data.amount} ${data.gift}</div>`;
+            document.getElementById('gift-container').prepend(div);
+            speak(`¡Cuidado! ${data.user} ha activado el modo furia con ${data.gift}`);
+
+            // JUEGO: Modo Furia
+            handleUserInteraction(data.user, data.amount * 100); // 100 puntos por cada combo del regalo
+            
+            const ball = balls.get(data.user);
+            if(ball) {
+                // Activar "Furia" por 10 segundos
+                ball.triggerFury(10000); 
+                spawnFloatingText(ball.x, ball.y, "¡FURIA!", "#8A2BE2");
+            }
+        });
+
     </script>
 </body>
 </html>

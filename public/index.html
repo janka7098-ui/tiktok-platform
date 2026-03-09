@@ -549,7 +549,11 @@
                         <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-kil" checked onchange="togglePanel('kil')" class="accent-red-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Kills</span> <button onclick="copyOverlayUrl('arena_kil'); event.preventDefault();" class="text-red-500 hover:text-white"><i data-lucide="link" class="w-3 h-3"></i></button></label>
                         <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-win" checked onchange="togglePanel('win')" class="accent-purple-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Wins</span> <button onclick="copyOverlayUrl('arena_win'); event.preventDefault();" class="text-purple-500 hover:text-white"><i data-lucide="link" class="w-3 h-3"></i></button></label>
                     </div>
-                    <button onclick="resetStats()" class="mt-3 w-full bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white hover:bg-red-900/50 py-2 rounded text-[10px] uppercase font-bold tracking-widest transition-all">Reiniciar Historial Kills/Wins</button>
+                    
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="resetKills()" class="w-full bg-zinc-900 border border-zinc-700 text-red-400 hover:text-white hover:bg-red-900/50 py-2 rounded text-[10px] uppercase font-bold tracking-widest transition-all">Reiniciar Kills</button>
+                        <button onclick="resetWins()" class="w-full bg-zinc-900 border border-zinc-700 text-purple-400 hover:text-white hover:bg-purple-900/50 py-2 rounded text-[10px] uppercase font-bold tracking-widest transition-all">Reiniciar Wins</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -662,12 +666,25 @@
             if(el && cb) el.style.opacity = cb.checked ? '1' : '0';
         }
 
-        function resetStats() {
-            if(confirm("¿Seguro que deseas reiniciar los contadores de Kills y Wins?")) {
-                persistentStats.clear();
+        function resetKills() {
+            if(confirm("¿Seguro que deseas reiniciar el contador de Kills?")) {
+                for (const [user, stats] of persistentStats.entries()) {
+                    stats.kills = 0;
+                    if(stats.kills === 0 && stats.wins === 0) persistentStats.delete(user);
+                }
                 updateKillsLeaderboard();
+                alert("Historial de Kills reiniciado.");
+            }
+        }
+
+        function resetWins() {
+            if(confirm("¿Seguro que deseas reiniciar el contador de Wins?")) {
+                for (const [user, stats] of persistentStats.entries()) {
+                    stats.wins = 0;
+                    if(stats.kills === 0 && stats.wins === 0) persistentStats.delete(user);
+                }
                 updateWinsLeaderboard();
-                alert("Historial reiniciado correctamente.");
+                alert("Historial de Wins reiniciado.");
             }
         }
 
@@ -877,10 +894,8 @@
             broadcastConfig();
         }
 
-        // Ejecutar una vez para setear los valores HTML por defecto en el objeto
         document.addEventListener("DOMContentLoaded", () => {
             if(!isOverlay) {
-                // Set defaults to Inputs
                 document.getElementById('p-fury-cost').value = powersCfg.fury.cost;
                 document.getElementById('p-spikes-cost').value = powersCfg.spikes.cost;
                 document.getElementById('p-hole-cost').value = powersCfg.blackhole.cost;
@@ -913,7 +928,7 @@
                 const prevForceEndRace = raceCfg.forceEnd;
                 Object.assign(arenaCfg, cfg.arena);
                 Object.assign(raceCfg, cfg.race);
-                Object.assign(powersCfg, cfg.powers); // Sincronizar poderes también
+                Object.assign(powersCfg, cfg.powers); 
                 
                 if(gameStateArena === 'waiting') updateLobbyTimer('arena');
                 if(gameStateRace === 'waiting') updateLobbyTimer('race');
@@ -1077,12 +1092,9 @@
             }
         }
 
-        /* ==========================================================================
-           SISTEMA DE PROYECTILES (CAÑÓN FÍSICO)
-           ========================================================================== */
         const cannonballs = [];
         function shootCannon(ball, cannonType) {
-            const cfg = powersCfg[cannonType]; // 'cannon1' o 'cannon2'
+            const cfg = powersCfg[cannonType]; 
             for(let i=0; i < cfg.count; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const speed = cfg.speedBase + Math.random() * 5; 
@@ -1365,7 +1377,6 @@
                                 const b2 = ballArray[j];
                                 const dx = b1.x - b2.x; const dy = b1.y - b2.y;
                                 const dist = Math.sqrt(dx * dx + dy * dy);
-                                // Usar radios desde la configuración
                                 const effectRad = b1.activePower === 'blackhole' ? powersCfg.blackhole.radius : powersCfg.bomb.radius;
                                 const effectFrc = b1.activePower === 'blackhole' ? powersCfg.blackhole.force : powersCfg.bomb.force;
                                 
@@ -1396,21 +1407,18 @@
                     if (p.x < 0 || p.x > width) p.vx *= -1; 
                     if (p.y < 0 || p.y > height) p.vy *= -1;
 
-                    // Dibujo de la bala
                     ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
                     ctx.fillStyle = p.color; ctx.shadowBlur = 10; ctx.shadowColor = p.color; ctx.fill(); ctx.shadowBlur = 0;
 
-                    // Chequear impacto con bolas reales (excluyendo al dueño)
                     let hit = false;
                     for (const [user, b] of balls.entries()) {
-                        if (user === p.owner || b.isDead) continue; // Ignora fuego amigo y muertos
+                        if (user === p.owner || b.isDead) continue; 
                         
                         const dx = p.x - b.x; const dy = p.y - b.y;
                         if (dx*dx + dy*dy <= b.radius * b.radius) {
-                            // ¡Impacto!
                             const dmg = Math.min(b.power, p.damage);
                             b.addPower(-dmg);
-                            if (balls.has(p.owner)) balls.get(p.owner).addPower(dmg); // Transfiere puntos al tirador
+                            if (balls.has(p.owner)) balls.get(p.owner).addPower(dmg); 
                             
                             floatingTextsArena.push({ x: b.x, y: b.y - b.radius, text: `-${dmg}`, color: "#FF3131", life: 1.0, vy: -1.5 });
                             
@@ -1421,7 +1429,7 @@
                                 showKillNotification(p.owner, b.username);
                                 updateKillsLeaderboard();
                             }
-                            hit = true; break; // La bala se destruye al golpear
+                            hit = true; break; 
                         }
                     }
 

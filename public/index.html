@@ -205,6 +205,7 @@
                     document.getElementById('game-canvas').style.background = 'transparent';
                     document.getElementById('game-canvas').style.boxShadow = 'none';
                     document.getElementById('sidebar-game').style.display = 'none';
+                    const copyBtn = document.getElementById('btn-copy-arena'); if(copyBtn) copyBtn.style.display = 'none';
                 } 
                 else if (overlayType === 'race') {
                     const view = document.getElementById('view-race');
@@ -215,6 +216,7 @@
                     document.getElementById('race-canvas').style.background = 'transparent';
                     document.getElementById('race-canvas').style.boxShadow = 'none';
                     document.getElementById('sidebar-race').style.display = 'none';
+                    const copyBtn = document.getElementById('btn-copy-race'); if(copyBtn) copyBtn.style.display = 'none';
                 }
                 else if (['chat', 'gifts', 'likes', 'donators', 'arena_dom', 'arena_don', 'arena_kil', 'arena_win', 'race_pos', 'race_win'].includes(overlayType)) {
                     const widgetContainer = document.createElement('div');
@@ -378,16 +380,23 @@
     <main id="view-game" class="hidden max-w-[1800px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[750px]">
         <div id="main-arena-container" class="col-span-1 lg:col-span-9 glass relative p-1 flex flex-col overflow-hidden group h-[500px] lg:h-auto transition-all duration-300">
             <div class="absolute inset-0 border-2 border-cyan-500/20 rounded-xl pointer-events-none z-10 group-hover:border-cyan-500/50 transition-colors"></div>
-            <div class="absolute top-4 left-4 z-20 flex items-center gap-2"><span class="bg-black/80 text-cyan-400 text-[10px] font-black px-3 py-1.5 rounded-full border border-cyan-500/30 tracking-widest uppercase shadow-[0_0_10px_rgba(0,255,255,0.2)]">Arena Activa</span></div>
+            
+            <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
+                <span class="bg-black/80 text-cyan-400 text-[10px] font-black px-3 py-1.5 rounded-full border border-cyan-500/30 tracking-widest uppercase shadow-[0_0_10px_rgba(0,255,255,0.2)]">Arena Activa</span>
+                <button id="btn-copy-arena" onclick="copyOverlayUrl('arena')" class="btn-copy-link flex items-center justify-center bg-black/80 pointer-events-auto" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
+            </div>
             
             <div class="flex-1 w-full h-full relative" id="canvas-wrapper">
                 <div id="killfeed" class="absolute top-16 left-1/2 transform -translate-x-1/2 z-40 flex flex-col gap-1 pointer-events-none"></div>
                 <div id="arena-timer" class="game-timer text-4xl md:text-5xl lg:text-6xl">03:00</div>
+                
                 <div id="panel-dom" class="arena-overlay-panel arena-overlay-left hidden md:flex"><div class="p-3 border-b border-zinc-800 bg-black/60 flex justify-between items-center"><h2 class="text-cyan-400 font-black uppercase tracking-widest italic text-xs"><i data-lucide="crosshair" class="inline w-3 mr-1 pb-0.5"></i> Top Dominantes</h2><span id="player-count" class="text-[9px] text-zinc-400 font-mono">0</span></div><div id="arena-ranking" class="flex-1 overflow-y-auto p-2 space-y-1"></div></div>
                 <div id="panel-don" class="arena-overlay-panel arena-overlay-right hidden md:flex"><div class="p-3 border-b border-zinc-800 bg-black/60 flex justify-between items-center"><h2 class="text-yellow-400 font-black uppercase tracking-widest italic text-xs"><i data-lucide="award" class="inline w-3 mr-1 pb-0.5"></i> Top Donadores</h2></div><div id="arena-donators" class="flex-1 overflow-y-auto p-2 space-y-1"></div></div>
                 <div id="panel-kil" class="arena-overlay-panel arena-overlay-bottom-left hidden md:flex"><div class="p-3 border-b border-zinc-800 bg-black/60 flex justify-between items-center"><h2 class="text-red-500 font-black uppercase tracking-widest italic text-xs"><i data-lucide="crosshairs" class="inline w-3 mr-1 pb-0.5"></i> Top Kills</h2></div><div id="arena-kills" class="flex-1 overflow-y-auto p-2 space-y-1"></div></div>
                 <div id="panel-win" class="arena-overlay-panel arena-overlay-bottom-right hidden md:flex"><div class="p-3 border-b border-zinc-800 bg-black/60 flex justify-between items-center"><h2 class="text-purple-400 font-black uppercase tracking-widest italic text-xs"><i data-lucide="trophy" class="inline w-3 mr-1 pb-0.5"></i> Top Wins</h2></div><div id="arena-wins" class="flex-1 overflow-y-auto p-2 space-y-1"></div></div>
+                
                 <canvas id="game-canvas"></canvas>
+                
                 <div id="start-match-overlay" class="match-overlay p-4 text-center"><h2 class="text-xl md:text-2xl font-black italic text-white mb-1 uppercase tracking-widest">Sala de Espera</h2><p class="text-cyan-400 mb-4 uppercase text-[9px] md:text-[10px] tracking-[2px] md:tracking-[4px] font-bold">Las bolas no se hacen daño aún</p><button id="btn-start-match" onclick="startMatch('arena')" class="btn-start px-6 md:px-8 py-2 md:py-3 rounded-xl font-black text-base md:text-lg uppercase tracking-widest cursor-pointer pointer-events-auto">Iniciar Batalla</button></div>
                 <div id="end-match-overlay" class="match-overlay p-4 text-center"><h2 class="text-3xl md:text-6xl font-black italic text-cyan-400 mb-4 md:mb-8 uppercase tracking-widest" style="text-shadow: 0 0 30px rgba(0,255,255,0.4);">¡FIN DE LA RONDA!</h2><div id="top-3-container" class="flex flex-col gap-2 md:gap-4 mb-6 md:mb-10 w-full max-w-2xl"></div><div class="flex flex-col items-center"><p class="text-sm md:text-xl text-zinc-400 font-bold uppercase tracking-widest">Preparando nueva sala en</p><span id="restart-countdown" class="text-red-500 text-4xl md:text-6xl font-black mt-2 drop-shadow-lg">5</span></div></div>
             </div>
@@ -399,7 +408,6 @@
             
             <div class="glass p-4 h-auto flex flex-col gap-2 border border-purple-900/30 flex-shrink-0">
                 <h2 class="text-xs font-bold uppercase text-purple-500 italic tracking-widest mb-1 border-b border-purple-900/50 pb-2"><i data-lucide="zap" class="inline w-3 mr-1"></i> Ajustes de Poderes</h2>
-                
                 <details class="bg-black/40 rounded border border-zinc-800 p-2"><summary class="text-[10px] text-cyan-400 uppercase font-bold cursor-pointer outline-none flex items-center justify-between">1. Furia Rápida <i data-lucide="chevron-down" class="w-3 h-3"></i></summary><div class="pt-2 mt-2 border-t border-zinc-800 space-y-2"><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Costo (Diamantes)</span><input type="number" id="p-fury-cost" class="cfg-input w-12" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Duración (seg)</span><input type="number" id="p-fury-dur" class="cfg-input w-12" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Velocidad (x)</span><input type="number" id="p-fury-spd" class="cfg-input w-12" step="0.5" oninput="updatePowersCfg()"></div><button onclick="simulatePower('fury')" class="btn-sim w-full mt-1">Simular Poder</button></div></details>
                 <details class="bg-black/40 rounded border border-zinc-800 p-2"><summary class="text-[10px] text-red-500 uppercase font-bold cursor-pointer outline-none flex items-center justify-between">2. Escudo Picos <i data-lucide="chevron-down" class="w-3 h-3"></i></summary><div class="pt-2 mt-2 border-t border-zinc-800 space-y-2"><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Costo (Diamantes)</span><input type="number" id="p-spikes-cost" class="cfg-input w-12" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Duración (seg)</span><input type="number" id="p-spikes-dur" class="cfg-input w-12" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Multiplicador Robo (x)</span><input type="number" id="p-spikes-stl" class="cfg-input w-12" step="1" oninput="updatePowersCfg()"></div><button onclick="simulatePower('spikes')" class="btn-sim w-full mt-1">Simular Poder</button></div></details>
                 <details class="bg-black/40 rounded border border-zinc-800 p-2"><summary class="text-[10px] text-purple-400 uppercase font-bold cursor-pointer outline-none flex items-center justify-between">3. Agujero Negro <i data-lucide="chevron-down" class="w-3 h-3"></i></summary><div class="pt-2 mt-2 border-t border-zinc-800 space-y-2"><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Costo (Diamantes)</span><input type="number" id="p-hole-cost" class="cfg-input w-12" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Duración (seg)</span><input type="number" id="p-hole-dur" class="cfg-input w-12" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Radio Atracción</span><input type="number" id="p-hole-rad" class="cfg-input w-12" step="50" oninput="updatePowersCfg()"></div><div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Fuerza Gravedad</span><input type="number" id="p-hole-frc" class="cfg-input w-12" step="0.5" oninput="updatePowersCfg()"></div><button onclick="simulatePower('blackhole')" class="btn-sim w-full mt-1">Simular Poder</button></div></details>
@@ -420,10 +428,10 @@
                 <div class="pt-3 pb-2 border-t border-zinc-800 mt-3">
                     <label class="text-[10px] text-zinc-400 uppercase block font-bold mb-2">Visibilidad de Paneles</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-dom" checked onchange="togglePanel('dom')" class="accent-cyan-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Dominantes</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-don" checked onchange="togglePanel('don')" class="accent-yellow-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Donadores</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-kil" checked onchange="togglePanel('kil')" class="accent-red-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Kills</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-win" checked onchange="togglePanel('win')" class="accent-purple-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Wins</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-dom" checked onchange="togglePanel('dom')" class="accent-cyan-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Dominantes</span> <button onclick="copyOverlayUrl('arena_dom'); event.preventDefault();" class="text-cyan-500 hover:text-white" title="Copiar URL"><i data-lucide="link" class="w-3 h-3"></i></button></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-don" checked onchange="togglePanel('don')" class="accent-yellow-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Donadores</span> <button onclick="copyOverlayUrl('arena_don'); event.preventDefault();" class="text-yellow-500 hover:text-white" title="Copiar URL"><i data-lucide="link" class="w-3 h-3"></i></button></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-kil" checked onchange="togglePanel('kil')" class="accent-red-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Kills</span> <button onclick="copyOverlayUrl('arena_kil'); event.preventDefault();" class="text-red-500 hover:text-white" title="Copiar URL"><i data-lucide="link" class="w-3 h-3"></i></button></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-win" checked onchange="togglePanel('win')" class="accent-purple-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Wins</span> <button onclick="copyOverlayUrl('arena_win'); event.preventDefault();" class="text-purple-500 hover:text-white" title="Copiar URL"><i data-lucide="link" class="w-3 h-3"></i></button></label>
                     </div>
                     <div class="flex gap-2 mt-4">
                         <button onclick="resetArenaKills()" class="w-full bg-zinc-900 border border-zinc-700 text-red-400 hover:text-white hover:bg-red-900/50 py-2 rounded text-[10px] uppercase font-bold tracking-widest transition-all">Limpiar Kills</button>
@@ -440,12 +448,12 @@
             
             <div class="absolute top-4 left-4 z-20 flex items-center gap-2">
                 <span class="bg-black/80 text-red-500 text-[10px] font-black px-3 py-1.5 rounded-full border border-red-500/50 tracking-widest uppercase shadow-[0_0_10px_rgba(255,49,49,0.2)]"><i data-lucide="skull" class="inline w-3 mr-1 pb-0.5"></i> Carrera Activa</span>
+                <button id="btn-copy-race" onclick="copyOverlayUrl('race')" class="btn-copy-link btn-copy-link-red flex items-center justify-center bg-black/80 pointer-events-auto" title="Copiar URL para OBS"><i data-lucide="link" class="w-3 h-3"></i></button>
             </div>
             
             <div class="flex-1 w-full h-full relative" id="canvas-wrapper-race">
                 
                 <div id="race-killfeed" class="absolute top-16 left-1/2 transform -translate-x-1/2 z-40 flex flex-col gap-1 pointer-events-none"></div>
-
                 <div id="race-timer" class="game-timer race-timer text-4xl md:text-5xl lg:text-6xl">03:00</div>
                 
                 <div id="panel-race-pos" class="arena-overlay-panel race-overlay-left hidden md:flex" style="background: rgba(20, 5, 5, 0.8);">
@@ -488,9 +496,7 @@
             </div>
 
             <div class="glass p-4 h-auto flex flex-col gap-2 border border-red-900/30 flex-shrink-0">
-                <h2 class="text-xs font-bold uppercase text-red-500 italic tracking-widest mb-1 border-b border-red-900/50 pb-2">
-                    <i data-lucide="zap" class="inline w-3 mr-1"></i> Poderes y Ataques
-                </h2>
+                <h2 class="text-xs font-bold uppercase text-red-500 italic tracking-widest mb-1 border-b border-red-900/50 pb-2"><i data-lucide="zap" class="inline w-3 mr-1"></i> Poderes y Ataques</h2>
                 
                 <details class="bg-black/40 rounded border border-zinc-800 p-2">
                     <summary class="text-[10px] text-yellow-400 uppercase font-bold cursor-pointer outline-none flex items-center justify-between">Nitro Especial (x1 a x4) <i data-lucide="chevron-down" class="w-3 h-3"></i></summary>
@@ -502,7 +508,6 @@
                         <button onclick="updateRacePowersCfg(); simulateRacePower('boost')" class="btn-sim w-full mt-1">Simular Nitro Random</button>
                     </div>
                 </details>
-
                 <details class="bg-black/40 rounded border border-zinc-800 p-2">
                     <summary class="text-[10px] text-blue-400 uppercase font-bold cursor-pointer outline-none flex items-center justify-between">Escudo Neón <i data-lucide="chevron-down" class="w-3 h-3"></i></summary>
                     <div class="pt-2 mt-2 border-t border-zinc-800 space-y-2">
@@ -511,13 +516,12 @@
                         <button onclick="simulateRacePower('shield')" class="btn-sim w-full mt-1" style="background:var(--cyan)">Simular Escudo</button>
                     </div>
                 </details>
-
                 <details class="bg-black/40 rounded border border-zinc-800 p-2">
                     <summary class="text-[10px] text-red-500 uppercase font-bold cursor-pointer outline-none flex items-center justify-between">Cañón Retroceso <i data-lucide="chevron-down" class="w-3 h-3"></i></summary>
                     <div class="pt-2 mt-2 border-t border-zinc-800 space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400" title="Coste en diamantes">Costo Diamantes</span><input type="number" id="rp-can-cost" class="cfg-input cfg-input-red w-12" oninput="updateRacePowersCfg()"></div>
-                        <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400" title="Balas que dispara hacia atrás">Cant. Balas</span><input type="number" id="rp-can-cnt" class="cfg-input cfg-input-red w-12" oninput="updateRacePowersCfg()"></div>
-                        <div class="flex justify-between items-center"><span class="text-[9px] text-red-400 font-bold" title="Metros que retrasa al golpear">Retroceso (Metros)</span><input type="number" id="rp-can-dmg" class="cfg-input cfg-input-red w-12" oninput="updateRacePowersCfg()"></div>
+                        <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Costo Diamantes</span><input type="number" id="rp-can-cost" class="cfg-input cfg-input-red w-12" oninput="updateRacePowersCfg()"></div>
+                        <div class="flex justify-between items-center"><span class="text-[9px] text-zinc-400">Cant. Balas</span><input type="number" id="rp-can-cnt" class="cfg-input cfg-input-red w-12" oninput="updateRacePowersCfg()"></div>
+                        <div class="flex justify-between items-center"><span class="text-[9px] text-red-400 font-bold">Retroceso (m)</span><input type="number" id="rp-can-dmg" class="cfg-input cfg-input-red w-12" oninput="updateRacePowersCfg()"></div>
                         <button onclick="simulateRacePower('cannon')" class="btn-sim w-full mt-1">Simular Cañón</button>
                     </div>
                 </details>
@@ -544,11 +548,16 @@
                 <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad por 1 unidad de regalo">Velocidad x Regalo</span><input type="number" id="cfg-race-gift" value="50" min="1" class="cfg-input cfg-input-red"></div>
                 <div class="flex items-center justify-between"><span class="text-[10px] text-zinc-400 uppercase font-bold" title="Velocidad por Tap Tap">Velocidad x Like</span><input type="number" id="cfg-race-like" value="5" min="1" class="cfg-input cfg-input-red"></div>
                 
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-red-900/50">
+                    <span class="text-[10px] text-red-400 uppercase font-bold" title="Habilita el láser eliminador trasero">Láser de Muerte</span>
+                    <input type="checkbox" id="cfg-race-deathzone" checked onchange="updateRaceSettings()" class="accent-red-500 w-4 h-4 cursor-pointer">
+                </div>
+                
                 <div class="pt-3 pb-2 border-t border-red-900/50 mt-3">
                     <label class="text-[10px] text-zinc-400 uppercase block font-bold mb-2">Visibilidad de Paneles</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-race-pos" checked onchange="togglePanel('race-pos')" class="accent-red-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Posiciones</span></label>
-                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-race-win" checked onchange="togglePanel('race-win')" class="accent-gold w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Wins</span></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-race-pos" checked onchange="togglePanel('race-pos')" class="accent-red-500 w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Posiciones</span> <button onclick="copyOverlayUrl('race_pos'); event.preventDefault();" class="text-red-500 hover:text-white" title="Copiar URL"><i data-lucide="link" class="w-3 h-3"></i></button></label>
+                        <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="toggle-p-race-win" checked onchange="togglePanel('race-win')" class="accent-gold w-3 h-3"> <span class="text-[10px] uppercase font-bold text-zinc-300">Top Wins</span> <button onclick="copyOverlayUrl('race_win'); event.preventDefault();" class="text-yellow-500 hover:text-white" title="Copiar URL"><i data-lucide="link" class="w-3 h-3"></i></button></label>
                     </div>
                     <button onclick="resetRaceWins()" class="mt-4 w-full bg-zinc-900 border border-zinc-700 text-gold hover:text-white hover:bg-yellow-900/50 py-2 rounded text-[10px] uppercase font-bold tracking-widest transition-all">Limpiar Historial de Wins</button>
                 </div>
@@ -776,11 +785,11 @@
             boost3: { cost: 99, mult: 4.0, dur: 10 },
             boost4: { cost: 299, mult: 6.0, dur: 15 },
             shield: { cost: 50, dur: 15 },
-            cannon: { cost: 500, count: 5, penalty: 200 } // Dispara 5 balas, cada bala retrocede 200m
+            cannon: { cost: 500, count: 5, penalty: 200 } 
         };
 
         const arenaCfg = { initialPower: 50, baseSpeed: 4, stealPercent: 0.05, giftMultiplier: 100, matchTimeMin: 3, forceEnd: 0 };
-        const raceCfg = { mode: 'likes_gifts', matchTimeMin: 3, friction: 0.98, giftMult: 50, likeMult: 5, forceEnd: 0 };
+        const raceCfg = { mode: 'likes_gifts', matchTimeMin: 3, friction: 0.98, giftMult: 50, likeMult: 5, forceEnd: 0, deathZoneEnabled: true };
 
         function updatePowersCfg() {
             if(isOverlay) return;
@@ -807,6 +816,13 @@
             broadcastConfig();
         }
 
+        function updateRaceSettings() {
+            if(isOverlay) return;
+            const rDz = document.getElementById('cfg-race-deathzone');
+            if(rDz) raceCfg.deathZoneEnabled = rDz.checked;
+            broadcastConfig();
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             if(!isOverlay) {
                 // Set Arena defaults
@@ -825,6 +841,10 @@
                 document.getElementById('rp-b4-cost').value = powersRaceCfg.boost4.cost; document.getElementById('rp-b4-dur').value = powersRaceCfg.boost4.dur;
                 document.getElementById('rp-shield-cost').value = powersRaceCfg.shield.cost; document.getElementById('rp-shield-dur').value = powersRaceCfg.shield.dur;
                 document.getElementById('rp-can-cost').value = powersRaceCfg.cannon.cost; document.getElementById('rp-can-cnt').value = powersRaceCfg.cannon.count; document.getElementById('rp-can-dmg').value = powersRaceCfg.cannon.penalty;
+
+                // Death Zone Setting
+                const rDz = document.getElementById('cfg-race-deathzone');
+                if(rDz) rDz.checked = raceCfg.deathZoneEnabled;
             }
         });
 
@@ -1048,8 +1068,8 @@
                 raceCannonballs.push({
                     owner: racer.username, damage: cfg.penalty,
                     dist: racer.distance, y: racer.y,
-                    speed: 50 + Math.random() * 50, // Viajan rápido hacia atrás o adelante
-                    direction: (Math.random() > 0.5 ? 1 : -1), // Algunos van para adelante, otros para atrás
+                    speed: 50 + Math.random() * 50, 
+                    direction: (Math.random() > 0.5 ? 1 : -1), 
                     color: '#FF3131', life: 100
                 });
             }
@@ -1189,7 +1209,6 @@
                 this.y = margin + Math.random() * availableHeight;
                 this.isDead = false;
                 
-                // PODERES CARRERA
                 this.boostTimer = 0; this.boostMult = 1; this.boostLevel = '';
                 this.shieldTimer = 0;
 
@@ -1201,7 +1220,7 @@
 
             addBoost(amount) { if(!this.isDead) this.velocity += (amount * this.boostMult); }
             
-            activateBoost(levelName) { // 'boost1', 'boost2', etc.
+            activateBoost(levelName) { 
                 const cfg = powersRaceCfg[levelName];
                 this.boostMult = cfg.mult; this.boostTimer = cfg.dur * 1000; this.boostLevel = levelName;
                 floatingTextsRace.push({ x: this.distance, y: this.y - 20, text: `¡NITRO x${cfg.mult}!`, color: '#FFD700', life: 1.0, vy: -1.0 });
@@ -1209,7 +1228,6 @@
 
             update(deltaTime) {
                 if (gameStateRace === 'playing' && !this.isDead) {
-                    // Temporizadores
                     if (this.boostTimer > 0) { this.boostTimer -= deltaTime; if(this.boostTimer <= 0) { this.boostMult = 1; this.boostLevel = ''; } }
                     if (this.shieldTimer > 0) { this.shieldTimer -= deltaTime; }
 
@@ -1219,26 +1237,24 @@
             }
             
             draw(ctx, camX) {
-                if (this.isDead) return; // No dibujar eliminados
+                if (this.isDead) return; 
                 const drawX = this.distance - camX + (widthR * 0.2); 
                 if (drawX < -100 || drawX > widthR + 100) return; 
                 
                 ctx.save(); ctx.translate(drawX, this.y);
                 
-                // Estela de fuego / Nitro
                 if(this.velocity > 0.5) {
                     let flameColor = 'rgba(255, 100, 0, 0.8)'; let glowColor = 'red';
                     if (this.boostLevel === 'boost1') { flameColor = 'rgba(255, 255, 0, 0.9)'; glowColor = 'yellow'; }
                     if (this.boostLevel === 'boost2') { flameColor = 'rgba(255, 150, 0, 0.9)'; glowColor = 'orange'; }
                     if (this.boostLevel === 'boost3') { flameColor = 'rgba(0, 255, 255, 0.9)'; glowColor = 'cyan'; }
-                    if (this.boostLevel === 'boost4') { flameColor = 'rgba(138, 43, 226, 0.9)'; glowColor = 'purple'; } // Fuego Morado x4!
+                    if (this.boostLevel === 'boost4') { flameColor = 'rgba(138, 43, 226, 0.9)'; glowColor = 'purple'; } 
 
                     ctx.fillStyle = flameColor; ctx.shadowBlur = 15; ctx.shadowColor = glowColor;
                     ctx.beginPath(); const flameLen = Math.min(this.velocity * (this.boostMult * 1.5), 150);
                     ctx.moveTo(-15, 0); ctx.lineTo(-15 - flameLen, -5); ctx.lineTo(-15 - flameLen, 5); ctx.fill();
                 }
 
-                // ESCUDO NEÓN
                 if (this.shieldTimer > 0) {
                     ctx.beginPath(); ctx.arc(10, 0, 30, 0, Math.PI * 2);
                     ctx.fillStyle = 'rgba(0, 255, 255, 0.2)'; ctx.fill();
@@ -1344,29 +1360,31 @@
                 for(let y = heightR; y > 0; y -= (y*0.1) + 20) { ctxR.moveTo(0, y); ctxR.lineTo(widthR, y); }
                 ctxR.stroke(); ctxR.restore();
 
-                // LÍMITE DE LA ZONA DE MUERTE (Línea roja a la izquierda)
-                const deathZoneX = 50; // A 50 píxeles del borde izquierdo
-                ctxR.fillStyle = 'rgba(255, 0, 0, 0.2)'; ctxR.fillRect(0, 0, deathZoneX, heightR);
-                ctxR.beginPath(); ctxR.moveTo(deathZoneX, 0); ctxR.lineTo(deathZoneX, heightR); ctxR.strokeStyle = 'red'; ctxR.lineWidth = 5; ctxR.shadowBlur = 20; ctxR.shadowColor = 'red'; ctxR.stroke(); ctxR.shadowBlur = 0;
+                // LÍMITE DE LA ZONA DE MUERTE
+                const deathZoneX = 50; 
+                if (raceCfg.deathZoneEnabled) {
+                    ctxR.fillStyle = 'rgba(255, 0, 0, 0.2)'; ctxR.fillRect(0, 0, deathZoneX, heightR);
+                    ctxR.beginPath(); ctxR.moveTo(deathZoneX, 0); ctxR.lineTo(deathZoneX, heightR); ctxR.strokeStyle = 'red'; ctxR.lineWidth = 5; ctxR.shadowBlur = 20; ctxR.shadowColor = 'red'; ctxR.stroke(); ctxR.shadowBlur = 0;
+                }
 
                 for (const r of racers.values()) { 
                     if(r.isDead) continue;
                     r.update(deltaTime); r.draw(ctxR, cameraX); 
                     
-                    // LÓGICA DE ZONA DE MUERTE
-                    const drawX = r.distance - cameraX + (widthR * 0.2);
-                    if (gameStateRace === 'playing' && drawX < deathZoneX - 20) { // Si la nave pasa la línea
-                        r.isDead = true;
-                        floatingTextsRace.push({ x: r.distance, y: r.y, text: `¡ELIMINADO!`, color: '#FF3131', life: 1.0, vy: -1.0 });
-                        showKillNotification("ZONA", r.username, true);
+                    if (raceCfg.deathZoneEnabled) {
+                        const drawX = r.distance - cameraX + (widthR * 0.2);
+                        if (gameStateRace === 'playing' && drawX < deathZoneX - 20) {
+                            r.isDead = true;
+                            floatingTextsRace.push({ x: r.distance, y: r.y, text: `¡ELIMINADO!`, color: '#FF3131', life: 1.0, vy: -1.0 });
+                            showKillNotification("ZONA", r.username, true);
+                        }
                     }
                 }
                 if(!isOverlay) updateRaceLeaderboard();
 
-                // Balas de Cañón Carrera
                 for (let i = raceCannonballs.length - 1; i >= 0; i--) {
                     const p = raceCannonballs[i];
-                    p.dist += (p.speed * p.direction * (deltaTime/100)); // Mover bala
+                    p.dist += (p.speed * p.direction * (deltaTime/100)); 
                     p.life--;
 
                     const pDrawX = p.dist - cameraX + (widthR * 0.2);
@@ -1375,17 +1393,16 @@
                         ctxR.fillStyle = '#FFD700'; ctxR.shadowBlur = 10; ctxR.shadowColor = '#FF0000'; ctxR.fill(); ctxR.shadowBlur = 0;
                     }
 
-                    // Checar impacto Carrera
                     let hit = false;
                     for (const [user, r] of racers.entries()) {
                         if (user === p.owner || r.isDead) continue;
                         if (Math.abs(p.dist - r.distance) < 30 && Math.abs(p.y - r.y) < 30) {
                             if (r.shieldTimer > 0) {
-                                r.shieldTimer = 0; // Escudo se rompe pero bloquea el daño
+                                r.shieldTimer = 0; 
                                 floatingTextsRace.push({ x: r.distance, y: r.y - 20, text: `¡BLOQUEADO!`, color: '#00FFFF', life: 1.0, vy: -1.0 });
                             } else {
                                 r.distance = Math.max(0, r.distance - p.damage);
-                                r.velocity *= 0.2; // Frena casi a cero
+                                r.velocity *= 0.2; 
                                 floatingTextsRace.push({ x: r.distance, y: r.y - 20, text: `-${p.damage}m`, color: '#FF3131', life: 1.0, vy: -1.0 });
                             }
                             hit = true; break;
@@ -1501,7 +1518,7 @@
 
             if (!racers.has(username)) racers.set(username, new Racer(username, avatarUrl));
             const racer = racers.get(username);
-            if(racer.isDead) return; // Un muerto no avanza
+            if(racer.isDead) return; 
 
             let speedBoost = 0;
             if(type === 'gift') speedBoost = amount * raceCfg.giftMult;

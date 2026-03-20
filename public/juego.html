@@ -21,18 +21,37 @@
             background: radial-gradient(circle at center, #1a0b2e 0%, #050507 100%); 
         }
 
-        /* Estilo para el botón de prueba */
-        .btn-test {
-            background: rgba(138, 43, 226, 0.2);
-            border: 2px solid rgba(138, 43, 226, 0.5);
-            color: #8A2BE2;
-            transition: all 0.3s;
+        /* Estilos para el panel DEV */
+        .dev-panel {
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            color: #efefef;
+            scrollbar-width: thin;
+            scrollbar-color: #8A2BE2 #0a0a0f;
         }
-        .btn-test:hover {
-            background: #8A2BE2;
-            color: white;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.6);
-            transform: scale(1.05);
+
+        .dev-panel h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+        }
+
+        .btn-dev {
+            background: #fff;
+            color: #333;
+            transition: all 0.2s;
+        }
+        .btn-dev:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .gift-mapping h3, .skill-meaning h3 {
+            color: #FFD700; /* Gold */
+            text-transform: uppercase;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -40,7 +59,7 @@
 
     <div class="absolute top-6 left-6 pointer-events-none z-50">
         <h1 class="text-4xl font-black italic text-cyan-500 uppercase tracking-tighter shadow-black drop-shadow-lg">
-            NEXORA <span class="text-white">AVATAR ARENA</span>
+            NEXORA <span class="text-white">ARENA Live</span>
         </h1>
         <div id="status" class="flex items-center gap-2 mt-2">
             <div id="status-dot" class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
@@ -48,11 +67,52 @@
         </div>
     </div>
 
-    <div class="absolute top-6 right-6 z-50">
-        <button onclick="spawnTestBot()" class="btn-test px-5 py-2 rounded-full font-black text-[11px] uppercase tracking-widest cursor-pointer">
-            ➕ Simular Jugador
-        </button>
-    </div>
+    <aside class="dev-panel absolute top-6 right-6 w-[300px] max-h-[calc(100vh-48px)] p-5 rounded-2xl shadow-xl overflow-y-auto z-50 flex flex-col gap-5">
+        
+        <section>
+            <h2 class="text-cyan-400 text-sm tracking-widest mb-3 flex items-center gap-2">
+                <i data-lucide="wrench" class="w-4 h-4"></i> DEV PANEL
+            </h2>
+            <div class="flex flex-col gap-1.5 text-black">
+                <button onclick="spawnTestBot()" class="btn-dev w-full py-2 rounded font-semibold text-xs flex items-center justify-center gap-2">
+                    <span class="text-purple-600 font-bold">+</span> Spawn Player
+                </button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">🔫 Shoot</button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">💥 Rampage</button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">🌪️ Storm</button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">⚡ Shock</button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">⚔️ Blade</button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">👾 Boss Test</button>
+                <button class="btn-dev w-full py-2 rounded font-semibold text-xs">🌍 Gravity Explosion Test</button>
+            </div>
+        </section>
+
+        <section class="gift-mapping text-sm font-mono space-y-2 border-t border-zinc-800 pt-4">
+            <h3>🎁 Gift Mapping</h3>
+            <p>LIKE -> ⚔️ Blade Lv1</p>
+            <p>FOLLOW -> ⚔️ Blade Lv3</p>
+            <p>SHARE -> ⚔️ Blade Lv3</p>
+            <p>MEMBER -> ⚔️ Blade Lv3 + 🔫 Shoot</p>
+            
+            <p>1 coin -> ⚔️ Blade Lv4</p>
+            <p>&leq; 5 coin -> ⚔️ Blade Lv5</p>
+            <p>&leq; 10 coin -> ⭐️ Lv3 + 🔫 Shoot</p>
+            <p>&leq; 20 coin -> 🌟 Lv4 + 💥 Rampage</p>
+            <p>&leq; 30 coin -> 🌠 Lv4 + ⚡ Shock</p>
+            <p>&leq; 100 coin -> 🌪️ Storm + ⚔️ Lv4</p>
+            <p>&leq; 199 coin -> ⚡ Shock + 💥 Rampage</p>
+            <p>> 199 coin -> 💎 ALL COMBO</p>
+        </section>
+
+        <section class="skill-meaning text-xs font-mono space-y-1.5 border-t border-zinc-800 pt-4 text-zinc-400">
+            <h3>📖 Skill Meaning</h3>
+            <p>⚔️ Blade = Cưa xoay (Sierra Giratoria)</p>
+            <p>🔫 Shoot = Bắn theo target (Disparo Directo)</p>
+            <p>⚡ Shock = Giật điện AOE (Choque Eléctrico de Área)</p>
+            <p>💥 Rampage = Lao vào mục tiêu (Embestida)</p>
+            <p>🌪️ Storm = Bắn loạn xạ (Tormenta de Disparos)</p>
+        </section>
+    </aside>
 
     <canvas id="canvas"></canvas>
 
@@ -77,8 +137,12 @@
         class Avatar {
             constructor(data) {
                 this.id = data.username;
-                this.x = Math.random() * (canvas.width - 100) + 50;
-                this.y = -60;
+                
+                // Definir la "Arena" de movimiento (izquierda del panel DEV)
+                const arenaWidth = canvas.width - 320; // Dejar 320px para el panel y margen
+
+                this.x = Math.random() * (arenaWidth - 100) + 50;
+                this.y = -60; // Aparecen desde arriba
                 this.vx = (Math.random() - 0.5) * 10;
                 this.vy = 2;
                 this.radius = 35; 
@@ -96,11 +160,27 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Rebotes
-                if (this.x + this.radius > canvas.width || this.x - this.radius < 0) this.vx *= -0.8;
+                // Definir los bordes de la Arena de batalla
+                const arenaRightBorder = canvas.width - 320;
+
+                // Rebotes límites de la "Arena"
+                if (this.x + this.radius > arenaRightBorder) {
+                    this.x = arenaRightBorder - this.radius;
+                    this.vx *= -0.8; // Rebota en el borde izquierdo del panel
+                }
+                if (this.x - this.radius < 0) {
+                    this.x = this.radius;
+                    this.vx *= -0.8; // Rebota en la pared izquierda
+                }
+
+                // Rebotes verticales
                 if (this.y + this.radius > canvas.height) {
                     this.y = canvas.height - this.radius;
-                    this.vy *= -0.6;
+                    this.vy *= -0.6; // Suelo
+                }
+                if (this.y - this.radius < 0) {
+                    this.y = this.radius;
+                    this.vy *= -1; // Techo (si sube mucho)
                 }
 
                 // Lógica de ataque cada 2-4 segundos
@@ -151,6 +231,7 @@
             }
 
             attack() {
+                // Atacar solo a objetivos dentro de la Arena
                 let targets = Object.values(avatars).filter(a => a.id !== this.id);
                 if (targets.length === 0) return;
 
@@ -182,7 +263,7 @@
             }
         }
 
-        // --- GENERADOR DE BOTS ---
+        // --- GENERADOR DE BOTS (Solo para prueba) ---
         function spawnTestBot() {
             const id = "User_" + Math.floor(Math.random()*999);
             avatars[id] = new Avatar({
@@ -230,10 +311,13 @@
             requestAnimationFrame(loop);
         }
 
+        // Inicializar Lucide Icons
+        lucide.createIcons();
+
         // Eventos de Socket
         socket.on('spawnPlayer', (data) => avatars[data.username] = new Avatar(data));
         socket.on('connect', () => {
-            statusText.innerText = "Conectado a Nexora Arena";
+            statusText.innerText = "Arena Live Conectada";
             statusText.classList.replace('text-red-500', 'text-green-500');
             statusDot.classList.replace('bg-red-500', 'bg-green-500');
         });

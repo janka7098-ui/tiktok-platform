@@ -55,30 +55,29 @@ app.get("/avatar-proxy", async (req,res)=>{
 });
 
 /* =========================
-   NUEVO SISTEMA DE KEYS (USUARIOS Y ADMIN)
+   SISTEMA DE KEYS (USUARIOS Y ADMIN)
 ========================= */
 const usersDB = {
   // Claves de Usuarios normales
-  "nexoraUser_aX9k": { role: "user", name: "Carlos" },
-  "nexoraUser_bY2m": { role: "user", name: "Lucia" },
-  "nexoraUser_cZ5p": { role: "user", name: "Miguel" },
-  "nexoraUser_dW8r": { role: "user", name: "Elena" },
-  "nexoraUser_eV1t": { role: "user", name: "David" },
+  "nexora01": { role: "user", name: "Usuario 1" },
+  "nexora02": { role: "user", name: "Usuario 2" },
+  "nexora03": { role: "user", name: "Usuario 3" },
+  "nexora04": { role: "user", name: "Usuario 4" },
+  "nexora05": { role: "user", name: "Usuario 5" },
   
   // Clave de Administrador
-  "nexoraAdmin_xX_GodMode_Xx": { role: "admin", name: "SuperAdmin" }
+  "admin123": { role: "admin", name: "SuperAdmin" } // Cambia "admin123" por tu clave secreta
 };
 
 const activeConnections=new Map();
 const userActions=new Map();
-
 
 io.on("connection",(socket)=>{
 
   socket.on("startConnection", async ({username,key})=>{
     if(!username || !key) return;
 
-    // Verificamos si la key existe en nuestra base de datos simulada (usersDB)
+    // Verificamos si la key existe en nuestra base de datos simulada
     const userAccount = usersDB[key];
 
     if(!userAccount){
@@ -86,7 +85,7 @@ io.on("connection",(socket)=>{
       return;
     }
 
-    // Aquí puedes emitir al Front-end quién se conectó y qué rol tiene
+    // Emitimos que la autenticación fue un éxito
     socket.emit("authSuccess", { 
         name: userAccount.name, 
         role: userAccount.role 

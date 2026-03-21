@@ -20,7 +20,6 @@ background:#0a0a12;
 color:white;
 }
 
-/* HEADER */
 .header{
 padding:20px;
 background:linear-gradient(90deg,#6d28d9,#00ffa6);
@@ -28,14 +27,12 @@ font-weight:700;
 font-size:20px;
 }
 
-/* MAIN */
 .container{
 padding:20px;
 max-width:1000px;
 margin:auto;
 }
 
-/* SEARCH */
 .search{
 width:100%;
 padding:12px;
@@ -46,7 +43,6 @@ color:white;
 margin-bottom:20px;
 }
 
-/* ADD BOX */
 .add-box{
 display:flex;
 gap:10px;
@@ -62,7 +58,6 @@ background:#1b1b2b;
 color:white;
 }
 
-/* TABLE */
 .table{
 width:100%;
 border-collapse:collapse;
@@ -80,7 +75,6 @@ background:#11111c;
 border-bottom:1px solid #1a1a2a;
 }
 
-/* BUTTONS */
 .btn{
 padding:8px 12px;
 border:none;
@@ -126,12 +120,14 @@ Lexora Interactive PRO 🚀
   <option value="follow">➕ Follow</option>
 </select>
 
-<input id="newGift" placeholder="Nombre (solo gift)">
+<input id="newGift" placeholder="Nombre (solo gift)" list="giftList">
 <input id="newParts" placeholder="Parts (-5)">
 <input id="targetLikes" placeholder="Meta likes (ej: 50000)">
 <button class="btn test" onclick="add()">Agregar</button>
 
 </div>
+
+<datalist id="giftList"></datalist>
 
 <!-- TABLA -->
 <table class="table" id="table">
@@ -141,7 +137,6 @@ Lexora Interactive PRO 🚀
 <th>Parts</th>
 <th>Meta</th>
 <th>Test</th>
-<th></th>
 </tr>
 </table>
 
@@ -152,9 +147,36 @@ Lexora Interactive PRO 🚀
 <script>
 
 let events = JSON.parse(localStorage.getItem("events")) || {}
+let giftImages = {}
 
 const table = document.getElementById("table")
 
+// 🔥 CARGAR REGALOS DEL SERVER
+async function loadGifts(){
+  try{
+    const res = await fetch("/gift-list");
+    const gifts = await res.json();
+
+    const datalist = document.getElementById("giftList");
+
+    gifts.forEach(g=>{
+      giftImages[g.name.toLowerCase()] = g.image;
+
+      const option = document.createElement("option");
+      option.value = g.name;
+      datalist.appendChild(option);
+    });
+
+    console.log("🎁 Gifts cargados:", gifts.length);
+
+  }catch(err){
+    console.log("❌ Error cargando gifts");
+  }
+}
+
+loadGifts()
+
+// 🔥 RENDER
 function render(){
 
 table.innerHTML = `
@@ -164,7 +186,6 @@ table.innerHTML = `
 <th>Parts</th>
 <th>Meta</th>
 <th>Test</th>
-<th></th>
 </tr>
 `
 
@@ -172,12 +193,20 @@ Object.keys(events).forEach(name=>{
 
 const e = events[name]
 
+const img = giftImages[name?.toLowerCase()]
+
 const row = document.createElement("tr")
 row.className="row"
 
 row.innerHTML = `
 <td>${e.type}</td>
-<td>${name}</td>
+
+<td>
+<div style="display:flex;align-items:center;gap:10px;">
+  ${img ? `<img src="${img}" style="width:30px;height:30px">` : ""}
+  ${name}
+</div>
+</td>
 
 <td>
 <input value="${e.parts}" onchange="update('${name}',this.value)">
@@ -189,9 +218,6 @@ ${e.type === "like" ? e.targetLikes || "-" : "-"}
 
 <td>
 <input id="test-${name}" value="1">
-</td>
-
-<td>
 <button class="btn test" onclick="test('${name}')">TEST</button>
 </td>
 `

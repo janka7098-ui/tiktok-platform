@@ -54,19 +54,20 @@ app.get("/avatar-proxy", async (req,res)=>{
   }
 });
 
-
-const allowedKeys=[
-  "nexora01",
-  "nexora02",
-  "nexora03",
-  "nexora04",
-  "nexora05",
-  "nexora06",
-  "nexora07",
-  "nexora08",
-  "nexora09",
-  "nexora10"
-];
+/* =========================
+   NUEVO SISTEMA DE KEYS (USUARIOS Y ADMIN)
+========================= */
+const usersDB = {
+  // Claves de Usuarios normales
+  "nexoraUser_aX9k": { role: "user", name: "Carlos" },
+  "nexoraUser_bY2m": { role: "user", name: "Lucia" },
+  "nexoraUser_cZ5p": { role: "user", name: "Miguel" },
+  "nexoraUser_dW8r": { role: "user", name: "Elena" },
+  "nexoraUser_eV1t": { role: "user", name: "David" },
+  
+  // Clave de Administrador
+  "nexoraAdmin_xX_GodMode_Xx": { role: "admin", name: "SuperAdmin" }
+};
 
 const activeConnections=new Map();
 const userActions=new Map();
@@ -77,10 +78,19 @@ io.on("connection",(socket)=>{
   socket.on("startConnection", async ({username,key})=>{
     if(!username || !key) return;
 
-    if(!allowedKeys.includes(key)){
+    // Verificamos si la key existe en nuestra base de datos simulada (usersDB)
+    const userAccount = usersDB[key];
+
+    if(!userAccount){
       socket.emit("status","invalid_key");
       return;
     }
+
+    // Aquí puedes emitir al Front-end quién se conectó y qué rol tiene
+    socket.emit("authSuccess", { 
+        name: userAccount.name, 
+        role: userAccount.role 
+    });
 
     const tiktok = new WebcastPushConnection(username);
 
@@ -113,7 +123,7 @@ io.on("connection",(socket)=>{
             gift:data.giftName,
             amount:data.repeatCount,
             image:`/regalos/${data.giftName}.png`,
-            avatar: data.profilePictureUrl // <-- FOTO DE PERFIL AÑADIDA
+            avatar: data.profilePictureUrl
           });
 
           const actions = userActions.get(username) || [];
@@ -130,7 +140,7 @@ io.on("connection",(socket)=>{
         }
       });
 
-/* =========================
+      /* =========================
          CHAT
       ========================= */
       tiktok.on("chat",(data)=>{
@@ -138,12 +148,12 @@ io.on("connection",(socket)=>{
           user:data.nickname,
           message:data.comment,
           avatar: data.profilePictureUrl,
-          // Añadimos los roles para el filtro:
           isMod: data.isModerator,
           isSub: data.isSubscriber,
           isFollower: data.followRole === 1 || data.followRole === 2
         });
       });
+
       /* =========================
          TAP TAP (LIKES)
       ========================= */
@@ -153,7 +163,6 @@ io.on("connection",(socket)=>{
         const user=data.nickname;
         const likes=data.likeCount || 1;
 
-        // <-- NUEVO: Evento individual para la Arena con su foto de perfil
         socket.emit("singleLike", { 
             user: user, 
             avatar: data.profilePictureUrl 

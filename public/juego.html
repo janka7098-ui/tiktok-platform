@@ -106,7 +106,7 @@
                     <label>Tamaño Arena:</label>
                     <span id="lbl-arena-size" class="text-cyan-400">100%</span>
                 </div>
-                <input type="range" id="cfg-arena-size" min="0.4" max="2" step="0.05" value="1" class="w-full accent-cyan-500 cursor-pointer mt-1">
+                <input type="range" id="cfg-arena-size" min="0.4" max="1" step="0.05" value="1" class="w-full accent-cyan-500 cursor-pointer mt-1">
             </div>
         </section>
 
@@ -178,8 +178,6 @@
             arenaBox.w = maxW * arenaScale;
             arenaBox.h = maxH * arenaScale;
             
-            // Centramos la arena dinámicamente. Si scale > 1, los valores 'x' e 'y' se volverán 
-            // negativos o menores al margen de seguridad, expandiéndose por detrás de los menús.
             arenaBox.x = 24 + (maxW - arenaBox.w) / 2;
             arenaBox.y = 120 + (maxH - arenaBox.h) / 2;
 
@@ -235,7 +233,12 @@
         class Avatar {
             constructor(data) {
                 this.id = data.username;
-                this.radius = 35; 
+                this.points = data.points || startPoints; 
+                this.kills = 0; 
+
+                // Radio dinámico inicial basado en los puntos (Max 150)
+                this.radius = Math.max(35, Math.min(150, 35 + (this.points / 100))); 
+                
                 this.x = arenaBox.x + Math.random() * (arenaBox.w - this.radius * 2) + this.radius;
                 this.y = arenaBox.y + Math.random() * (arenaBox.h - this.radius * 2) + this.radius; 
                 
@@ -243,9 +246,6 @@
                 this.vy = (Math.random() - 0.5) * 8;
                 
                 this.color = data.color || COLORS[Math.floor(Math.random() * COLORS.length)];
-                
-                this.points = data.points || startPoints; 
-                this.kills = 0; 
                 
                 this.img = new Image();
                 this.img.crossOrigin = "Anonymous"; 
@@ -382,6 +382,9 @@
                 let wasAlive = this.points > 0;
                 this.points -= amount;
                 
+                // Disminuir tamaño al recibir daño
+                this.radius = Math.max(35, Math.min(150, 35 + (this.points / 100)));
+                
                 if(Math.random() > 0.5 || amount >= 10) { 
                     effects.push({ type: 'text', x: this.x, y: this.y, text: `-${Math.floor(amount)}`, color: '#FF3131', life: 40 });
                 }
@@ -393,7 +396,8 @@
 
             addPoints(amount) {
                 this.points += amount;
-                this.radius = Math.min(60, 35 + (this.points / 100)); 
+                // Aumentar tamaño (Límite 150px)
+                this.radius = Math.max(35, Math.min(150, 35 + (this.points / 100))); 
                 effects.push({ type: 'text', x: this.x, y: this.y - this.radius - 20, text: `+${amount}`, color: '#39FF14', life: 40 });
             }
         }
@@ -492,7 +496,7 @@
             let users = Object.values(avatars);
             if(users.length === 0) return;
             let randomUser = users[Math.floor(Math.random() * users.length)];
-            randomUser.addPoints(5); 
+            randomUser.addPoints(100); // Agrega bastantes puntos rápido para probar crecimiento
         }
 
         function simulateGift() {

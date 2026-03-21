@@ -225,10 +225,10 @@
                 </div>
             </section>
             
-            <div id="enlaces-protegidos" class="hidden flex-col gap-2 mt-4">
+<div id="enlaces-protegidos" style="display: none;">
                 <div class="p-2 bg-black/40 border border-zinc-800 rounded-lg text-center mb-2">
                     <span class="text-xs text-zinc-400 font-bold uppercase">Bienvenido: <span id="nombre-usuario" class="text-cyan-400">...</span></span>
-                    <span id="badge-admin" class="hidden ml-2 bg-purple-600 text-white text-[10px] px-2 py-1 rounded font-black tracking-widest uppercase">ADMIN</span>
+                    <span id="badge-admin" style="display: none;" class="ml-2 bg-purple-600 text-white text-[10px] px-2 py-1 rounded font-black tracking-widest uppercase">ADMIN</span>
                 </div>
 
                 <div class="mt-2">
@@ -247,8 +247,7 @@
                     </a>
                 </div>
             </div>
-            
-            <section class="glass flex flex-col flex-1 overflow-hidden min-h-[200px] lg:min-h-0 mt-4">
+<section class="glass flex flex-col flex-1 overflow-hidden min-h-[200px] lg:min-h-0 mt-4">
                 <div class="p-4 border-b border-zinc-900 bg-black/20 text-center"><h2 class="text-xs font-bold uppercase tracking-widest italic text-zinc-500">Historial de Sesión</h2></div>
                 <div id="gift-history" class="flex-1 overflow-y-auto p-3 space-y-2 text-[11px] font-mono text-zinc-500"></div>
             </section>
@@ -339,17 +338,18 @@
         const btnDisconnect = document.getElementById('btn-disconnect');
         if(btnDisconnect) btnDisconnect.onclick = () => { socket.emit("stopConnection"); };
 
-        // 🔥 NUEVA LÓGICA DE AUTENTICACIÓN
+        // 🔥 NUEVA LÓGICA DE AUTENTICACIÓN AÑADIDA
         socket.on("authSuccess", (userAccount) => {
             sessionStorage.setItem('accesoPermitido', 'true');
             sessionStorage.setItem('rolUsuario', userAccount.role);
 
-            document.getElementById('enlaces-protegidos').classList.remove('hidden');
-            document.getElementById('enlaces-protegidos').classList.add('flex');
+            // Muestra los botones ocultos
+            document.getElementById('enlaces-protegidos').style.display = 'block';
             document.getElementById('nombre-usuario').innerText = userAccount.name;
 
+            // Si es admin, muestra la etiqueta
             if(userAccount.role === "admin") {
-                document.getElementById('badge-admin').classList.remove('hidden');
+                document.getElementById('badge-admin').style.display = 'inline-block';
             }
         });
 
@@ -358,6 +358,7 @@
             const sText = document.getElementById('connection-status'); const sPulse = document.getElementById('status-pulse');
             const hostAvatar = document.getElementById('host-avatar'); const hostTitle = document.getElementById('host-title');
             
+            // 🔥 Validación de clave incorrecta
             if (status === "invalid_key") {
                 alert("❌ CLAVE INCORRECTA. Acceso denegado.");
                 return;
@@ -376,10 +377,9 @@
                 hostAvatar.src = "/Logo.png"; hostAvatar.classList.remove('border-cyan-500', 'shadow-[0_0_15px_rgba(0,255,255,0.4)]');
                 hostTitle.innerHTML = `NEXORA <span class="text-cyan-500">LIVE</span>`;
                 
-                // Ocultar botones y borrar sesión al desconectar
-                document.getElementById('enlaces-protegidos').classList.add('hidden');
-                document.getElementById('enlaces-protegidos').classList.remove('flex');
-                document.getElementById('badge-admin').classList.add('hidden');
+                // 🔥 Ocultar todo si se desconecta
+                document.getElementById('enlaces-protegidos').style.display = 'none';
+                document.getElementById('badge-admin').style.display = 'none';
                 sessionStorage.removeItem('accesoPermitido');
                 sessionStorage.removeItem('rolUsuario');
             }

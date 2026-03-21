@@ -44,6 +44,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
             transition: all 0.2s;
+            cursor: pointer;
         }
         .btn-dev:hover {
             background: rgba(255, 255, 255, 0.15);
@@ -93,35 +94,32 @@
     <aside class="dev-panel absolute top-6 right-6 w-[300px] max-h-[calc(100vh-48px)] p-5 rounded-2xl overflow-y-auto z-50 flex flex-col gap-5">
         <section>
             <h2 class="text-cyan-400 text-sm tracking-widest mb-3 flex items-center gap-2">
-                DEV PANEL
+                DEV PANEL (Simulador)
             </h2>
             <div class="flex flex-col gap-2 text-white">
-                <button onclick="spawnTestBot()" class="btn-dev w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 border-cyan-500/50 hover:border-cyan-500 text-cyan-300">
-                    <span class="text-lg leading-none">+</span> Spawn Player
+                <button onclick="simulateJoin()" class="btn-dev w-full py-2 rounded-lg font-bold text-xs border-cyan-500/50 text-cyan-300">
+                    + Simular Entrada
                 </button>
-                <button onclick="testPower('shoot')" class="btn-dev w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 border-green-500/30">🔫 Shoot</button>
-                <button onclick="testPower('rampage')" class="btn-dev w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 border-red-500/30">💥 Rampage</button>
-                <button onclick="testPower('storm')" class="btn-dev w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 border-gray-400/30">🌪️ Storm</button>
-                <button onclick="testPower('shock')" class="btn-dev w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 border-yellow-500/30">⚡ Shock</button>
-                <button onclick="testPower('blade')" class="btn-dev w-full py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 border-purple-500/30">⚔️ Blade</button>
-                <button onclick="spawnBoss()" class="btn-dev w-full py-2 rounded-lg font-bold text-xs text-red-400 border-red-500/50 mt-2 hover:bg-red-900/20">👾 Boss Test</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="simulateLike()" class="btn-dev py-2 rounded-lg font-bold text-xs border-red-500/50 text-red-300">❤️ Simular Like</button>
+                    <button onclick="simulateGift()" class="btn-dev py-2 rounded-lg font-bold text-xs border-yellow-500/50 text-yellow-300">🎁 Simular Regalo</button>
+                </div>
+                <div class="border-t border-zinc-700 my-2"></div>
+                <button onclick="testPower('shoot')" class="btn-dev w-full py-2 rounded-lg font-bold text-[10px] border-green-500/30">🔫 Forzar Shoot</button>
+                <button onclick="testPower('rampage')" class="btn-dev w-full py-2 rounded-lg font-bold text-[10px] border-red-500/30">💥 Forzar Rampage</button>
+                <button onclick="testPower('storm')" class="btn-dev w-full py-2 rounded-lg font-bold text-[10px] border-gray-400/30">🌪️ Forzar Storm</button>
+                <button onclick="testPower('shock')" class="btn-dev w-full py-2 rounded-lg font-bold text-[10px] border-yellow-500/30">⚡ Forzar Shock</button>
+                <button onclick="testPower('blade')" class="btn-dev w-full py-2 rounded-lg font-bold text-[10px] border-purple-500/30">⚔️ Forzar Blade</button>
             </div>
         </section>
 
         <section class="gift-mapping text-sm font-mono space-y-2 border-t border-zinc-800 pt-4">
-            <h3>🎁 Gift Mapping</h3>
-            <p>LIKE -> ⚔️ Blade Lv1</p>
-            <p>SHARE -> 🔫 Multi-Shoot</p>
-            <p>MEMBER -> 🌪️ Caotic Storm</p>
-        </section>
-
-        <section class="skill-meaning text-xs font-mono space-y-1.5 border-t border-zinc-800 pt-4 text-zinc-400">
-            <h3>📖 Skill Meaning</h3>
-            <p><span class="text-purple-400">⚔️ Blade:</span> Orbital rotating saws</p>
-            <p><span class="text-green-400">🔫 Shoot:</span> Burst of energy projectiles</p>
-            <p><span class="text-yellow-400">⚡ Shock:</span> AOE electric pulse</p>
-            <p><span class="text-red-400">💥 Rampage:</span> High-speed charge</p>
-            <p><span class="text-gray-300">🌪️ Storm:</span> 360° Bullet Hell</p>
+            <h3>🎁 Regalos -> Efectos</h3>
+            <p>1 a 5 Monedas -> 🔫 Shoot</p>
+            <p>10 Monedas -> ⚔️ Blade</p>
+            <p>20 Monedas -> 💥 Rampage</p>
+            <p>50 Monedas -> ⚡ Shock</p>
+            <p>100+ Monedas -> 🌪️ Storm</p>
         </section>
     </aside>
 
@@ -129,6 +127,7 @@
 
     <script>
         // --- CONFIGURACIÓN BASE ---
+        const socket = io(); // Conexión con tu backend
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -137,6 +136,7 @@
         let bullets = []; 
         
         let arenaBox = { x: 0, y: 0, w: 0, h: 0 };
+        const COLORS = ["#00FFFF", "#8A2BE2", "#39FF14", "#FF3131", "#FFD700", "#FF00FF"];
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -190,17 +190,17 @@
         class Avatar {
             constructor(data) {
                 this.id = data.username;
-                this.radius = data.isBoss ? 60 : 35; 
+                this.radius = 35; 
                 this.x = arenaBox.x + Math.random() * (arenaBox.w - this.radius * 2) + this.radius;
-                this.y = arenaBox.y + Math.random() * (arenaBox.h - this.radius * 2) + this.radius; // Aparecen aleatorio en toda la caja
+                this.y = arenaBox.y + Math.random() * (arenaBox.h - this.radius * 2) + this.radius; 
                 
-                // Movimiento inicial aleatorio en cualquier dirección
                 this.vx = (Math.random() - 0.5) * 8;
                 this.vy = (Math.random() - 0.5) * 8;
                 
-                this.color = data.color || '#00FFFF';
-                this.maxHp = data.isBoss ? 5000 : 500 + Math.floor(Math.random() * 500); 
-                this.hp = this.maxHp;
+                this.color = data.color || COLORS[Math.floor(Math.random() * COLORS.length)];
+                
+                // SISTEMA DE PUNTOS
+                this.points = data.points || 50; 
                 
                 this.img = new Image();
                 this.img.src = data.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.id}`;
@@ -224,14 +224,11 @@
                         this.vy *= 0.3;
                     }
                 } else {
-                    // Mantenimiento de velocidad constante (Movimiento Libre)
                     let speed = Math.hypot(this.vx, this.vy);
                     if (speed < 2) {
-                        // Si van muy lento, se dan un empujoncito aleatorio para no quedarse quietos
                         this.vx += (Math.random() - 0.5) * 1.5;
                         this.vy += (Math.random() - 0.5) * 1.5;
                     }
-                    // Ligera fricción natural para que no se aceleren infinitamente
                     this.vx *= 0.995;
                     this.vy *= 0.995;
                 }
@@ -239,25 +236,13 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Rebotes perfectos con la Caja de Arena (Billar)
-                if (this.x + this.radius > arenaBox.x + arenaBox.w) { 
-                    this.x = arenaBox.x + arenaBox.w - this.radius; 
-                    this.vx *= -1; 
-                }
-                if (this.x - this.radius < arenaBox.x) { 
-                    this.x = arenaBox.x + this.radius; 
-                    this.vx *= -1; 
-                }
-                if (this.y + this.radius > arenaBox.y + arenaBox.h) { 
-                    this.y = arenaBox.y + arenaBox.h - this.radius; 
-                    this.vy *= -1; 
-                }
-                if (this.y - this.radius < arenaBox.y) { 
-                    this.y = arenaBox.y + this.radius; 
-                    this.vy *= -1; 
-                }
+                // Rebotes
+                if (this.x + this.radius > arenaBox.x + arenaBox.w) { this.x = arenaBox.x + arenaBox.w - this.radius; this.vx *= -1; }
+                if (this.x - this.radius < arenaBox.x) { this.x = arenaBox.x + this.radius; this.vx *= -1; }
+                if (this.y + this.radius > arenaBox.y + arenaBox.h) { this.y = arenaBox.y + arenaBox.h - this.radius; this.vy *= -1; }
+                if (this.y - this.radius < arenaBox.y) { this.y = arenaBox.y + this.radius; this.vy *= -1; }
 
-                // Lógica de Blades (Sierras)
+                // Lógica de Blades
                 if (this.hasBlade) {
                     this.bladeTimer--;
                     this.bladeAngle += 0.15; 
@@ -315,28 +300,41 @@
                 }
                 ctx.restore();
 
-                // HP
+                // PUNTOS EN EL CENTRO
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 16, 0, Math.PI * 2);
+                ctx.fill();
+
                 ctx.fillStyle = "white";
                 ctx.font = "900 16px Rajdhani";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.strokeStyle = "rgba(0,0,0,0.9)";
-                ctx.lineWidth = 4;
-                ctx.strokeText(Math.floor(this.hp), this.x, this.y + this.radius + 18);
-                ctx.fillText(Math.floor(this.hp), this.x, this.y + this.radius + 18);
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 5;
+                ctx.fillText(Math.floor(this.points), this.x, this.y);
+                ctx.shadowBlur = 0;
 
                 // Nombre
                 ctx.fillStyle = this.color;
                 ctx.font = "bold 13px Rajdhani";
-                ctx.strokeText(this.id, this.x, this.y + this.radius + 32);
-                ctx.fillText(this.id, this.x, this.y + this.radius + 32);
+                ctx.strokeStyle = "rgba(0,0,0,0.8)";
+                ctx.lineWidth = 3;
+                ctx.strokeText(this.id, this.x, this.y + this.radius + 18);
+                ctx.fillText(this.id, this.x, this.y + this.radius + 18);
             }
 
             takeDamage(amount) {
-                this.hp -= amount;
+                this.points -= amount;
                 if(Math.random() > 0.5) { 
-                    effects.push({ type: 'dmg_text', x: this.x, y: this.y - this.radius, text: `-${Math.floor(amount)}`, life: 40 });
+                    effects.push({ type: 'text', x: this.x, y: this.y - this.radius, text: `-${Math.floor(amount)}`, color: '#FF3131', life: 40 });
                 }
+            }
+
+            addPoints(amount) {
+                this.points += amount;
+                this.radius = Math.min(60, 35 + (this.points / 100)); // Crece un poquito si tiene muchos puntos
+                effects.push({ type: 'text', x: this.x, y: this.y - this.radius, text: `+${amount}`, color: '#39FF14', life: 40 });
             }
         }
 
@@ -349,22 +347,20 @@
             
             for(let i = -1; i <= 1; i++) {
                 let spread = angle + (i * 0.15);
-                let speed = 12;
-                bullets.push(new Bullet(user.x, user.y, Math.cos(spread) * speed, Math.sin(spread) * speed, "#39FF14", user.id, 25));
+                bullets.push(new Bullet(user.x, user.y, Math.cos(spread) * 12, Math.sin(spread) * 12, "#39FF14", user.id, 15));
             }
         }
 
         function powerStorm(user) {
-            let numBullets = 12;
+            let numBullets = 16;
             for(let i = 0; i < numBullets; i++) {
                 let angle = (i * (Math.PI * 2)) / numBullets;
-                let speed = 8;
-                bullets.push(new Bullet(user.x, user.y, Math.cos(angle) * speed, Math.sin(angle) * speed, "#FFF", user.id, 15));
+                bullets.push(new Bullet(user.x, user.y, Math.cos(angle) * 8, Math.sin(angle) * 8, "#FFF", user.id, 20));
             }
         }
 
         function powerShock(user) {
-            let range = 300; 
+            let range = 350; 
             let hitSomeone = false;
             for (let otherId in avatars) {
                 if (otherId !== user.id) {
@@ -372,7 +368,7 @@
                     let dist = Math.hypot(user.x - other.x, user.y - other.y);
                     if (dist < range) {
                         hitSomeone = true;
-                        other.takeDamage(50); 
+                        other.takeDamage(40); 
                         effects.push({ type: 'lightning', x1: user.x, y1: user.y, x2: other.x, y2: other.y, color: "#FFD700", life: 15 });
                     }
                 }
@@ -386,9 +382,8 @@
             let target = targets.sort((a,b) => Math.hypot(user.x - a.x, user.y - a.y) - Math.hypot(user.x - b.x, user.y - b.y))[0];
             
             let angle = Math.atan2(target.y - user.y, target.x - user.x);
-            let speed = 25; 
-            user.vx = Math.cos(angle) * speed;
-            user.vy = Math.sin(angle) * speed;
+            user.vx = Math.cos(angle) * 25;
+            user.vy = Math.sin(angle) * 25;
             user.isRampaging = true;
             user.rampageTimer = 30; 
         }
@@ -398,26 +393,71 @@
             user.bladeTimer = 300; 
         }
 
-        // --- BOTONES DEV PANEL ---
-        function spawnTestBot() {
-            const id = "User_" + Math.floor(Math.random()*999);
-            avatars[id] = new Avatar({
-                username: id,
-                color: ["#00FFFF", "#8A2BE2", "#39FF14", "#FF3131", "#FFD700"][Math.floor(Math.random()*5)]
-            });
+        // --- MANEJO DE EVENTOS TIKTOK (LIVE) ---
+        function getOrCreatePlayer(username, profilePic, initialPoints = 50) {
+            if (!avatars[username]) {
+                avatars[username] = new Avatar({ username: username, profilePic: profilePic, points: initialPoints });
+            }
+            return avatars[username];
         }
 
-        function spawnBoss() {
-            avatars["BOSS_KAIJU"] = new Avatar({
-                username: "BOSS_KAIJU",
-                color: "#FF0000",
-                isBoss: true
-            });
+        // Socket: Alguien comenta o entra al live
+        socket.on('chat', (data) => getOrCreatePlayer(data.user || data.username, data.avatar));
+        socket.on('member', (data) => getOrCreatePlayer(data.user || data.username, data.avatar));
+
+        // Socket: Tap Tap (Likes)
+        socket.on('singleLike', (data) => {
+            let user = getOrCreatePlayer(data.user || data.username, data.avatar);
+            user.addPoints(2); // +2 Puntos por cada like procesado
+        });
+
+        // Socket: Regalos
+        socket.on('gift', (data) => {
+            let user = getOrCreatePlayer(data.user || data.username, data.avatar);
+            let coins = data.diamondCount || data.diamonds || 1;
+            
+            user.addPoints(coins * 10); // +10 puntos por cada moneda de TikTok
+
+            // Lógica de activación de poderes por monedas
+            if (coins >= 100) powerStorm(user);
+            else if (coins >= 50) powerShock(user);
+            else if (coins >= 20) powerRampage(user);
+            else if (coins >= 10) powerBlade(user);
+            else powerShoot(user); // Regalos pequeños disparan balas
+        });
+
+
+        // --- FUNCIONES PARA SIMULAR EVENTOS (BOTONES DEV PANEL) ---
+        function simulateJoin() {
+            const id = "User_" + Math.floor(Math.random()*999);
+            getOrCreatePlayer(id, `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`);
+        }
+
+        function simulateLike() {
+            let users = Object.values(avatars);
+            if(users.length === 0) return;
+            let randomUser = users[Math.floor(Math.random() * users.length)];
+            randomUser.addPoints(5); // Le sube 5 puntos de prueba
+        }
+
+        function simulateGift() {
+            let users = Object.values(avatars);
+            if(users.length === 0) return;
+            let randomUser = users[Math.floor(Math.random() * users.length)];
+            let randomCoins = [1, 10, 20, 50, 100][Math.floor(Math.random() * 5)]; // Regalo random
+            
+            randomUser.addPoints(randomCoins * 10);
+            
+            if (randomCoins >= 100) powerStorm(randomUser);
+            else if (randomCoins >= 50) powerShock(randomUser);
+            else if (randomCoins >= 20) powerRampage(randomUser);
+            else if (randomCoins >= 10) powerBlade(randomUser);
+            else powerShoot(randomUser);
         }
 
         function testPower(powerName) {
             let users = Object.values(avatars);
-            if(users.length === 0) { alert("¡Aparece un jugador primero!"); return; }
+            if(users.length === 0) return;
             let randomUser = users[Math.floor(Math.random() * users.length)];
             
             if(powerName === 'shoot') powerShoot(randomUser);
@@ -444,7 +484,7 @@
             ctx.fill(); ctx.stroke();
             ctx.restore();
 
-            // 2. Colisiones Físicas entre Avatares
+            // 2. Colisiones Físicas
             let avatarList = Object.values(avatars);
             for (let i = 0; i < avatarList.length; i++) {
                 for (let j = i + 1; j < avatarList.length; j++) {
@@ -457,7 +497,6 @@
                     let minDist = a.radius + b.radius;
 
                     if (dist < minDist) {
-                        // A) Separarlos para que no se atasquen
                         let overlap = minDist - dist;
                         let nx = dx / dist;
                         let ny = dy / dist;
@@ -467,7 +506,6 @@
                         b.x += nx * (overlap / 2);
                         b.y += ny * (overlap / 2);
 
-                        // B) Calcular daño
                         let isSpecialHit = false;
                         if (a.isRampaging || b.isRampaging) {
                             if (a.isRampaging) { b.takeDamage(100); a.isRampaging = false; }
@@ -475,17 +513,15 @@
                             isSpecialHit = true;
                             effects.push({ type: 'shockwave', x: a.x + dx/2, y: a.y + dy/2, color: '#FF3131', radius: 40, life: 20 });
                         } else {
-                            // Daño normal por choque (Entre 10 y 25)
-                            let crashDmg = 10 + Math.floor(Math.random() * 15);
+                            // Daño normal por choque (Roban puntos)
+                            let crashDmg = 5 + Math.floor(Math.random() * 10);
                             a.takeDamage(crashDmg);
                             b.takeDamage(crashDmg);
                         }
 
-                        // C) Rebote elástico (Intercambian velocidades)
                         let tx = a.vx; a.vx = b.vx; b.vx = tx;
                         let ty = a.vy; a.vy = b.vy; b.vy = ty;
 
-                        // Efecto visual de colisión
                         if(!isSpecialHit) {
                             effects.push({ type: 'shockwave', x: a.x + dx/2, y: a.y + dy/2, color: '#FFD700', radius: 25, life: 10 });
                         }
@@ -493,13 +529,13 @@
                 }
             }
 
-            // 3. Actualizar y Dibujar Avatares
+            // 3. Actualizar Avatares
             for (let id in avatars) {
                 avatars[id].update();
                 avatars[id].draw();
                 
-                // Borrar muertos
-                if (avatars[id].hp <= 0) {
+                // Borrar muertos si se quedan sin puntos
+                if (avatars[id].points <= 0) {
                     effects.push({ type: 'shockwave', x: avatars[id].x, y: avatars[id].y, color: avatars[id].color, radius: 100, life: 30 });
                     delete avatars[id];
                 }
@@ -541,12 +577,14 @@
                     ctx.shadowColor = e.color;
                     ctx.shadowBlur = 20;
                     ctx.stroke();
-                } else if (e.type === 'dmg_text') {
-                    ctx.fillStyle = `rgba(255, 49, 49, ${e.life/40})`;
+                } else if (e.type === 'text') {
+                    ctx.fillStyle = e.color;
+                    ctx.globalAlpha = Math.max(0, e.life / 40);
                     ctx.font = "900 24px Rajdhani";
                     ctx.shadowColor = "black";
                     ctx.shadowBlur = 5;
                     ctx.fillText(e.text, e.x, e.y - (40 - e.life));
+                    ctx.globalAlpha = 1;
                 } else if (e.type === 'trail') {
                     ctx.beginPath();
                     ctx.arc(e.x, e.y, e.radius * (e.life/15), 0, Math.PI*2);

@@ -155,11 +155,9 @@
         let arenaBox = { x: 0, y: 0, w: 0, h: 0 };
         const COLORS = ["#00FFFF", "#8A2BE2", "#39FF14", "#FF3131", "#FFD700", "#FF00FF"];
         
-        // Ajustes configurables
         let startPoints = 50;
         let arenaScale = 1.0;
 
-        // Escuchadores de la UI
         document.getElementById('cfg-init-pts').addEventListener('input', (e) => {
             startPoints = parseInt(e.target.value) || 50;
         });
@@ -174,19 +172,15 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            // Área máxima disponible (descontando el panel)
             let maxW = canvas.width - 360; 
             let maxH = canvas.height - 144;
             
-            // Aplicar escala seleccionada
             arenaBox.w = maxW * arenaScale;
             arenaBox.h = maxH * arenaScale;
             
-            // Centrar la caja si se hace más pequeña
             arenaBox.x = 24 + (maxW - arenaBox.w) / 2;
             arenaBox.y = 120 + (maxH - arenaBox.h) / 2;
 
-            // Evitar que los avatares se queden fuera al achicar la arena
             for (let id in avatars) {
                 let a = avatars[id];
                 if(a.x - a.radius < arenaBox.x) a.x = arenaBox.x + a.radius;
@@ -248,12 +242,19 @@
                 
                 this.color = data.color || COLORS[Math.floor(Math.random() * COLORS.length)];
                 
-                // SISTEMA DE PUNTOS Y KILLS
                 this.points = data.points || startPoints; 
-                this.kills = 0; // NUEVO: Contador de bajas
+                this.kills = 0; 
                 
+                // === AQUI ESTÁ LA MAGIA PARA QUE SE VEA EL AVATAR ===
                 this.img = new Image();
-                this.img.src = data.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.id}`;
+                this.img.crossOrigin = "Anonymous"; // Permite que el Canvas dibuje la imagen externa sin bloqueos
+                
+                if (data.profilePic) {
+                    // Usamos el proxy para asegurar que la imagen de TikTok no tenga problemas de CORS
+                    this.img.src = `/avatar-proxy?url=${encodeURIComponent(data.profilePic)}`;
+                } else {
+                    this.img.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.id}`;
+                }
                 
                 this.isRampaging = false;
                 this.rampageTimer = 0;
@@ -286,13 +287,12 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Rebotes en paredes
+                // Rebotes
                 if (this.x + this.radius > arenaBox.x + arenaBox.w) { this.x = arenaBox.x + arenaBox.w - this.radius; this.vx *= -1; }
                 if (this.x - this.radius < arenaBox.x) { this.x = arenaBox.x + this.radius; this.vx *= -1; }
                 if (this.y + this.radius > arenaBox.y + arenaBox.h) { this.y = arenaBox.y + arenaBox.h - this.radius; this.vy *= -1; }
                 if (this.y - this.radius < arenaBox.y) { this.y = arenaBox.y + this.radius; this.vy *= -1; }
 
-                // Daño continuo por sierras
                 if (this.hasBlade) {
                     this.bladeTimer--;
                     this.bladeAngle += 0.15; 
@@ -301,7 +301,7 @@
                             let other = avatars[otherId];
                             let dist = Math.hypot(this.x - other.x, this.y - other.y);
                             if (dist < this.radius + other.radius + 30) {
-                                other.takeDamage(1, this.id); // Pasa el ID del atacante
+                                other.takeDamage(1, this.id); 
                             }
                         }
                     }
@@ -312,7 +312,6 @@
             draw() {
                 ctx.save();
                 
-                // Dibujar Sierras
                 if (this.hasBlade) {
                     const sawDist = this.radius + 25;
                     for(let i=0; i<3; i++) {
@@ -329,7 +328,6 @@
                     }
                 }
 
-                // Aura
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
                 ctx.strokeStyle = this.isRampaging ? "#FF3131" : this.color;
@@ -339,18 +337,18 @@
                 ctx.stroke();
                 ctx.closePath();
 
-                // Imagen de perfil
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.clip();
-                if (this.img.complete) {
+                // Verificamos que la imagen esté cargada correctamente para dibujarla
+                if (this.img.complete && this.img.naturalWidth > 0) {
                     ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
                 } else {
-                    ctx.fillStyle = "#111"; ctx.fill();
+                    ctx.fillStyle = "#111"; 
+                    ctx.fill();
                 }
                 ctx.restore();
 
-                // PUNTOS EN EL CENTRO
                 ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, 16, 0, Math.PI * 2);
@@ -365,7 +363,6 @@
                 ctx.fillText(Math.floor(this.points), this.x, this.y);
                 ctx.shadowBlur = 0;
 
-                // Nombre
                 ctx.fillStyle = this.color;
                 ctx.font = "bold 13px Rajdhani";
                 ctx.strokeStyle = "rgba(0,0,0,0.8)";
@@ -373,7 +370,6 @@
                 ctx.strokeText(this.id, this.x, this.y + this.radius + 18);
                 ctx.fillText(this.id, this.x, this.y + this.radius + 18);
 
-                // CONTADOR DE KILLS (NUEVO)
                 if (this.kills > 0) {
                     ctx.fillStyle = "#FF3131";
                     ctx.font = "900 16px Rajdhani";
@@ -383,7 +379,6 @@
                 }
             }
 
-            // MODIFICADO: Recibe quién lo atacó para sumarle la kill
             takeDamage(amount, attackerId) {
                 let wasAlive = this.points > 0;
                 this.points -= amount;
@@ -392,7 +387,6 @@
                     effects.push({ type: 'text', x: this.x, y: this.y, text: `-${Math.floor(amount)}`, color: '#FF3131', life: 40 });
                 }
 
-                // Darle la kill al atacante si acaba de morir
                 if (wasAlive && this.points <= 0 && attackerId && avatars[attackerId]) {
                     avatars[attackerId].kills++;
                 }
@@ -463,7 +457,6 @@
         // --- MANEJO DE EVENTOS TIKTOK ---
         function getOrCreatePlayer(username, profilePic) {
             if (!avatars[username]) {
-                // Utiliza la variable global startPoints que se ajusta en el Panel
                 avatars[username] = new Avatar({ username: username, profilePic: profilePic, points: startPoints });
             }
             return avatars[username];
@@ -546,7 +539,6 @@
             ctx.fill(); ctx.stroke();
             ctx.restore();
 
-            // COLISIONES FÍSICAS ENTRE AVATARES
             let avatarList = Object.values(avatars);
             for (let i = 0; i < avatarList.length; i++) {
                 for (let j = i + 1; j < avatarList.length; j++) {
@@ -575,7 +567,6 @@
                             isSpecialHit = true;
                             effects.push({ type: 'shockwave', x: a.x + dx/2, y: a.y + dy/2, color: '#FF3131', radius: 40, life: 20 });
                         } else {
-                            // Daño cruzado con identificación del atacante
                             let crashDmg = 10 + Math.floor(Math.random() * 15);
                             a.takeDamage(crashDmg, b.id);
                             b.takeDamage(crashDmg, a.id);
@@ -591,12 +582,10 @@
                 }
             }
 
-            // ACTUALIZAR AVATARES
             for (let id in avatars) {
                 avatars[id].update();
                 avatars[id].draw();
                 
-                // Muerte si puntos <= 0
                 if (avatars[id].points <= 0) {
                     effects.push({ type: 'shockwave', x: avatars[id].x, y: avatars[id].y, color: avatars[id].color, radius: 100, life: 30 });
                     delete avatars[id];
@@ -613,7 +602,7 @@
                     if (id !== b.ownerId) {
                         let target = avatars[id];
                         if (Math.hypot(b.x - target.x, b.y - target.y) < target.radius + b.radius) {
-                            target.takeDamage(b.dmg, b.ownerId); // Pasa el ID para la kill
+                            target.takeDamage(b.dmg, b.ownerId); 
                             hit = true;
                             effects.push({ type: 'shockwave', x: b.x, y: b.y, color: b.color, radius: 20, life: 10 });
                             break;
@@ -623,7 +612,6 @@
                 if (hit || b.life <= 0) bullets.splice(i, 1);
             }
 
-            // DIBUJAR EFECTOS Y TEXTOS
             for (let i = effects.length - 1; i >= 0; i--) {
                 let e = effects[i];
                 e.life--;

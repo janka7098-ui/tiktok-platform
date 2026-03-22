@@ -14,6 +14,62 @@ const io = socketIo(server,{
 });
 
 app.use(express.static("public"));
+// 👇 AÑADIDO: Permite leer los datos que envía tu nuevo panel web
+app.use(express.json()); 
+
+/* =========================
+   ESTADO PARA ROBLOX (AÑADIDO)
+========================= */
+let currentEvent = {
+    id: "0",
+    action: "none",
+    amount: 0,
+    target: "ALL"
+};
+
+/* =========================
+   PUENTE PARA ROBLOX (AÑADIDO)
+========================= */
+app.get('/ping', (req, res) => {
+    console.log("👋 ¡Bingo! El panel web acaba de comunicarse con el servidor Nexora Ultra.");
+    res.json({ mensaje: "Prueba exitosa" });
+});
+
+app.post('/test', (req, res) => {
+    const { gift, repeatCount, parts, type, targetLikes, robloxUser } = req.body;
+
+    let action = "move";
+    if (type === "win") action = "win";
+
+    let target = robloxUser === "ALL_USERS" ? "ALL" : robloxUser;
+    let amount = Number(parts) * Number(repeatCount); 
+
+    currentEvent = {
+        id: Date.now().toString(),
+        action: action,
+        amount: amount,
+        target: target
+    };
+
+    console.log("🔥 Nuevo evento a Roblox (TEST):", currentEvent);
+    res.json({ success: true, message: "Evento enviado a Roblox" });
+});
+
+app.get('/get-event', (req, res) => {
+    res.json(currentEvent);
+});
+
+app.get('/reset', (req, res) => {
+    currentEvent = {
+        id: Date.now().toString(),
+        action: "reset",
+        amount: 0,
+        target: "ALL"
+    };
+    console.log("🔄 Reset general activado en Roblox");
+    res.json({ success: true, message: "Reset enviado" });
+});
+
 
 /* =========================
    LISTA DE REGALOS
@@ -137,8 +193,7 @@ io.on("connection",(socket)=>{
         socket.emit("chat",{
           user:data.nickname,
           message:data.comment,
-          avatar: data.profilePictureUrl, // <-- CORREGIDO: Coma añadida y línea duplicada eliminada
-          // Añadimos los roles para el filtro:
+          avatar: data.profilePictureUrl, 
           isMod: data.isModerator,
           isSub: data.isSubscriber,
           isFollower: data.followRole === 1 || data.followRole === 2
@@ -154,7 +209,6 @@ io.on("connection",(socket)=>{
         const user=data.nickname;
         const likes=data.likeCount || 1;
 
-        // Evento individual para la Arena con su foto de perfil
         socket.emit("singleLike", { 
             user: user, 
             avatar: data.profilePictureUrl 

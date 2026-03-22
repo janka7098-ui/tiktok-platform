@@ -113,7 +113,7 @@ io.on("connection",(socket)=>{
             gift:data.giftName,
             amount:data.repeatCount,
             image:`/regalos/${data.giftName}.png`,
-            avatar: data.profilePictureUrl // <-- FOTO DE PERFIL AÑADIDA
+            avatar: data.profilePictureUrl
           });
 
           const actions = userActions.get(username) || [];
@@ -131,15 +131,13 @@ io.on("connection",(socket)=>{
       });
 
       /* =========================
-/* =========================
          CHAT
       ========================= */
       tiktok.on("chat",(data)=>{
         socket.emit("chat",{
           user:data.nickname,
           message:data.comment,
-          avatar: data.profilePictureUrl // <-- FOTO DE PERFIL AÑADIDA
-          avatar: data.profilePictureUrl,
+          avatar: data.profilePictureUrl, // <-- CORREGIDO: Coma añadida y línea duplicada eliminada
           // Añadimos los roles para el filtro:
           isMod: data.isModerator,
           isSub: data.isSubscriber,
@@ -156,7 +154,7 @@ io.on("connection",(socket)=>{
         const user=data.nickname;
         const likes=data.likeCount || 1;
 
-        // <-- NUEVO: Evento individual para la Arena con su foto de perfil
+        // Evento individual para la Arena con su foto de perfil
         socket.emit("singleLike", { 
             user: user, 
             avatar: data.profilePictureUrl 

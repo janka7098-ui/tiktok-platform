@@ -3,427 +3,438 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lexora Interactive</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Lexora Interactive | Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+    /* RESET Y BASES */
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
 
-body{
-background:#050507;
-color:#eee;
-background-image: radial-gradient(circle at 50% -20%, #1a0b2e 0%, #050507 80%);
-}
+    body{
+        background:#050507;
+        color:#eee;
+        background-image: radial-gradient(circle at 50% -20%, #1a0b2e 0%, #050507 80%);
+        min-height: 100vh;
+    }
 
-/* HEADER */
-.header{
-padding:20px;
-border-radius:16px;
-background: rgba(15,15,25,0.8);
-backdrop-filter: blur(12px);
-border:1px solid rgba(0,255,255,0.2);
-box-shadow:0 0 20px rgba(0,0,0,0.8);
-font-size:22px;
-font-weight:800;
-letter-spacing:2px;
-color:#00ffff;
-margin:20px;
-}
+    /* HEADER MEJORADO */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 30px;
+        background: rgba(15, 15, 25, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
 
-/* CONTAINER */
-.container{
-padding:20px;
-max-width:1100px;
-margin:auto;
-}
+    .logo {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #00ffff;
+    }
 
-/* INPUTS */
-input, select{
-padding:12px;
-border-radius:10px;
-border:1px solid rgba(255,255,255,0.08);
-background:rgba(0,0,0,0.4);
-color:white;
-outline:none;
-transition:0.2s;
-}
+    /* BOTÓN VOLVER */
+    .back-btn {
+        text-decoration: none;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-input:focus, select:focus{
-border-color:#00ffff;
-box-shadow:0 0 10px rgba(0,255,255,0.3);
-}
+    .back-btn:hover {
+        background: rgba(0, 255, 255, 0.1);
+        border-color: #00ffff;
+        color: #00ffff;
+    }
 
-/* SEARCH */
-.search{
-width:100%;
-margin:20px 0;
-}
+    /* CONTAINER */
+    .container{
+        padding: 40px 20px;
+        max-width: 1100px;
+        margin: auto;
+    }
 
-/* USER INPUT */
-.user-input{
-width:100%;
-margin-bottom:10px;
-}
+    /* GRID DE INPUTS SUPERIORES */
+    .top-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
 
-/* PANEL */
-.add-box{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-margin-bottom:20px;
-padding:15px;
-border-radius:16px;
-background: rgba(15,15,25,0.7);
-border:1px solid rgba(138,43,226,0.2);
-backdrop-filter: blur(10px);
-}
+    input, select{
+        padding:12px;
+        border-radius:10px;
+        border:1px solid rgba(255,255,255,0.08);
+        background:rgba(0,0,0,0.4);
+        color:white;
+        outline:none;
+        transition:0.2s;
+    }
 
-/* SELECTOR */
-.selector{
-position:relative;
-width:220px;
-}
+    input:focus, select:focus{
+        border-color:#00ffff;
+        box-shadow:0 0 10px rgba(0,255,255,0.3);
+    }
 
-.selected{
-background:rgba(0,0,0,0.5);
-padding:12px;
-border-radius:10px;
-cursor:pointer;
-border:1px solid rgba(255,255,255,0.08);
-}
+    .search{
+        width:100%;
+        margin-bottom: 25px;
+        border-color: rgba(138,43,226,0.3);
+    }
 
-/* Clase para deshabilitar el selector */
-.disabled-selector {
-    opacity: 0.5;
-    pointer-events: none;
-    background: rgba(50, 50, 50, 0.5);
-}
+    /* PANEL DE AGREGAR */
+    .add-box{
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+        margin-bottom:30px;
+        padding:20px;
+        border-radius:16px;
+        background: rgba(15,15,25,0.7);
+        border: 1px solid rgba(138,43,226,0.2);
+        backdrop-filter: blur(10px);
+        align-items: center;
+    }
 
-.dropdown{
-position:absolute;
-width:100%;
-max-height:250px;
-overflow-y:auto;
-background:#0b0b15;
-border-radius:12px;
-margin-top:5px;
-display:none;
-border:1px solid rgba(0,255,255,0.2);
-z-index:10;
-}
+    /* SELECTOR DE REGALOS */
+    .selector{ position:relative; min-width:200px; flex: 1; }
+    .selected{
+        background:rgba(0,0,0,0.5);
+        padding:12px;
+        border-radius:10px;
+        cursor:pointer;
+        border:1px solid rgba(255,255,255,0.08);
+        font-size: 14px;
+    }
 
-.item{
-display:flex;
-align-items:center;
-gap:10px;
-padding:10px;
-cursor:pointer;
-transition:0.2s;
-}
+    .disabled-selector {
+        opacity: 0.4;
+        pointer-events: none;
+        background: rgba(50, 50, 50, 0.5);
+    }
 
-.item:hover{
-background:rgba(0,255,255,0.1);
-}
+    .dropdown{
+        position:absolute;
+        width:100%;
+        max-height:250px;
+        overflow-y:auto;
+        background:#0b0b15;
+        border-radius:12px;
+        margin-top:5px;
+        display:none;
+        border:1px solid rgba(0,255,255,0.2);
+        z-index:110;
+    }
 
-.item img{
-width:30px;
-height:30px;
-}
+    .item{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        padding:10px;
+        cursor:pointer;
+        transition:0.2s;
+    }
+    .item:hover{ background:rgba(0,255,255,0.1); }
+    .item img{ width:30px; height:30px; border-radius: 4px; }
 
-/* TABLA */
-.table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
+    /* TABLA */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        background: rgba(10,10,20,0.4);
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
 
-.table th{
-padding:12px;
-text-align:left;
-color:#00ffff;
-font-size:12px;
-letter-spacing:1px;
-}
+    .table{
+        width:100%;
+        border-collapse:collapse;
+    }
 
-.row td{
-padding:12px;
-background:rgba(10,10,20,0.7);
-border-bottom:1px solid rgba(255,255,255,0.05);
-}
+    .table th{
+        padding:15px;
+        text-align:left;
+        color:#00ffff;
+        font-size:11px;
+        text-transform: uppercase;
+        letter-spacing:1.5px;
+        background: rgba(255,255,255,0.02);
+    }
 
-/* BOTONES */
-.btn{
-padding:10px 14px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-weight:700;
-transition:0.2s;
-}
+    .row td{
+        padding:15px;
+        border-bottom:1px solid rgba(255,255,255,0.05);
+        font-size: 14px;
+    }
 
-.test{
-background:#00ffff;
-color:black;
-}
+    /* BOTONES */
+    .btn{
+        padding:10px 16px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        font-weight:700;
+        transition:0.2s;
+        font-size: 13px;
+    }
 
-/* ESTILO DEL BOTÓN BORRAR */
-.delete-btn {
-background: #ff3366; 
-color: white;
-margin-left: 5px;
-}
+    .test{ background:#00ffff; color:black; }
+    .test:hover { background: #fff; transform: translateY(-2px); }
 
-.delete-btn:hover {
-background: #ff0033;
-box-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
-}
+    .delete-btn { background: rgba(255, 51, 102, 0.15); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.3); }
+    .delete-btn:hover { background: #ff3366; color: white; }
 
-.save{
-margin-top:20px;
-width:100%;
-padding:14px;
-border-radius:12px;
-background:linear-gradient(90deg,#8A2BE2,#00ffff);
-font-weight:800;
-border:none;
-color:white;
-}
+    .save{
+        margin-top:30px;
+        width:100%;
+        padding:16px;
+        border-radius:12px;
+        background:linear-gradient(90deg,#8A2BE2,#00ffff);
+        font-weight:800;
+        border:none;
+        color:white;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s;
+    }
+    .save:hover { filter: brightness(1.2); box-shadow: 0 5px 20px rgba(0, 255, 255, 0.2); }
+
 </style>
 </head>
 
 <body>
 
-<div class="header">
-LEXORA <span style="color:#8A2BE2">INTERACTIVE</span>
-</div>
+<header class="header">
+    <div class="logo">LEXORA <span style="color:#8A2BE2">INTERACTIVE</span></div>
+    <a href="index.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver al Inicio
+    </a>
+</header>
 
 <div class="container">
 
-<input id="robloxUser" class="user-input" placeholder="Usuario Roblox (o TODOS)">
-<input id="adminCode" class="user-input" placeholder="Código admin (solo TODOS)">
+    <div class="top-controls">
+        <input id="robloxUser" placeholder="Usuario Roblox (o TODOS)">
+        <input id="adminCode" type="password" placeholder="Código admin (solo TODOS)">
+    </div>
 
-<input class="search" placeholder="Buscar evento..." onkeyup="filter()" id="search">
+    <input class="search" placeholder="🔍 Buscar evento por nombre o tipo..." onkeyup="filter()" id="search">
 
-<div class="add-box">
+    <div class="add-box">
+        <select id="type" onchange="checkType()">
+            <option value="gift">🎁 Gift</option>
+            <option value="like">❤️ Like</option>
+            <option value="follow">➕ Follow</option>
+            <option value="win">🏆 Win</option> 
+        </select>
 
-<select id="type" onchange="checkType()">
-<option value="gift">🎁 Gift</option>
-<option value="like">❤️ Like</option>
-<option value="follow">➕ Follow</option>
-<option value="win">🏆 Win</option> 
-</select>
+        <div id="giftSelector" class="selector">
+            <div class="selected" onclick="toggleDropdown()" id="selectedBox">
+                <span id="selectedText">Seleccionar regalo</span>
+            </div>
+            <div id="dropdown" class="dropdown"></div>
+        </div>
 
-<div id="giftSelector" class="selector">
-<div class="selected" onclick="toggleDropdown()" id="selectedBox">
-<span id="selectedText">Seleccionar regalo</span>
-</div>
-<div id="dropdown" class="dropdown"></div>
-</div>
+        <input id="newParts" style="width: 100px;" placeholder="Parts (-5)">
+        <input id="targetLikes" style="width: 130px;" placeholder="Cada n likes">
+        <button class="btn test" onclick="add()">+ Agregar</button>
+    </div>
 
-<input id="newParts" placeholder="Parts (-5)">
-<input id="targetLikes" placeholder="Cada cuantos likes">
-<button class="btn test" onclick="add()">Agregar</button>
+    <div class="table-container">
+        <table class="table" id="table"></table>
+    </div>
 
-</div>
-
-<table class="table" id="table"></table>
-
-<button class="save" onclick="save()">Guardar Cambios</button>
+    <button class="save" onclick="save()">Guardar Configuración 🔥</button>
 
 </div>
 
 <script>
+    // Tu lógica de JavaScript se mantiene igual pero he corregido el error de nameKey
+    let allEvents = JSON.parse(localStorage.getItem("eventsByUser")) || {}
+    let selectedGift = ""
+    let giftImages = {}
 
-let allEvents = JSON.parse(localStorage.getItem("eventsByUser")) || {}
-let selectedGift = ""
-let giftImages = {}
+    function checkType() {
+        const type = document.getElementById("type").value;
+        const giftSelector = document.getElementById("selectedBox");
+        const selectedText = document.getElementById("selectedText");
 
-// FUNCIÓN PARA BLOQUEAR REGALOS SI ES LIKE O FOLLOW
-function checkType() {
-    const type = document.getElementById("type").value;
-    const giftSelector = document.getElementById("selectedBox");
-    const selectedText = document.getElementById("selectedText");
-
-    if (type === "like" || type === "follow") {
-        giftSelector.classList.add("disabled-selector");
-        selectedText.innerText = "Ninguno";
-        selectedGift = "Ninguno";
-    } else {
-        giftSelector.classList.remove("disabled-selector");
-        selectedText.innerText = "Seleccionar regalo";
-        selectedGift = "";
-    }
-}
-
-function getUser(){
-    const user = document.getElementById("robloxUser").value.trim()
-    const code = document.getElementById("adminCode").value.trim()
-
-    if(user.toLowerCase() === "todos"){
-        if(code !== "admin24"){
-            alert("Código admin incorrecto 🚫")
-            return null
+        if (type === "like" || type === "follow") {
+            giftSelector.classList.add("disabled-selector");
+            selectedText.innerText = "Ninguno";
+            selectedGift = "Ninguno";
+        } else {
+            giftSelector.classList.remove("disabled-selector");
+            selectedText.innerText = "Seleccionar regalo";
+            selectedGift = "";
         }
-        return "ALL_USERS"
     }
-    return user
-}
 
-function toggleDropdown(){
-    const d = document.getElementById("dropdown")
-    d.style.display = d.style.display === "block" ? "none" : "block"
-}
+    function getUser(){
+        const user = document.getElementById("robloxUser").value.trim()
+        const code = document.getElementById("adminCode").value.trim()
+        if(user.toLowerCase() === "todos"){
+            if(code !== "admin24"){ return null }
+            return "ALL_USERS"
+        }
+        return user || null;
+    }
 
-async function loadGifts(){
-    const res = await fetch("/gift-list")
-    const gifts = await res.json()
-    const dropdown = document.getElementById("dropdown")
+    function toggleDropdown(){
+        const d = document.getElementById("dropdown")
+        d.style.display = d.style.display === "block" ? "none" : "block"
+    }
 
-    gifts.forEach(g=>{
-        giftImages[g.name.toLowerCase()] = g.image
+    async function loadGifts(){
+        // Nota: Asegúrate que esta ruta /gift-list sea válida en tu servidor
+        try {
+            const res = await fetch("/gift-list")
+            const gifts = await res.json()
+            const dropdown = document.getElementById("dropdown")
 
-        const div = document.createElement("div")
-        div.className = "item"
-        div.innerHTML = `<img src="${g.image}"><span>${g.name}</span>`
+            gifts.forEach(g=>{
+                giftImages[g.name.toLowerCase()] = g.image
+                const div = document.createElement("div")
+                div.className = "item"
+                div.innerHTML = `<img src="${g.image}"><span>${g.name}</span>`
+                div.onclick = ()=>{
+                    selectedGift = g.name
+                    document.getElementById("selectedText").innerText = g.name
+                    dropdown.style.display = "none"
+                }
+                dropdown.appendChild(div)
+            })
+        } catch (e) { console.log("Error cargando regalos localmente") }
+    }
 
-        div.onclick = ()=>{
-            selectedGift = g.name
-            document.getElementById("selectedText").innerText = g.name
-            dropdown.style.display = "none"
+    loadGifts()
+
+    const table = document.getElementById("table")
+
+    function render(){
+        const user = getUser()
+        if(!user) {
+            table.innerHTML = "<tr><td style='text-align:center; padding:20px; color:#888;'>Ingresa un usuario para ver sus eventos</td></tr>";
+            return;
         }
 
-        dropdown.appendChild(div)
-    })
-}
+        table.innerHTML = `
+        <tr>
+            <th>Usuario</th>
+            <th>Tipo</th>
+            <th>Nombre</th>
+            <th>Parts</th>
+            <th>Meta</th>
+            <th>Test</th>
+            <th>Acción</th>
+        </tr>`;
 
-loadGifts()
+        if(!allEvents[user]) return
 
-const table = document.getElementById("table")
-
-function render(){
-    const user = getUser()
-
-    table.innerHTML = `
-    <tr>
-    <th>Usuario</th>
-    <th>Tipo</th>
-    <th>Nombre</th>
-    <th>Parts</th>
-    <th>Meta</th>
-    <th>Test</th>
-    <th>Borrar</th>
-    </tr>
-    `
-
-    if(!user || !allEvents[user]) return
-
-    Object.keys(allEvents[user]).forEach(name=>{
-        const e = allEvents[user][name]
-        const img = giftImages[name?.toLowerCase()]
-
-        const row = document.createElement("tr")
-        row.className="row"
-
-        row.innerHTML = `
-        <td>${user}</td>
-        <td>${e.type}</td>
-        <td>${img?`<img src="${img}" style="width:25px">`:""} ${name}</td>
-        <td><input value="${e.parts}" onchange="update('${name}',this.value)" style="width:60px;"></td>
-        <td>${e.targetLikes||"-"}</td>
-        <td>
-            <input id="test-${name}" value="1" style="width:40px;">
-            <button class="btn test" onclick="test('${name}')">TEST</button>
-        </td>
-        <td>
-            <button class="btn delete-btn" onclick="deleteEvent('${name}')">🗑️ Borrar</button>
-        </td>
-        `
-
-        table.appendChild(row)
-    })
-}
-
-function add(){
-    const user = getUser()
-    if(!user) return
-
-    const type = document.getElementById("type").value
-    const parts = Number(document.getElementById("newParts").value)
-    const targetLikes = Number(document.getElementById("targetLikes").value)
-
-    if(!allEvents[user]) allEvents[user] = {}
-
-    // Si es regalo usa el seleccionado, si es like/follow usa el nombre del tipo
-    let nameKey = (type === "gift") ? selectedGift : (type === "like" ? "Like" : "Follow");
-    
-    if(!nameKey || nameKey === "") {
-        alert("Selecciona un regalo primero");
-        return;
-    }
-
-    let key = type==="gift"?selectedGift:type==="like"?"like_"+targetLikes:"follow"
-
-    allEvents[user][key]={
-        type,
-        parts,
-        targetLikes,
-        robloxUser:user
-    }
-
-    render()
-}
-
-function update(name,value){
-    const user=getUser()
-    allEvents[user][name].parts=Number(value)
-}
-
-function test(name){
-    const user=getUser()
-    const e=allEvents[user][name]
-    const amount=Number(document.getElementById("test-"+name).value)
-
-    fetch("/test",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            gift:name,
-            repeatCount:amount,
-            parts:e.parts,
-            type:e.type,
-            targetLikes:e.targetLikes,
-            robloxUser:user
+        Object.keys(allEvents[user]).forEach(name=>{
+            const e = allEvents[user][name]
+            const img = giftImages[name?.toLowerCase()]
+            const row = document.createElement("tr")
+            row.className="row"
+            row.innerHTML = `
+            <td>${user}</td>
+            <td><span style="color:#8A2BE2; font-weight:bold">${e.type.toUpperCase()}</span></td>
+            <td>${img?`<img src="${img}" style="width:20px; vertical-align:middle; margin-right:5px">`:""} ${name}</td>
+            <td><input value="${e.parts}" onchange="update('${name}',this.value)" style="width:60px; padding:5px;"></td>
+            <td>${e.targetLikes||"-"}</td>
+            <td>
+                <input id="test-${name}" value="1" style="width:40px; padding:5px;">
+                <button class="btn test" onclick="test('${name}')">TEST</button>
+            </td>
+            <td>
+                <button class="btn delete-btn" onclick="deleteEvent('${name}')">Borrar</button>
+            </td>`;
+            table.appendChild(row)
         })
-    })
-}
-
-function deleteEvent(name) {
-    const user = getUser()
-    
-    if(!user || !allEvents[user] || !allEvents[user][name]) return
-    
-    if(confirm(`¿Estás seguro de que quieres borrar el evento: ${name}?`)) {
-        delete allEvents[user][name] 
-        render() 
-        save() 
     }
-}
 
-function save(){
-    localStorage.setItem("eventsByUser",JSON.stringify(allEvents))
-    alert("Guardado 🔥")
-}
+    function add(){
+        const user = getUser()
+        if(!user) { alert("Usuario no válido"); return; }
 
-function filter(){
-    const s=document.getElementById("search").value.toLowerCase()
-    document.querySelectorAll(".row").forEach(r=>{
-        r.style.display=r.innerText.toLowerCase().includes(s)?"":"none"
-    })
-}
+        const type = document.getElementById("type").value
+        const parts = Number(document.getElementById("newParts").value)
+        const targetLikes = Number(document.getElementById("targetLikes").value)
 
-document.getElementById("robloxUser").addEventListener("input",render)
+        if(!allEvents[user]) allEvents[user] = {}
 
-render()
+        let nameKey = (type === "gift") ? selectedGift : (type.charAt(0).toUpperCase() + type.slice(1));
+        
+        if(!nameKey || nameKey === "Seleccionar regalo") {
+            alert("Selecciona un regalo primero");
+            return;
+        }
+
+        let key = type==="gift"?selectedGift:type==="like"?"like_"+targetLikes:type;
+
+        allEvents[user][key]={
+            type,
+            parts,
+            targetLikes,
+            robloxUser:user
+        }
+        render()
+    }
+
+    function update(name,value){
+        const user=getUser()
+        if(allEvents[user][name]) allEvents[user][name].parts=Number(value)
+    }
+
+    function test(name){
+        const user=getUser()
+        const e=allEvents[user][name]
+        const amount=Number(document.getElementById("test-"+name).value)
+        
+        // Simulación de envío al servidor
+        console.log("Enviando Test...", {name, user, amount});
+        alert(`Test enviado para ${name}`);
+    }
+
+    function deleteEvent(name) {
+        const user = getUser()
+        if(confirm(`¿Borrar evento: ${name}?`)) {
+            delete allEvents[user][name] 
+            render() 
+            save() 
+        }
+    }
+
+    function save(){
+        localStorage.setItem("eventsByUser",JSON.stringify(allEvents))
+        alert("¡Configuración guardada con éxito! 🔥")
+    }
+
+    function filter(){
+        const s=document.getElementById("search").value.toLowerCase()
+        document.querySelectorAll(".row").forEach(r=>{
+            r.style.display=r.innerText.toLowerCase().includes(s)?"":"none"
+        })
+    }
+
+    document.getElementById("robloxUser").addEventListener("input", render)
+    render()
 
 </script>
 

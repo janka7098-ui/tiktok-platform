@@ -17,21 +17,21 @@ const io = socketIo(server, {
 app.use(express.json());
 
 /* =========================
-   CONFIGURACIÓN DE RUTAS (CORREGIDO)
+   CONFIGURACIÓN DE RUTAS
 ========================= */
 
-// 1. Forzar que la raíz cargue el index principal
+// 1. Carga el menú principal al entrar a la IP o dominio
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 2. Ruta específica para el panel interactivo (asegúrate que el archivo se llame interactivoR.html o interactive.html)
+// 2. Carga el panel de configuración de regalos
 app.get('/interactive', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'interactivoR.html'));
 });
 
-// 3. Servir archivos estáticos (regalos, css, js)
-app.use(express.static("public"));
+// 3. Servir archivos estáticos (imágenes, sonidos, regalos)
+app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
    ESTADO PARA ROBLOX

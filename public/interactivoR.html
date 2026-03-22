@@ -92,6 +92,13 @@ cursor:pointer;
 border:1px solid rgba(255,255,255,0.08);
 }
 
+/* Clase para deshabilitar el selector */
+.disabled-selector {
+    opacity: 0.5;
+    pointer-events: none;
+    background: rgba(50, 50, 50, 0.5);
+}
+
 .dropdown{
 position:absolute;
 width:100%;
@@ -199,7 +206,7 @@ LEXORA <span style="color:#8A2BE2">INTERACTIVE</span>
 
 <div class="add-box">
 
-<select id="type">
+<select id="type" onchange="checkType()">
 <option value="gift">🎁 Gift</option>
 <option value="like">❤️ Like</option>
 <option value="follow">➕ Follow</option>
@@ -207,7 +214,7 @@ LEXORA <span style="color:#8A2BE2">INTERACTIVE</span>
 </select>
 
 <div id="giftSelector" class="selector">
-<div class="selected" onclick="toggleDropdown()">
+<div class="selected" onclick="toggleDropdown()" id="selectedBox">
 <span id="selectedText">Seleccionar regalo</span>
 </div>
 <div id="dropdown" class="dropdown"></div>
@@ -230,6 +237,23 @@ LEXORA <span style="color:#8A2BE2">INTERACTIVE</span>
 let allEvents = JSON.parse(localStorage.getItem("eventsByUser")) || {}
 let selectedGift = ""
 let giftImages = {}
+
+// FUNCIÓN PARA BLOQUEAR REGALOS SI ES LIKE O FOLLOW
+function checkType() {
+    const type = document.getElementById("type").value;
+    const giftSelector = document.getElementById("selectedBox");
+    const selectedText = document.getElementById("selectedText");
+
+    if (type === "like" || type === "follow") {
+        giftSelector.classList.add("disabled-selector");
+        selectedText.innerText = "Ninguno";
+        selectedGift = "Ninguno";
+    } else {
+        giftSelector.classList.remove("disabled-selector");
+        selectedText.innerText = "Seleccionar regalo";
+        selectedGift = "";
+    }
+}
 
 function getUser(){
     const user = document.getElementById("robloxUser").value.trim()
@@ -329,6 +353,14 @@ function add(){
 
     if(!allEvents[user]) allEvents[user] = {}
 
+    // Si es regalo usa el seleccionado, si es like/follow usa el nombre del tipo
+    let nameKey = (type === "gift") ? selectedGift : (type === "like" ? "Like" : "Follow");
+    
+    if(!nameKey || nameKey === "") {
+        alert("Selecciona un regalo primero");
+        return;
+    }
+
     let key = type==="gift"?selectedGift:type==="like"?"like_"+targetLikes:"follow"
 
     allEvents[user][key]={
@@ -365,7 +397,6 @@ function test(name){
     })
 }
 
-// NUEVA FUNCIÓN PARA BORRAR EVENTOS
 function deleteEvent(name) {
     const user = getUser()
     
@@ -374,7 +405,7 @@ function deleteEvent(name) {
     if(confirm(`¿Estás seguro de que quieres borrar el evento: ${name}?`)) {
         delete allEvents[user][name] 
         render() 
-        save() // Autoguardado al borrar para evitar perder datos
+        save() 
     }
 }
 

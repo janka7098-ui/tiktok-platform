@@ -2,368 +2,147 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lexora Interactive</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Nexora Login</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
 
-body{
-background:#050507;
-color:#eee;
-background-image: radial-gradient(circle at 50% -20%, #1a0b2e 0%, #050507 80%);
-}
+    .container {
+        background: #0f172a;
+        padding: 30px;
+        border-radius: 15px;
+        width: 320px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.5);
+    }
 
-/* HEADER */
-.header{
-padding:20px;
-border-radius:16px;
-background: rgba(15,15,25,0.8);
-backdrop-filter: blur(12px);
-border:1px solid rgba(0,255,255,0.2);
-box-shadow:0 0 20px rgba(0,0,0,0.8);
-font-size:22px;
-font-weight:800;
-letter-spacing:2px;
-color:#00ffff;
-margin:20px;
-}
+    h2 {
+        margin-bottom: 10px;
+        text-align: center;
+    }
 
-/* CONTAINER */
-.container{
-padding:20px;
-max-width:1100px;
-margin:auto;
-}
+    input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+    }
 
-/* INPUTS */
-input, select{
-padding:12px;
-border-radius:10px;
-border:1px solid rgba(255,255,255,0.08);
-background:rgba(0,0,0,0.4);
-color:white;
-outline:none;
-transition:0.2s;
-}
+    button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        background: #3b82f6;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
 
-input:focus, select:focus{
-border-color:#00ffff;
-box-shadow:0 0 10px rgba(0,255,255,0.3);
-}
+    button:hover {
+        background: #2563eb;
+    }
 
-/* SEARCH */
-.search{
-width:100%;
-margin:20px 0;
-}
+    .switch {
+        text-align: center;
+        margin-top: 10px;
+        cursor: pointer;
+        color: #60a5fa;
+    }
 
-/* USER INPUT */
-.user-input{
-width:100%;
-margin-bottom:10px;
-}
+    #mensaje {
+        text-align: center;
+        margin-top: 10px;
+    }
 
-/* PANEL */
-.add-box{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-margin-bottom:20px;
-padding:15px;
-border-radius:16px;
-background: rgba(15,15,25,0.7);
-border:1px solid rgba(138,43,226,0.2);
-backdrop-filter: blur(10px);
-}
-
-/* SELECTOR */
-.selector{
-position:relative;
-width:220px;
-}
-
-.selected{
-background:rgba(0,0,0,0.5);
-padding:12px;
-border-radius:10px;
-cursor:pointer;
-border:1px solid rgba(255,255,255,0.08);
-}
-
-.dropdown{
-position:absolute;
-width:100%;
-max-height:250px;
-overflow-y:auto;
-background:#0b0b15;
-border-radius:12px;
-margin-top:5px;
-display:none;
-border:1px solid rgba(0,255,255,0.2);
-z-index:10;
-}
-
-.item{
-display:flex;
-align-items:center;
-gap:10px;
-padding:10px;
-cursor:pointer;
-transition:0.2s;
-}
-
-.item:hover{
-background:rgba(0,255,255,0.1);
-}
-
-.item img{
-width:30px;
-height:30px;
-}
-
-/* TABLA */
-.table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
-
-.table th{
-padding:12px;
-text-align:left;
-color:#00ffff;
-font-size:12px;
-letter-spacing:1px;
-}
-
-.row td{
-padding:12px;
-background:rgba(10,10,20,0.7);
-border-bottom:1px solid rgba(255,255,255,0.05);
-}
-
-/* BOTONES */
-.btn{
-padding:10px 14px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-weight:700;
-transition:0.2s;
-}
-
-.test{
-background:#00ffff;
-color:black;
-}
-
-.save{
-margin-top:20px;
-width:100%;
-padding:14px;
-border-radius:12px;
-background:linear-gradient(90deg,#8A2BE2,#00ffff);
-font-weight:800;
-border:none;
-color:white;
-}
+    .hidden {
+        display: none;
+    }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-LEXORA <span style="color:#8A2BE2">INTERACTIVE</span>
-</div>
-
 <div class="container">
 
-<input id="robloxUser" class="user-input" placeholder="Usuario Roblox (o TODOS)">
-<input id="adminCode" class="user-input" placeholder="Código admin (solo TODOS)">
+    <!-- REGISTRO -->
+    <div id="registerBox">
+        <h2>Crear cuenta</h2>
+        <input type="text" id="regUsername" placeholder="Username">
+        <input type="email" id="regEmail" placeholder="Email">
+        <input type="password" id="regPassword" placeholder="Contraseña">
+        <button onclick="register()">Registrarse</button>
 
-<input class="search" placeholder="Buscar evento..." onkeyup="filter()" id="search">
+        <div class="switch" onclick="toggle()">¿Ya tienes cuenta? Inicia sesión</div>
+    </div>
 
-<div class="add-box">
+    <!-- LOGIN -->
+    <div id="loginBox" class="hidden">
+        <h2>Iniciar sesión</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Contraseña">
+        <button onclick="login()">Entrar</button>
 
-<select id="type">
-<option value="gift">🎁 Gift</option>
-<option value="like">❤️ Like</option>
-<option value="follow">➕ Follow</option>
-</select>
+        <div class="switch" onclick="toggle()">Crear cuenta</div>
+    </div>
 
-<div id="giftSelector" class="selector">
-<div class="selected" onclick="toggleDropdown()">
-<span id="selectedText">Seleccionar regalo</span>
-</div>
-<div id="dropdown" class="dropdown"></div>
-</div>
-
-<input id="newParts" placeholder="Parts (-5)">
-<input id="targetLikes" placeholder="Cada cuantos likes">
-<button class="btn test" onclick="add()">Agregar</button>
-
-</div>
-
-<table class="table" id="table"></table>
-
-<button class="save" onclick="save()">Guardar</button>
+    <p id="mensaje"></p>
 
 </div>
 
 <script>
+const API = "";
 
-let allEvents = JSON.parse(localStorage.getItem("eventsByUser")) || {}
-let selectedGift = ""
-let giftImages = {}
-
-function getUser(){
-const user = document.getElementById("robloxUser").value.trim()
-const code = document.getElementById("adminCode").value.trim()
-
-if(user.toLowerCase() === "todos"){
-if(code !== "admin24"){
-alert("Código admin incorrecto 🚫")
-return null
-}
-return "ALL_USERS"
-}
-return user
+function toggle() {
+    document.getElementById("registerBox").classList.toggle("hidden");
+    document.getElementById("loginBox").classList.toggle("hidden");
 }
 
-function toggleDropdown(){
-const d = document.getElementById("dropdown")
-d.style.display = d.style.display === "block" ? "none" : "block"
+async function register() {
+    const username = document.getElementById("regUsername").value;
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
+
+    const res = await fetch(API + "/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username, email, password })
+    });
+
+    const data = await res.json();
+    document.getElementById("mensaje").innerText = data.message || (data.success ? "Cuenta creada 🎉" : "Error");
 }
 
-async function loadGifts(){
-const res = await fetch("/gift-list")
-const gifts = await res.json()
-const dropdown = document.getElementById("dropdown")
+async function login() {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
 
-gifts.forEach(g=>{
-giftImages[g.name.toLowerCase()] = g.image
+    const res = await fetch(API + "/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ email, password })
+    });
 
-const div = document.createElement("div")
-div.className = "item"
-div.innerHTML = `<img src="${g.image}"><span>${g.name}</span>`
+    const data = await res.json();
 
-div.onclick = ()=>{
-selectedGift = g.name
-document.getElementById("selectedText").innerText = g.name
-dropdown.style.display = "none"
+    if (data.success) {
+        document.getElementById("mensaje").innerText = "Bienvenido " + data.username;
+        window.location.href = "/index";
+    } else {
+        document.getElementById("mensaje").innerText = data.message;
+    }
 }
-
-dropdown.appendChild(div)
-})
-}
-
-loadGifts()
-
-const table = document.getElementById("table")
-
-function render(){
-
-const user = getUser()
-
-table.innerHTML = `
-<tr>
-<th>Usuario</th>
-<th>Tipo</th>
-<th>Nombre</th>
-<th>Parts</th>
-<th>Meta</th>
-<th>Test</th>
-</tr>
-`
-
-if(!user || !allEvents[user]) return
-
-Object.keys(allEvents[user]).forEach(name=>{
-
-const e = allEvents[user][name]
-const img = giftImages[name?.toLowerCase()]
-
-const row = document.createElement("tr")
-row.className="row"
-
-row.innerHTML = `
-<td>${user}</td>
-<td>${e.type}</td>
-<td>${img?`<img src="${img}" style="width:25px">`:""} ${name}</td>
-<td><input value="${e.parts}" onchange="update('${name}',this.value)"></td>
-<td>${e.targetLikes||"-"}</td>
-<td><input id="test-${name}" value="1">
-<button class="btn test" onclick="test('${name}')">TEST</button></td>
-`
-
-table.appendChild(row)
-})
-}
-
-function add(){
-const user = getUser()
-if(!user) return
-
-const type = document.getElementById("type").value
-const parts = Number(document.getElementById("newParts").value)
-const targetLikes = Number(document.getElementById("targetLikes").value)
-
-if(!allEvents[user]) allEvents[user] = {}
-
-let key = type==="gift"?selectedGift:type==="like"?"like_"+targetLikes:"follow"
-
-allEvents[user][key]={
-type,
-parts,
-targetLikes,
-robloxUser:user
-}
-
-render()
-}
-
-function update(name,value){
-const user=getUser()
-allEvents[user][name].parts=Number(value)
-}
-
-function test(name){
-const user=getUser()
-const e=allEvents[user][name]
-const amount=Number(document.getElementById("test-"+name).value)
-
-fetch("/test",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-gift:name,
-repeatCount:amount,
-parts:e.parts,
-type:e.type,
-targetLikes:e.targetLikes,
-robloxUser:user
-})
-})
-}
-
-function save(){
-localStorage.setItem("eventsByUser",JSON.stringify(allEvents))
-alert("Guardado 🔥")
-}
-
-function filter(){
-const s=document.getElementById("search").value.toLowerCase()
-document.querySelectorAll(".row").forEach(r=>{
-r.style.display=r.innerText.toLowerCase().includes(s)?"":"none"
-})
-}
-
-document.getElementById("robloxUser").addEventListener("input",render)
-
-render()
-
 </script>
 
 </body>

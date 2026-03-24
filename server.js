@@ -9,83 +9,78 @@ const axios = require("axios");
 const app = express();
 const server = http.createServer(app);
 
+// Configuración de Socket.io con mayor buffer para archivos de audio
 const io = socketIo(server, {
-    maxHttpBufferSize: 1e7
+    maxHttpBufferSize: 1e7,
+    cors: { origin: "*" }
 });
 
-// Middleware
 app.use(express.json());
-
-/* =========================
-   CONFIGURACIÓN DE RUTAS
-========================= */
-
-// 1. Carga el menú principal al entrar a la IP o dominio
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// 2. Carga el panel de configuración de regalos
-app.get('/interactive', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'interactivoR.html'));
-});
-
-// 3. Servir archivos estáticos (imágenes, sonidos, regalos)
 app.use(express.static(path.join(__dirname, "public")));
 
 /* =========================
-   ESTADO PARA ROBLOX
+    ESTADO Y COLA (QUEUE)
 ========================= */
-let currentEvent = {
-    id: "0",
-    action: "none",
-    amount: 0,
-    target: "ALL"
-};
+// Usamos una cola para que Roblox no pierda eventos rápidos
+let eventQueue = []; 
+
+const allowedKeys = ["nexora01", "nexora02", "nexora03", "nexora04", "nexora05", "nexora06", "nexora07", "nexora08", "nexora09", "nexora10"];
+const activeConnections = new Map();
+const userActions = new Map();
+
+// Asegurar que existan las carpetas necesarias
+const uploadsDir = path.join(__dirname, "public", "uploads");
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 /* =========================
-   PUENTE PARA ROBLOX
+    RUTAS DE NAVEGACIÓN
 ========================= */
-app.get('/ping', (req, res) => {
-    console.log("👋 ¡Bingo! El panel web se comunicó.");
-    res.json({ mensaje: "Prueba exitosa" });
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/index', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/interactive', (req, res) => res.sendFile(path.join(__dirname, 'public', 'interactivo.html')));
+/* =========================
+    PUENTE PARA ROBLOX
+========================= */
+
+// Roblox debe consultar esta ruta. Devuelve un Array de eventos y limpia la cola.
+app.get('/get-events', (req, res) => {
+    const tempEvents = [...eventQueue];
+    eventQueue = []; // Vaciar cola tras la lectura
+    res.json(tempEvents);
 });
 
+// Mantengo /lastevent por compatibilidad, pero devuelve el último de la cola sin borrarla
 app.get('/lastevent', (req, res) => {
-    res.json(currentEvent);
+    if (eventQueue.length === 0) return res.json({ id: "0", action: "none" });
+    res.json(eventQueue[eventQueue.length - 1]);
+});
+
+app.get('/reset', (req, res) => {
+    eventQueue.push({
+        id: Date.now().toString(),
+        action: "reset",
+        amount: 0,
+        target: "ALL"
+    });
+    console.log("🔄 Reset general enviado a cola");
+    res.json({ success: true });
 });
 
 app.post('/test', (req, res) => {
     const { gift, repeatCount, parts, type, robloxUser } = req.body;
-
-    currentEvent = {
+    const newEvent = {
         id: Date.now().toString(),
         action: type === "win" ? "win" : "move",
         amount: Number(parts) * Number(repeatCount), 
         target: robloxUser === "ALL_USERS" ? "ALL" : robloxUser
     };
-
-    console.log("🔥 Nuevo evento (TEST):", currentEvent);
-    res.json({ success: true, message: "Evento enviado a Roblox" });
-});
-
-app.get('/get-event', (req, res) => {
-    res.json(currentEvent);
-});
-
-app.get('/reset', (req, res) => {
-    currentEvent = {
-        id: Date.now().toString(),
-        action: "reset",
-        amount: 0,
-        target: "ALL"
-    };
-    console.log("🔄 Reset general activado");
+    eventQueue.push(newEvent);
+    console.log("🔥 Test enviado:", newEvent);
     res.json({ success: true });
 });
 
 /* =========================
-   LISTA DE REGALOS Y PROXY
+    LISTA DE REGALOS Y PROXY
 ========================= */
 app.get("/gift-list", (req, res) => {
     const giftsPath = path.join(__dirname, "public", "regalos");
@@ -101,27 +96,22 @@ app.get("/gift-list", (req, res) => {
 
 app.get("/avatar-proxy", async (req, res) => {
     try {
-        const url = req.query.url;
-        const response = await axios.get(url, { responseType: "arraybuffer" });
+        const { url } = req.query;
+        if (!url) return res.status(400).send("No URL");
+        const response = await axios.get(url, { responseType: "arraybuffer", timeout: 5000 });
         res.set("Content-Type", "image/jpeg");
         res.send(response.data);
-    } catch (err) { res.status(500).send("avatar error"); }
+    } catch (err) { res.status(500).send("error"); }
 });
 
-const allowedKeys = ["nexora01", "nexora02", "nexora03", "nexora04", "nexora05", "nexora06", "nexora07", "nexora08", "nexora09", "nexora10"];
-const activeConnections = new Map();
-const userActions = new Map();
-
 /* =========================
-   SOCKET.IO LOGIC
+    LÓGICA SOCKET.IO (TIKTOK)
 ========================= */
 io.on("connection", (socket) => {
 
     socket.on("startConnection", async ({ username, key }) => {
-        if (!username || !key) return;
-        if (!allowedKeys.includes(key)) {
-            socket.emit("status", "invalid_key");
-            return;
+        if (!username || !key || !allowedKeys.includes(key)) {
+            return socket.emit("status", "invalid_key");
         }
 
         const tiktok = new WebcastPushConnection(username);
@@ -133,6 +123,7 @@ io.on("connection", (socket) => {
 
             tiktok.on("gift", (data) => {
                 if (data.repeatEnd) {
+                    // 1. Notificar al panel web
                     socket.emit("gift", {
                         user: data.nickname,
                         gift: data.giftName,
@@ -141,21 +132,26 @@ io.on("connection", (socket) => {
                         avatar: data.profilePictureUrl
                     });
 
-                    // ENVÍO AUTOMÁTICO A ROBLOX
-                    currentEvent = {
-                        id: Date.now().toString(),
+                    // 2. Insertar en la cola de Roblox
+                    eventQueue.push({
+                        id: `${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                         action: "move",
                         amount: data.repeatCount,
-                        target: "ALL"
-                    };
-                    console.log(`🎁 Regalo en Vivo: ${data.giftName} x${data.repeatCount} -> Roblox`);
+                        target: "ALL",
+                        giftName: data.giftName
+                    });
 
+                    console.log(`🎁 Gift: ${data.giftName} x${data.repeatCount} -> Agregado a cola`);
+
+                    // 3. Ejecutar acción de sonido o link
                     const actions = userActions.get(username) || [];
                     const action = actions.find(a => a.gift.toLowerCase() === data.giftName.toLowerCase());
                     if (action) {
                         if (action.type === "link") {
-                            axios.get(`${action.file}?user=${encodeURIComponent(data.nickname)}&gift=${data.giftName}&amount=${data.repeatCount}`).catch(() => console.log("URL offline"));
-                        } else { socket.emit("triggerSound", action.file); }
+                            axios.get(`${action.file}?user=${encodeURIComponent(data.nickname)}&gift=${data.giftName}&amount=${data.repeatCount}`).catch(() => {});
+                        } else { 
+                            socket.emit("triggerSound", action.file); 
+                        }
                     }
                 }
             });
@@ -164,66 +160,57 @@ io.on("connection", (socket) => {
                 socket.emit("chat", {
                     user: data.nickname,
                     message: data.comment,
-                    avatar: data.profilePictureUrl,
-                    isMod: data.isModerator,
-                    isSub: data.isSubscriber,
-                    isFollower: data.followRole === 1 || data.followRole === 2
+                    avatar: data.profilePictureUrl
                 });
             });
 
-            const likeRanking = new Map();
             tiktok.on("like", (data) => {
-                const user = data.nickname;
-                const likes = data.likeCount || 1;
-                socket.emit("singleLike", { user: user, avatar: data.profilePictureUrl });
-                if (!likeRanking.has(user)) { likeRanking.set(user, 0); }
-                likeRanking.set(user, likeRanking.get(user) + likes);
-                const ranking = [...likeRanking.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map((u, i) => ({ rank: i + 1, user: u[0], likes: u[1] }));
-                socket.emit("likeRanking", ranking);
+                socket.emit("singleLike", { user: data.nickname, avatar: data.profilePictureUrl });
             });
 
-        } catch (err) { socket.emit("status", "error"); }
+        } catch (err) { 
+            socket.emit("status", "error"); 
+        }
     });
 
+    // --- Gestión de Acciones ---
     socket.on("uploadAndSave", ({ username, gift, fileName, fileData }) => {
         if (!username || !fileData) return;
-        const userFolder = path.join(__dirname, "public", "uploads", username);
+        const userFolder = path.join(uploadsDir, username);
         if (!fs.existsSync(userFolder)) fs.mkdirSync(userFolder, { recursive: true });
+        
         const base64Data = fileData.split(";base64,").pop();
         const finalFileName = `${Date.now()}_${fileName}`;
         const filePath = path.join(userFolder, finalFileName);
-        fs.writeFile(filePath, base64Data, { encoding: "base64" }, () => {
+        
+        fs.writeFile(filePath, base64Data, { encoding: "base64" }, (err) => {
+            if (err) return;
             if (!userActions.has(username)) userActions.set(username, []);
-            const actions = userActions.get(username);
-            actions.push({ gift: gift, file: `/uploads/${username}/${finalFileName}`, type: "mp3" });
-            socket.emit("actionsUpdated", actions);
-            socket.emit("status", "connected");
+            userActions.get(username).push({ gift, file: `/uploads/${username}/${finalFileName}`, type: "mp3" });
+            socket.emit("actionsUpdated", userActions.get(username));
         });
     });
 
     socket.on("saveAction", ({ username, action }) => {
         if (!username) return;
         if (!userActions.has(username)) userActions.set(username, []);
-        const actions = userActions.get(username);
-        actions.push(action);
-        socket.emit("actionsUpdated", actions);
+        userActions.get(username).push(action);
+        socket.emit("actionsUpdated", userActions.get(username));
     });
 
     socket.on("getActions", (username) => {
-        const actions = userActions.get(username) || [];
-        socket.emit("actionsUpdated", actions);
+        socket.emit("actionsUpdated", userActions.get(username) || []);
     });
 
     socket.on("deleteAction", ({ username, index }) => {
         if (!userActions.has(username)) return;
-        const actions = userActions.get(username);
-        actions.splice(index, 1);
-        socket.emit("actionsUpdated", actions);
+        userActions.get(username).splice(index, 1);
+        socket.emit("actionsUpdated", userActions.get(username));
     });
 
     socket.on("stopConnection", () => {
         if (activeConnections.has(socket.id)) {
-            try { activeConnections.get(socket.id).disconnect(); } catch { }
+            activeConnections.get(socket.id).disconnect();
             activeConnections.delete(socket.id);
         }
         socket.emit("status", "disconnected");
@@ -231,7 +218,7 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
         if (activeConnections.has(socket.id)) {
-            try { activeConnections.get(socket.id).disconnect(); } catch { }
+            activeConnections.get(socket.id).disconnect();
             activeConnections.delete(socket.id);
         }
     });
@@ -239,5 +226,5 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-    console.log("🚀 Nexora Ultra activo en puerto", PORT);
+    console.log("🚀 Nexora Ultra (Queue Mode) activo en puerto", PORT);
 });
